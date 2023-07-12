@@ -1,0 +1,26 @@
+{
+  # Cuda device
+  "CUDA Device ID":0,
+
+  "CPU cores":5,
+  "GPU max units":1000,
+  "Number of cells":50,
+  "Mode":"Cell";
+  "Multi read":"YES",
+
+  "Output folders":"results_of_Simulation",
+  "Intermediate folders":"Intermediates",
+
+  "Seed":"x",
+
+  "Write progeny parent":"YES",
+  "Write progeny sequences":"NO",
+
+  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/reference_Genomes",
+
+  # Replication profiles
+  "Replication profile folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters/replication_profiles/",
+
+  # Sequence profiles
+  "Sequence profile folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters/sequence_profiles/"
+}

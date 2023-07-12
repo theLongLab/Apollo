@@ -1,0 +1,77 @@
+{
+
+  # Selectivity is bernoulli distributions
+
+  "Number of sequences":2,
+
+  "Sequence 1":{
+
+    "Sequence ID":"NC_045512.2|Reference_1|2019-12-01",
+
+    "Fitness":"1.8",
+    "Survivability":"0.87",
+    "Proof reading accuracy":"0.25",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":3,
+
+      "Hotspot 1":{
+        "Ratio of recombinant progeny":"0.75",
+        "Selectivity":"1",
+        "Fitness":"1",
+        "Survivability":"0.83"
+      },
+
+      "Hotspot 2":{
+        "Ratio of recombinant progeny":"0.75",
+        "Selectivity":"1",
+        "Fitness":"1",
+        "Survivability":"0.82"
+      },
+
+      "Hotspot 3":{
+        "Ratio of recombinant progeny":"0.75",
+        "Selectivity":"1",
+        "Fitness":"1.0",
+        "Survivability":"0.01"
+      },
+    },
+  },
+
+  "Sequence 2":{
+
+    "Sequence ID":"NC_045512.2|Reference_2|2019-12-01",
+
+    "Fitness":"1.0",
+    "Survivability":"0.05",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":3,
+
+      "Hotspot 1":{
+        "Ratio of recombinant progeny":"0",
+        "Selectivity":"1",
+        "Fitness":"1",
+        "Survivability":"0"
+      },
+
+      "Hotspot 2":{
+        "Ratio of recombinant progeny":"0.25",
+        "Selectivity":"2.5",
+        "Fitness":"1.0",
+        "Survivability":"0.07"
+      },
+
+      "Hotspot 3":{
+        "Ratio of recombinant progeny":"0.75",
+        "Selectivity":"0.25",
+        "Fitness":"2.0",
+        "Survivability":"0.0"
+      },
+    },
+  },
+
+}
