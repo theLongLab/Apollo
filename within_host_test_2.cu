@@ -1601,7 +1601,7 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
         // }
     }
 
-    cout << "Purging parent profile intermediaries" << endl;
+    cout << "\nPurging parent profile intermediaries" << endl;
     if (filesystem::exists(parent_Profiles_Store))
     {
         filesystem::remove_all(parent_Profiles_Store);
