@@ -1,0 +1,187 @@
+{
+
+  # Selectivity is bernoulli distributions
+
+  "Number of sequences":12,
+
+  "Sequence 1":{
+
+    "Sequence ID":"14p1_1_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 2":{
+
+    "Sequence ID":"14p1_2_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 3":{
+
+    "Sequence ID":"14p1_3_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 4":{
+
+    "Sequence ID":"14p1_4_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 5":{
+
+    "Sequence ID":"14p1_5_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 6":{
+
+    "Sequence ID":"14p1_6_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 7":{
+
+    "Sequence ID":"14p1_7_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 8":{
+
+    "Sequence ID":"14p1_8_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 9":{
+
+    "Sequence ID":"14p1_9_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 10":{
+
+    "Sequence ID":"14p1_10_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 11":{
+
+    "Sequence ID":"14p1_11_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+  "Sequence 12":{
+
+    "Sequence ID":"14p1_12_RT",
+
+    "Fitness":"1",
+    "Survivability":"0.5",
+    "Proof reading accuracy":"0",
+
+    "Recombination hotspots":{
+
+      "Number of hotspots":0,
+
+    },
+  },
+
+}

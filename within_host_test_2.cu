@@ -934,7 +934,25 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
             if (filesystem::exists(parent_Profiles_Store))
             {
                 filesystem::remove_all(parent_Profiles_Store);
+
+                // string sourceFolder = parent_Sequences_Store;
+                string tar_Folder = parent_Sequences_Store + ".tar";
+
+                string command_Tar = "tar -cf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
+
+                int result = system(command_Tar.c_str());
+
+                if (result == 0)
+                {
+                    cout << "Tar successful" << endl;
+                }
+                else
+                {
+                    cout << "Failed to tar the sequence folder: " << parent_Sequences_Store << endl;
+                    exit(-1);
+                }
             }
+
             parent_Profiles_Store = progeny_Profile_Store;
             parent_Sequences_Store = progeny_Sequences_Store;
 
@@ -1581,6 +1599,29 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
         // {
         //     break;
         // }
+    }
+
+    cout << "Purging parent profile intermediaries" << endl;
+    if (filesystem::exists(parent_Profiles_Store))
+    {
+        filesystem::remove_all(parent_Profiles_Store);
+
+        // string sourceFolder = parent_Sequences_Store;
+        string tar_Folder = parent_Sequences_Store + ".tar";
+
+        string command_Tar = "tar -cf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
+
+        int result = system(command_Tar.c_str());
+
+        if (result == 0)
+        {
+            cout << "Tar successful" << endl;
+        }
+        else
+        {
+            cout << "Failed to tar the sequence folder: " << parent_Sequences_Store << endl;
+            exit(-1);
+        }
     }
 
     // cudaFree(cuda_parent_Sequences);

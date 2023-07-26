@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "functions_library.cuh"
+#include <cstdlib>
 
 #include <curand.h>
 #include <curand_kernel.h>

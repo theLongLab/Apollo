@@ -1,0 +1,1061 @@
+{
+  # Days (gamma)
+  "Shape replication time":"10000",
+  "Scale replication time":"0.0120",
+
+  "Shape days in host":"20.0",
+  "Scale days in host":"0.27",
+
+  # Viral units per cell
+  "Viral distribution per cell":{
+    "Distribution type cell":"Gamma",
+    "Shape units per_cell":"10",
+    "Scale units per_cell":"5",
+
+    "Cell limits":"Yes",
+    "Shape cells":"10000",
+    "Scale cells":"1000"
+
+    # Type:Negative binomial
+  },
+
+  # PROGENY Number by distribution
+  # Normal, negative_binomial_distribution, gamma
+
+  "Progeny distribution":{
+    "Distribution type progeny":"Gamma",
+    "Shape progeny per_unit":"5",
+    "Scale progeny per_unit":"100"
+
+    # Type:Negative binomial
+    # Mean progeny negative Binomial
+    # Dispersion parameter
+  },
+
+  # Replication phases
+  "Phases":{
+
+    "Number of phases":3,
+
+    "Phase 1":{
+      "Time":"0.16",
+      "Mode":"Growth"
+    },
+
+    "Phase 2":{
+      # Beta distribution
+      "Mode":"Depriciation",
+      "Time":"0.13",
+      "Alpha":"40",
+      "Beta":"50"
+    },
+
+    "Phase 3":{
+      "Mode":"Stationary",
+      "Time":"0.71",
+      "Variance":"100"
+    },
+
+  },
+
+  # RECOMBINATION, FITNESS, MUTATIONS, PROOF READING (ERROR Correction)
+
+  # Probability a recombination event will occur per generation
+  # Same base can get mutated twice
+
+  "Mutation activate":"Yes",
+  "Recombination activate":"No",
+  "Proof reading activate":"No",
+
+  "Mutation rate":{
+
+    "Number of mutation hotspots":30,
+
+    "Hotspot 1":{
+        "Region":"89:89",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 2":{
+        "Region":"105:105",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 3":{
+        "Region":"121:121",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 4":{
+        "Region":"135:135",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 5":{
+        "Region":"139:139",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 6":{
+        "Region":"204:204",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 7":{
+        "Region":"209:209",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 8":{
+        "Region":"246:246",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 9":{
+        "Region":"248:248",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 10":{
+        "Region":"252:252",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 11":{
+        "Region":"319:319",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 12":{
+        "Region":"322:322",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 13":{
+        "Region":"329:329",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 14":{
+        "Region":"354:354",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 15":{
+        "Region":"368:368",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 16":{
+        "Region":"393:393",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 17":{
+        "Region":"452:452",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 18":{
+        "Region":"513:513",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 19":{
+        "Region":"521:521",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 20":{
+        "Region":"537:537",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 21":{
+        "Region":"559:559",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 22":{
+        "Region":"599:599",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 23":{
+        "Region":"629:629",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 24":{
+        "Region":"643:643",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 25":{
+        "Region":"644:644",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 26":{
+        "Region":"651:651",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 27":{
+        "Region":"660:660",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 28":{
+        "Region":"662:662",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 29":{
+        "Region":"671:671",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+    "Hotspot 30":{
+        "Region":"675:675",
+
+        # Poisson mutations per generation
+        "Clock model":{
+          "Type":"Strict fixed",
+          "Fixed mutation rate":"0.000046"
+        },
+
+        "Probability":{
+          "AA":"0.818531",
+          "AG":"0.156588",
+          "AT":"0.014818",
+          "AC":"0.010063",
+
+          "GA":"0.311697",
+          "GG":"0.663422",
+          "GT":"0.014818",
+          "GC":"0.010063",
+
+          "TT":"0.797674",
+          "TC":"0.163581",
+          "TA":"0.025789",
+          "TG":"0.012956",
+
+          "CT":"0.240881",
+          "CC":"0.720374",
+          "CA":"0.025789",
+          "CG":"0.012956"
+        },
+    },
+
+  },
+
+  # CHANGES IN FITNESS DUE TO BASE PAIR CHANGES
+
+    "Mutation fitess effects":{
+      "Number of fitess points":0,
+
+    },
+
+    "Mutation survivability effects":{
+      "Number of survivability points":0,
+
+    },
+
+  # Recombination probability should be addative.
+
+  "Recombination":{
+
+    "Number of recombination hotspots":0,
+
+  },
+
+  "Proof Reading":{
+
+    "Mutation effect types":0,
+
+  },
+}
