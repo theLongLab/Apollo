@@ -1,10 +1,10 @@
 {
   # Days (gamma)
-  "Shape replication time":"10000",
-  "Scale replication time":"0.0120",
+  "Shape replication time":"100",
+  "Scale replication time":"0.022",
 
-  "Shape days in host":"20.0",
-  "Scale days in host":"0.27",
+  "Shape days in host":"10000",
+  "Scale days in host":"0.0120",
 
   # Viral units per cell
   "Viral distribution per cell":{

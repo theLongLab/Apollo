@@ -160,6 +160,8 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
     cout << "Generations (upper round)  : " << generations << endl
          << endl;
 
+    // exit(-1);
+
     cout << "Sequences found: " << endl;
 
     vector<string> reference_Sequence_list = function.get_Files(references_Folder, ".fasta");
@@ -204,7 +206,13 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
         // cout << reference_Seq << endl;
 
-        parent_Sequence_Headers.push_back(header.substr(1));
+        string clean_Header = header.substr(1);
+
+        clean_Header.erase(std::remove(clean_Header.begin(), clean_Header.end(), '\r'), clean_Header.end());
+
+        // cout << clean_Header << endl;
+        // exit(-1);
+        parent_Sequence_Headers.push_back(clean_Header);
 
         if (num_Sequences_ref == 0)
         {
@@ -565,6 +573,8 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
         free(stride_Array);
     }
 
+    // exit(-1);
+
     if (mutation_Activate_parent != 0)
     {
         function.mutation_hotspots = this->mutation_hotspots;
@@ -637,6 +647,8 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
         int recomb_Columns = 0;
 
+        // cout << "Check 1\n";
+
         if (recombination_hotspots != -1)
         {
             for (size_t i = 0; i < recombination_hotspots; i++)
@@ -651,6 +663,8 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
             recomb_Columns = recombination_hotspots;
         }
 
+        // cout << "Check 2\n";
+
         header_profiles = header_profiles + "\tSurvive_or_Not";
 
         function.config_File_delete_create(this->progeny_Recombination_File, header_recombination);
@@ -661,6 +675,7 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
         if (profile_File.is_open())
         {
+            // cout << "Check 3\n";
             for (size_t i = 0; i < parents_in_current_generation; i++)
             {
                 fstream parent_Profile_Files;
@@ -669,20 +684,24 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
                 parent_Profile_Files.open(parent_Profiles_Store + "/0_" + to_string(parents[i]) + ".profile", ios::out);
                 survivability_Files.open(parent_Profiles_Store + "/0_" + to_string(parents[i]) + ".profile_surv", ios::out);
+
+                // cout << "1\n";
                 if (proof_reading_Activate_parent != 0)
                 {
                     function.proof_reading_Activate_parent = 1;
                     parent_Probability_Files.open(parent_Profiles_Store + "/0_" + to_string(parents[i]) + ".profile_prob", ios::out);
                 }
-
+                // cout << "2\n";
                 parent_Profile_Files << to_string(current_gen_Parent_data[i][0]);
+                // cout << "3\n";
                 if (proof_reading_Activate_parent != 0)
                 {
                     parent_Probability_Files << to_string(sequences_Proof_reading_probability[i]);
                     parent_Probability_Files.close();
                 }
-
+                // cout << "4\n";
                 survivability_Files << to_string(sequences_Survivability[i][0]);
+                // cout << "sub Check 1\n";
                 for (int hotspot_surv = 0; hotspot_surv < recomb_Columns; hotspot_surv++)
                 {
                     survivability_Files << "\t" << to_string(sequences_Survivability[i][hotspot_surv + 1]);
@@ -692,9 +711,14 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
                 profile_File << "0_" << to_string(parents[i]) << "\t"
                              << "0\t" << to_string(sequences_Survivability[i][0])
-                             << "\t" << to_string(current_gen_Parent_data[i][0]) << "\t" << to_string(sequences_Proof_reading_probability[i]);
+                             << "\t" << to_string(current_gen_Parent_data[i][0]);
+                if (proof_reading_Activate_parent != 0)
+                {
+                    profile_File << "\t" << to_string(sequences_Proof_reading_probability[i]);
+                }
 
                 int track = 0;
+                // cout << "sub Check 2\n";
                 for (int hotspots = 0; hotspots < (recomb_Columns * 3); hotspots++)
                 {
                     profile_File << "\t" << to_string(current_gen_Parent_data[i][hotspots + 1]);
@@ -710,8 +734,10 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
                 parent_Profile_Files.close();
             }
+            // cout << " sub Check final\n";
             profile_File.close();
         }
+        // cout << "Check 4\n";
     }
 
     // exit(-1);
@@ -882,6 +908,8 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
             cout << "Number of infected cell(s): " << num_Unique_cells << endl
                  << endl;
 
+            // exit(-1);
+
             vector<pair<int, int>> start_Stop_Rounds;
 
             int full_Rounds = num_Unique_cells / this->at_a_Time_cells;
@@ -922,11 +950,11 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
             }
 
             cout << "Completed generation via " << start_Stop_Rounds.size() << " rounds" << endl;
-            cout << "Simulated progeny: " << sum_Progeny_in_Generation << endl;
+            cout << "\nSimulated progeny: " << sum_Progeny_in_Generation << endl;
             cout << "Progeny that survived till parenthood: " << surviving_Progeny.size() << endl;
             cout << "Progeny that perished before becoming parents: " << sum_Progeny_in_Generation - surviving_Progeny.size() << endl;
 
-            // exit(-1);
+            //exit(-1);
 
             generation_line = generation_line + "\t" + to_string(sum_Progeny_in_Generation) + "\n";
 
@@ -2067,10 +2095,15 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
     functions_library function = functions_library();
     parameter_load Parameters = parameter_load();
 
-    cout << "Configuring parent sequences" << endl
+    cout << "\nConfiguring parent sequences" << endl
          << endl;
 
-    current_gen_Parent_data = function.create_FLOAT_2D_arrays(parents_in_current_generation, 1 + (3 * recombination_hotspots));
+    int num_hotspots_Check = 0;
+    if (recombination_hotspots != -1)
+    {
+        num_hotspots_Check = recombination_hotspots;
+    }
+    current_gen_Parent_data = function.create_FLOAT_2D_arrays(parents_in_current_generation, 1 + (3 * num_hotspots_Check));
 
     if (proof_reading_Activate_parent != 0)
     {
@@ -2190,7 +2223,7 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                 if (sequence_Block != -1)
                 {
                     cout << "Configuring " << check_Sequence << endl;
-                    int seq_ID_check, fitness_check, proof_check = -1;
+                    int seq_ID_check = -1, fitness_check = -1, proof_check = -1, survivability = -1;
                     while (getline(sequence_Profile, line))
                     {
                         if (line != "}" && line != "")
@@ -2218,6 +2251,7 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                                 }
                                 else
                                 {
+                                    cout << line_Data[0] << endl;
                                     if (line_Data[0] == "\"Sequence ID\"")
                                     {
                                         sequence_Name = Parameters.get_STRING(line_Data[1]);
@@ -2225,6 +2259,7 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                                         for (int headers = 0; headers < parent_headers.size(); headers++)
                                         {
                                             // cout << parent_headers[headers] << endl;
+                                            // cout << sequence_Name << endl;
                                             if (parent_headers[headers] == sequence_Name)
                                             {
                                                 // cout << "Found" << endl;
@@ -2238,6 +2273,7 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                                             cout << "ERROR: " << sequence_Name << " SEQUENCE NOT FOUND." << endl;
                                             exit(-1);
                                         }
+                                        // exit(-1);
                                     }
                                     else if (line_Data[0] == "\"Fitness\"")
                                     {
@@ -2249,6 +2285,7 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                                     {
                                         sequences_Survivability[seq_ID_check][0] = Parameters.get_FLOAT(line_Data[1]);
                                         cout << "Survivability probability: " << sequences_Survivability[seq_ID_check][0] << endl;
+                                        survivability = 1;
                                     }
                                     else
                                     {
@@ -2262,14 +2299,15 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                                             }
                                         }
                                     }
+                                    // exit(-1);
                                     if (proof_reading_Activate_parent != 0)
                                     {
-                                        if ((seq_ID_check != -1) && (fitness_check != -1) && (proof_check != -1))
+                                        if ((seq_ID_check != 1) && (fitness_check == 1) && (proof_check == 1) && (survivability == 1))
                                         {
                                             break;
                                         }
                                     }
-                                    else if ((seq_ID_check != -1) && (fitness_check != -1))
+                                    else if ((seq_ID_check != -1) && (fitness_check == 1) && (survivability == 1))
                                     {
                                         proof_check = 1;
                                         break;
@@ -2278,7 +2316,11 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                             }
                         }
                     }
-                    if (seq_ID_check != -1 && fitness_check != -1 && proof_check != -1)
+                    // exit(-1);
+                    //  cout << seq_ID_check << endl;
+                    //  cout << fitness_check << endl;
+                    //  cout << proof_check << endl;
+                    if (seq_ID_check != -1 && fitness_check == 1 && proof_check == 1 && survivability == 1)
                     {
                         int recombination_Block = -1;
                         while (getline(sequence_Profile, line))
@@ -2473,8 +2515,11 @@ void within_host_test_2::configure_sequence_Profile(int parents_in_current_gener
                             }
                             else
                             {
-                                cout << "NUMBER OF HOTSPOTS OF " << hotspot_Number << " DOES NOT MATCH THAT OF THE REPLICATION PROFILE " << this->recombination_hotspots << endl;
-                                exit(-1);
+                                if (this->recombination_hotspots != -1)
+                                {
+                                    cout << "NUMBER OF HOTSPOTS OF " << hotspot_Number << " DOES NOT MATCH THAT OF THE REPLICATION PROFILE " << this->recombination_hotspots << endl;
+                                    exit(-1);
+                                }
                             }
                         }
                     }

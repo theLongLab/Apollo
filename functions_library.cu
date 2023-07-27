@@ -3268,6 +3268,7 @@ void functions_library::write_nFASTA_multi_WRITE(string progeny_Sequences_Store,
             }
             nFASTA.close();
         }
+        // cout << "Wrote: " << progeny_Name << endl;
     }
 }
 
@@ -4456,7 +4457,7 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
             }
             else
             {
-                sequence_Profile_write << "\tNA";
+                // sequence_Profile_write << "\tNA";
             }
             for (int recombination_Hotspot = 0; recombination_Hotspot < recombination_hotspots; recombination_Hotspot++)
             {
@@ -4545,7 +4546,7 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
 
         if (multi_READ == "YES")
         {
-            cout << "Initiating multi write" << endl;
+            cout << "Initiating multi write FASTA: " << sum_Progeny << endl;
 
             int num_per_Core = sum_Progeny / this->CPU_cores;
             int remainder = sum_Progeny % this->CPU_cores;
@@ -4575,6 +4576,8 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
             }
 
             threads_vec.clear();
+
+            // exit(-1);
         }
         else
         {
@@ -4606,11 +4609,14 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
         processed_Cells = processed_Cells + num_of_Cells;
         clear_Array_int_CPU(progeny_Sequences, sum_Progeny);
         clear_Array_int_CPU(progeny_recom_Index, sum_Progeny);
-        free(progeny_Proof_reading_probability);
+        if (proof_reading_Activate_parent != 0)
+        {
+            free(progeny_Proof_reading_probability);
+        }
         clear_Array_float_CPU(current_gen_Progeny_data, sum_Progeny);
         clear_Array_float_CPU(progeny_survivability_Probabilities, sum_Progeny);
 
-        // exit(-1);
+        //exit(-1);
     }
     else
     {
