@@ -954,7 +954,10 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
             cout << "Progeny that survived till parenthood: " << surviving_Progeny.size() << endl;
             cout << "Progeny that perished before becoming parents: " << sum_Progeny_in_Generation - surviving_Progeny.size() << endl;
 
-            //exit(-1);
+            // if (generation == 1)
+            // {
+            //     exit(-1);
+            // }
 
             generation_line = generation_line + "\t" + to_string(sum_Progeny_in_Generation) + "\n";
 
