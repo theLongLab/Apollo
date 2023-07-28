@@ -4,17 +4,17 @@
   "Scale replication time":"0.022",
 
   "Shape days in host":"10000",
-  "Scale days in host":"0.0120",
+  "Scale days in host":"0.003",
 
   # Viral units per cell
   "Viral distribution per cell":{
     "Distribution type cell":"Gamma",
     "Shape units per_cell":"10",
-    "Scale units per_cell":"5",
+    "Scale units per_cell":"0.5",
 
     "Cell limits":"Yes",
     "Shape cells":"10000",
-    "Scale cells":"1000"
+    "Scale cells":"10"
 
     # Type:Negative binomial
   },
@@ -25,7 +25,7 @@
   "Progeny distribution":{
     "Distribution type progeny":"Gamma",
     "Shape progeny per_unit":"5",
-    "Scale progeny per_unit":"100"
+    "Scale progeny per_unit":"1"
 
     # Type:Negative binomial
     # Mean progeny negative Binomial
@@ -53,7 +53,7 @@
     "Phase 3":{
       "Mode":"Stationary",
       "Time":"0.71",
-      "Variance":"100"
+      "Variance":"1"
     },
 
   },
