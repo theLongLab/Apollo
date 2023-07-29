@@ -21,6 +21,7 @@
 #include "parameter_load.h"
 
 #include "functions_library.cuh"
+#include "extract_seq.cuh"
 
 using namespace std;
 
@@ -53,6 +54,35 @@ int main(int argc, char *argv[])
 
      // int seed_value = rd();
 
+     parameter_load Parameters = parameter_load();
+
+     if (function == "--extract")
+     {
+          cout << "Ectraction\n";
+
+          vector<string> parameters_List = {
+              "\"CUDA Device ID\"",
+              "\"CPU cores\"",
+              "\"GPU max units\"",
+              "\"Intermediate folders\"",
+              "\"Output folders\"",
+              "\"Multi read\""};
+
+          vector<string> found_Parameters = Parameters.get_parameters(parameter_MASTER_file, parameters_List);
+
+          string output_Folders = Parameters.get_STRING(found_Parameters[4]);
+          function_main.config_Folder(output_Folders, "Output");
+
+          //     extract_seq(int CUDA_device_number, int CPU_cores, int gpu_Limit,
+          //                 string intermediate_Folders,
+          //                 string output_Folder,
+          //                 string multi_READ);
+
+          extract_seq e_seq = extract_seq(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]), Parameters.get_STRING(found_Parameters[3]), output_Folders, Parameters.get_STRING(found_Parameters[5]));
+
+          exit(-1);
+     }
+
      vector<string> parameters_List = {
          "\"CUDA Device ID\"",
          "\"Seed\"",
@@ -71,7 +101,6 @@ int main(int argc, char *argv[])
 
      // cout << parameters_List.size();
 
-     parameter_load Parameters = parameter_load();
      vector<string> found_Parameters = Parameters.get_parameters(parameter_MASTER_file, parameters_List);
 
      // for (string p : found_Parameters)

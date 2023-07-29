@@ -3255,8 +3255,9 @@ void functions_library::write_nFASTA_multi_WRITE(string progeny_Sequences_Store,
         if (filesystem::exists(file_Location))
         {
             filesystem::remove(file_Location);
-            // cout << "Existing file was deleted: " << location << endl;
+            cout << "Existing file was deleted: " << file_Location << endl;
         }
+
         fstream nFASTA;
         nFASTA.open(file_Location, ios::app);
 

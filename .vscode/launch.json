@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["-c","/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_HIV/parameters_MASTER.json"],
+            "args": ["--extract","/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_HIV/parameters_MASTER.json"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

@@ -967,9 +967,9 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
                 filesystem::remove_all(parent_Profiles_Store);
 
                 // string sourceFolder = parent_Sequences_Store;
-                string tar_Folder = parent_Sequences_Store + ".tar";
+                string tar_Folder = parent_Sequences_Store + ".tar.gz";
 
-                string command_Tar = "tar -cf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
+                string command_Tar = "tar -czf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
 
                 int result = system(command_Tar.c_str());
 
@@ -1175,7 +1175,7 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
 
                 float num_To_remove = phase_parameters[generation_modes[generation]][2] * reduction_Ratio;
 
-                int parents_in_Next_gen = static_cast<int>(phase_parameters[generation_modes[generation]][2] - (int)num_To_remove);
+                int parents_in_Next_gen = static_cast<int>(phase_parameters[generation_modes[generation]][2] - num_To_remove);
 
                 cout << "Parents moving to next generation: " << parents_in_Next_gen << endl;
 
