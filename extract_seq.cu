@@ -36,5 +36,64 @@ void extract_seq::ingress()
 {
     functions_library function = functions_library(tot_Blocks, tot_ThreadsperBlock, gpu_Limit, CPU_cores);
 
-    int num_Generations;
+    // vector<string> sequence_Folders;
+
+    int num_Generations = 0;
+
+    cout << "Intermediate sequences folder: " << this->intermediate_sequence_Store << endl;
+
+    for (const auto &entry : filesystem::directory_iterator(intermediate_sequence_Store))
+    {
+        string file_Name = entry.path().filename();
+        // cout << file_Name.substr(0, 11) << endl;
+        if (file_Name.substr(0, 11) == "generation_")
+        {
+            // cout << entry.path() << '\n';
+            // sequence_Folders.push_back(entry.path());
+            num_Generations++;
+        }
+    }
+
+    if (num_Generations != 0)
+    {
+        cout << endl
+             << num_Generations << " generation(s) worth of sequence(s) were found.\n\n";
+
+        for (int folder_Index = 0; folder_Index < num_Generations; folder_Index++)
+        {
+            string folder = intermediate_sequence_Store + "/generation_" + to_string(folder_Index);
+            string command_Tar = "tar -xzf " + folder + ".tar.gz";
+
+            int result = system(command_Tar.c_str());
+
+            if (result == 0)
+            {
+                cout << "Extraction successful: " << folder + ".tar.gz" << endl;
+                cout << "Processing folder: " << folder << endl
+                     << endl;
+
+                int sequence_Files_count = 0;
+
+                for (const auto &entry : filesystem::directory_iterator(folder))
+                {
+                    string file_Name = entry.path().filename();
+
+                    sequence_Files_count++;
+
+                    // cout << "Processing sequence: " << file_Name << endl;
+                }
+                cout << sequence_Files_count << " sequence(s) found." << endl;
+            }
+            else
+            {
+                cout << "Failed to extract the sequence folder: " << folder << endl;
+                exit(-1);
+            }
+            break;
+        }
+    }
+    else
+    {
+        cout << "No generational sequence data was found.\n";
+    }
 }

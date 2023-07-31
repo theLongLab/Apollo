@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
           //                 string multi_READ);
 
           extract_seq e_seq = extract_seq(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]), Parameters.get_STRING(found_Parameters[3]), output_Folders, Parameters.get_STRING(found_Parameters[5]));
+          e_seq.ingress();
 
           exit(-1);
      }
