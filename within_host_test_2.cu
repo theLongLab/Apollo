@@ -1638,9 +1638,9 @@ void within_host_test_2::ingress(float rep_time, float host_days, string mode)
         filesystem::remove_all(parent_Profiles_Store);
 
         // string sourceFolder = parent_Sequences_Store;
-        string tar_Folder = parent_Sequences_Store + ".tar";
+        string tar_Folder = parent_Sequences_Store + ".tar.gz";
 
-        string command_Tar = "tar -cf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
+        string command_Tar = "tar -czf " + tar_Folder + " " + parent_Sequences_Store + " && rm -R " + parent_Sequences_Store;
 
         int result = system(command_Tar.c_str());
 

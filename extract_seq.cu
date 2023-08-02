@@ -180,6 +180,7 @@ void extract_seq::ingress()
                                 sequence_Count.push_back(1);
                             }
                         }
+                        N_sequences_Store.clear();
                     }
                 }
                 else
@@ -214,7 +215,26 @@ void extract_seq::ingress()
                 cout << "Failed to extract the sequence folder: " << folder << endl;
                 exit(-1);
             }
-            break;
+
+            string command_remove = "rm -r " + folder;
+
+            int result_remove = system(command_remove.c_str());
+
+            if (result_remove == 0)
+            {
+                cout << "Purged the sequence folder: " << folder << endl
+                     << endl;
+            }
+            else
+            {
+                cout << "Failed to purge the sequence folder: " << folder << endl
+                     << endl;
+                exit(-1);
+            }
+            // if (folder_Index == 1)
+            // {
+            //     break;
+            // }
         }
 
         cout << "Writing results of sequence summary\n";
@@ -251,6 +271,8 @@ void extract_seq::ingress()
         }
 
         sequences_files_Summary.close();
+
+        cout << "Completed extraction\n";
     }
     else
     {
