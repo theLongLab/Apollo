@@ -90,9 +90,11 @@ void network::ingress()
 
     network_Write.close();
 
+    cout << endl;
+
     string node_Summary_Path = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/node_Summary_File.csv";
     function.config_File_delete_create(node_Summary_Path, "ID\tNumber_of_links");
-    
+
     fstream node_Summary;
     node_Summary.open(node_Summary_Path, ios::app);
 
