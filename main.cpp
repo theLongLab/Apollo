@@ -17,6 +17,7 @@
 #include "within_host_test.cuh"
 
 #include "within_host_test_2.cuh"
+#include "network.cuh"
 
 #include "parameter_load.h"
 
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
 
      if (function == "--extract")
      {
-          cout << "Ectraction\n";
+          cout << "Extraction\n";
 
           vector<string> parameters_List = {
               "\"CUDA Device ID\"",
@@ -81,6 +82,22 @@ int main(int argc, char *argv[])
           extract_seq e_seq = extract_seq(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]), Parameters.get_STRING(found_Parameters[3]), output_Folders, Parameters.get_STRING(found_Parameters[5]));
           e_seq.ingress();
 
+          exit(-1);
+     }
+     else if (function == "--network")
+     {
+          vector<string> parameters_List = {
+              "\"CUDA Device ID\"",
+              "\"CPU cores\"",
+              "\"GPU max units\"",
+              "\"Multi read\""};
+          // int CUDA_device_number, int CPU_cores, int gpu_Limit
+          cout << "Network test\n";
+
+          vector<string> found_Parameters = Parameters.get_parameters(parameter_MASTER_file, parameters_List);
+
+          network net = network(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]),Parameters.get_STRING(found_Parameters[3]));
+          net.ingress();
           exit(-1);
      }
 
