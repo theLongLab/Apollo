@@ -27,7 +27,7 @@ network::network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string mu
 
 void network::ingress()
 {
-    int nodes = 10;
+    int nodes = 100;
 
     cout << "Barabasi Albert Model\n\nNodes: " << nodes << endl;
 
@@ -40,32 +40,40 @@ void network::ingress()
         connections_per_Node.push_back(0);
         tot_connections++;
 
-        float randomNum = static_cast<float>(std::rand()) / RAND_MAX;
+        // randomNum = 0.99;
 
         // cout << randomNum << endl;
 
         int attach_Node = -1;
-        float cum_Prob = 0;
 
         do
         {
+            float randomNum = static_cast<float>(std::rand()) / RAND_MAX;
+            float cum_Prob = 0;
             for (int check_Node = 0; check_Node < connections_per_Node.size(); check_Node++)
             {
-                cum_Prob += cum_Prob + ((float)(connections_per_Node[check_Node] + 1) / (float)tot_connections);
-                // cout << tot_connections << endl;
+                cum_Prob += ((float)(connections_per_Node[check_Node] + 1) / (float)tot_connections);
+                // cout << check_Node + 1 << ": " << connections_per_Node[check_Node] + 1 << "/" << tot_connections << "=" << ((float)(connections_per_Node[check_Node] + 1) / (float)tot_connections) << endl;
+                // cout << "Tot_prob: " << cum_Prob << " : " << randomNum << endl;
                 if (randomNum < cum_Prob)
                 {
                     attach_Node = check_Node;
                     break;
                 }
             }
+            // cum_Prob = 0;
         } while (attach_Node == node && node != 0);
 
         if (attach_Node != -1)
         {
             cout << "Node " << node + 1 << " attached to " << attach_Node + 1 << endl;
-            connections_per_Node[attach_Node] + connections_per_Node[attach_Node] + 1;
+            connections_per_Node[attach_Node] = connections_per_Node[attach_Node] + 1;
             tot_connections++;
+        }
+        else
+        {
+            cout << "ERROR\n";
+            exit(-1);
         }
     }
 }
