@@ -27,6 +27,8 @@ network::network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string mu
 
 void network::ingress()
 {
+    functions_library function = functions_library();
+
     int nodes = 100;
 
     cout << "Barabasi Albert Model\n\nNodes: " << nodes << endl;
@@ -34,6 +36,11 @@ void network::ingress()
     vector<int> connections_per_Node;
 
     int tot_connections = 0;
+
+    string generation_population_Network = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/generation_Summary_File.csv";
+    function.config_File_delete_create(generation_population_Network, "Source\tTarget");
+    fstream network_Write;
+    network_Write.open(generation_population_Network, ios::app);
 
     for (int node = 0; node < nodes; node++)
     {
@@ -66,7 +73,11 @@ void network::ingress()
 
         if (attach_Node != -1)
         {
-            cout << "Node " << node + 1 << " attached to " << attach_Node + 1 << endl;
+            if (node != 0)
+            {
+                cout << "Node " << node + 1 << " attached to " << attach_Node + 1 << endl;
+                network_Write << to_string(attach_Node + 1) << "\t" << to_string(node + 1) << "\n";
+            }
             connections_per_Node[attach_Node] = connections_per_Node[attach_Node] + 1;
             tot_connections++;
         }
@@ -76,4 +87,21 @@ void network::ingress()
             exit(-1);
         }
     }
+
+    network_Write.close();
+
+    string node_Summary_Path = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/node_Summary_File.csv";
+    function.config_File_delete_create(node_Summary_Path, "ID\tNumber_of_links");
+    
+    fstream node_Summary;
+    node_Summary.open(node_Summary_Path, ios::app);
+
+    node_Summary << "1\t" << to_string(connections_per_Node[0] - 1) << "\n";
+
+    for (size_t i = 1; i < connections_per_Node.size(); i++)
+    {
+        node_Summary << to_string(i + 1) << "\t" << to_string(connections_per_Node[i] + 1) << "\n";
+    }
+
+    node_Summary.close();
 }
