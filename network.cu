@@ -47,16 +47,19 @@ void network::ingress()
         int attach_Node = -1;
         float cum_Prob = 0;
 
-        for (int check_Node = 0; check_Node < connections_per_Node.size(); check_Node++)
+        do
         {
-            cum_Prob += cum_Prob + ((float)(connections_per_Node[check_Node] + 1) / (float)tot_connections);
-            // cout << tot_connections << endl;
-            if (randomNum < cum_Prob)
+            for (int check_Node = 0; check_Node < connections_per_Node.size(); check_Node++)
             {
-                attach_Node = check_Node;
-                break;
+                cum_Prob += cum_Prob + ((float)(connections_per_Node[check_Node] + 1) / (float)tot_connections);
+                // cout << tot_connections << endl;
+                if (randomNum < cum_Prob)
+                {
+                    attach_Node = check_Node;
+                    break;
+                }
             }
-        }
+        } while (attach_Node == node && node != 0);
 
         if (attach_Node != -1)
         {
