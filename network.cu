@@ -274,8 +274,8 @@ void network::sim_cLD()
     int eff_Population = 1000;
 
     // PROGENY BINOMIAL
-    int n = 10;
-    float prob = 0.45;
+    int n = 20;
+    float prob = 0.50;
     binomial_distribution<int> binomialDist(n, prob);
 
     // cout << x << endl;
@@ -287,23 +287,21 @@ void network::sim_cLD()
     float recombination_Prob = 0.25;
     int interactions = 1;
 
+    int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
+
     float **pop_GeneA_GeneB_Parent = function.create_Fill_2D_array_FLOAT(eff_Population, 3, 0);
     for (size_t i = 0; i < eff_Population; i++)
     {
         pop_GeneA_GeneB_Parent[i][2] = 0.5;
+        parent_IDs[i] = i;
     }
+
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD.csv";
 
     for (int gen = 0; gen < generations; gen++)
     {
-        cout << "Processing generation " << gen + 1 << " of "
-             << "generations\n"
+        cout << "Processing generation " << gen + 1 << " of " << generations << " generations\n"
              << endl;
-        int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
-
-        for (size_t i = 0; i < eff_Population; i++)
-        {
-            parent_IDs[i] = i;
-        }
 
         random_shuffle(&parent_IDs[0], &parent_IDs[eff_Population]);
 
@@ -326,6 +324,10 @@ void network::sim_cLD()
         int progeny_Fill_count = 0;
 
         vector<int> progeny_surviving_ID;
+
+        float Pa = 0;
+        float Pb = 0;
+        float Pab = 0;
 
         for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
         {
@@ -391,17 +393,41 @@ void network::sim_cLD()
                 int mutations_A = dist_Poisson(generator);
                 int mutations_B = dist_Poisson(generator);
 
-                if (mutations_A == mutations_B)
+                // int check_A_B = 0;
+
+                if (mutations_A != 0)
                 {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
-                    // cout << mutations_A << "\t" << mutations_B << "\n";
-                }
-                else
-                {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                    Pa++;
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
+                    // check_A_B++;
                 }
 
-                cout << pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] << "\t";
+                if (mutations_B != 0)
+                {
+                    Pb++;
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
+                    // check_A_B++;
+                }
+
+                if (mutations_A != 0 && mutations_B != 0)
+                {
+                    Pab++;
+                }
+
+                if (interactions == 1)
+                {
+                    if (mutations_A == mutations_B)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
+                        // cout << mutations_A << "\t" << mutations_B << "\n";
+                    }
+                    else
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                    }
+                }
+
+                // cout << pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] << "\t";
                 bernoulli_distribution distribution(pop_GeneA_GeneB_Progeny[progeny_Fill_count][2]);
 
                 // Flip the coin and output the result
@@ -409,8 +435,8 @@ void network::sim_cLD()
                 if (result)
                 {
                     progeny_surviving_ID.push_back(progeny_Fill_count);
-                    //cout << "Yes\n";
-                    // cout << result << " Heads" << endl;
+                    // cout << "Yes\n";
+                    //  cout << result << " Heads" << endl;
                 }
                 // else
                 // {
@@ -423,6 +449,44 @@ void network::sim_cLD()
             }
         }
 
+        fstream cLD_writer;
+        cLD_writer.open(cLD_write, ios::app);
+
+        Pa = Pa / sum_Progeny;
+        Pb = Pb / sum_Progeny;
+        Pab = Pab / sum_Progeny;
+
+        cout << "\nPa: " << Pa << "\tPb: " << Pb << "\tPab: " << Pab << endl;
+
+        float cLD = pow((Pab - (Pa * Pb)), 2) / (Pa * (1 - Pa) * Pb * (1 - Pb));
+
+        cout << "cLD: " << cLD << endl
+             << endl;
+
+        cLD_writer << to_string(gen + 1) << "\t" << to_string(Pa) << "\t" << to_string(Pb) << "\t" << to_string(Pab) << "\t" << to_string(cLD) << "\n";
+
+        cout << "Progeny moving to next generation: " << progeny_surviving_ID.size();
+
+        cout << "\nConfiguring next generation\n\n";
+        function.clear_Array_float_CPU(pop_GeneA_GeneB_Parent, eff_Population);
+        pop_GeneA_GeneB_Parent = function.create_Fill_2D_array_FLOAT(progeny_surviving_ID.size(), 3, 0);
+
+        free(parent_IDs);
+        parent_IDs = (int *)malloc((progeny_surviving_ID.size()) * sizeof(int));
+
+        for (size_t i = 0; i < progeny_surviving_ID.size(); i++)
+        {
+            pop_GeneA_GeneB_Parent[i][0] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][0];
+            pop_GeneA_GeneB_Parent[i][1] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][1];
+            pop_GeneA_GeneB_Parent[i][2] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][2];
+            parent_IDs[i] = i;
+        }
+
+        function.clear_Array_float_CPU(pop_GeneA_GeneB_Progeny, progeny_surviving_ID.size());
+        function.clear_Array_int_CPU(parent_Pairs, eff_Population / 2);
+
+        eff_Population = progeny_surviving_ID.size();
+
         // for (size_t i = 0; i < sum_Progeny; i++)
         // {
         //     cout << pop_GeneA_GeneB_Progeny[i][0] << "\t";
@@ -431,6 +495,13 @@ void network::sim_cLD()
         // }
 
         // REMOVE
-        break;
+
+        // clear 2D arrays
+        // if (gen == 1)
+        // {
+        //     break;
+        // }
+
+        cLD_writer.close();
     }
 }
