@@ -297,6 +297,7 @@ void network::sim_cLD()
     }
 
     string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD.csv";
+    function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     for (int gen = 0; gen < generations; gen++)
     {
