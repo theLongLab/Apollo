@@ -283,7 +283,7 @@ void network::sim_cLD()
     float mutation_Rate = 2;
     poisson_distribution<int> dist_Poisson(mutation_Rate);
 
-    int mutation_points = 10;
+    // int mutation_points = 10;
     float recombination_Prob = 0.25;
     int interactions = 1;
 
@@ -324,6 +324,9 @@ void network::sim_cLD()
         float **pop_GeneA_GeneB_Progeny = function.create_Fill_2D_array_FLOAT(sum_Progeny, 3, 0);
 
         int progeny_Fill_count = 0;
+
+        vector<int> progeny_surviving_ID;
+
         for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
         {
             for (int progeny = 0; progeny < parent_Pairs[parent_pair][2]; progeny++)
@@ -333,7 +336,7 @@ void network::sim_cLD()
                 int mom_0_dad_1 = 0;
                 if (dis(generator) < 0.5)
                 {
-                    // cout << "dad" << endl;
+                    // cout << dis(generator) << endl;
                     mom_0_dad_1 = 1;
                 }
 
@@ -381,6 +384,40 @@ void network::sim_cLD()
                         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
                     }
                 }
+
+                // mutate
+                // reduce those with mismatc mutations survivability
+
+                int mutations_A = dist_Poisson(generator);
+                int mutations_B = dist_Poisson(generator);
+
+                if (mutations_A == mutations_B)
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
+                    // cout << mutations_A << "\t" << mutations_B << "\n";
+                }
+                else
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                }
+
+                cout << pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] << "\t";
+                bernoulli_distribution distribution(pop_GeneA_GeneB_Progeny[progeny_Fill_count][2]);
+
+                // Flip the coin and output the result
+                bool result = distribution(generator);
+                if (result)
+                {
+                    progeny_surviving_ID.push_back(progeny_Fill_count);
+                    //cout << "Yes\n";
+                    // cout << result << " Heads" << endl;
+                }
+                // else
+                // {
+                //     // survive = 0;
+                //     //cout << "No\n";
+                //     // cout << result << " Tails" << endl;
+                // }
 
                 progeny_Fill_count++;
             }
