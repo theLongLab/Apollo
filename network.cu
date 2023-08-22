@@ -107,3 +107,293 @@ void network::ingress()
 
     node_Summary.close();
 }
+
+void network::ingress_2()
+{
+    functions_library function = functions_library();
+
+    int caves = 10;
+    int avg_size_of_cave = 10;
+    // int outside_world_nodes = 1;
+
+    cout << "Connected Caveman models\n\nNodes: " << caves << endl;
+
+    // parent_child
+    vector<vector<pair<int, int>>> connections_All;
+
+    // for (size_t i = 0; i < 100; i++)
+    // {
+    //     cout << dist(gen) << endl;
+    // }
+
+    // exit(-1);
+
+    // create cave connections
+    string node_Summary_Path = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/node_Summary_File.csv";
+    function.config_File_delete_create(node_Summary_Path, "ID\tCave_ID");
+    fstream node_Summary;
+    node_Summary.open(node_Summary_Path, ios::app);
+
+    for (int cave = 0; cave < caves; cave++)
+    {
+
+        vector<pair<int, int>> connections_of_cave;
+
+        for (int node_parent = 0; node_parent < avg_size_of_cave; node_parent++)
+        {
+            node_Summary << cave << "_" << node_parent << "\t" << cave << "\n";
+            for (int node_child = node_parent + 1; node_child < avg_size_of_cave; node_child++)
+            {
+                connections_of_cave.push_back(make_pair(node_parent, node_child));
+            }
+        }
+
+        connections_All.push_back(connections_of_cave);
+    }
+
+    node_Summary.close();
+
+    // Define the distribution
+    // Seed the random number generator
+    random_device rd;
+    mt19937 gen(rd());
+
+    vector<int> parent_outside;
+
+    vector<pair<int, int>> connections_of_cave;
+    connections_of_cave = connections_All[0];
+
+    uniform_int_distribution<int> dist(0, connections_of_cave.size() - 1);
+    int select_Connection = dist(gen);
+
+    parent_outside.push_back(connections_of_cave[select_Connection].first);
+    connections_of_cave.erase(connections_of_cave.begin() + select_Connection);
+    connections_All[0] = connections_of_cave;
+
+    vector<pair<int, int>> redirect_outside_Connections;
+
+    for (int redirect_Cave = 1; redirect_Cave < connections_All.size(); redirect_Cave++)
+    {
+        connections_of_cave = connections_All[redirect_Cave];
+
+        uniform_int_distribution<int> dist(0, connections_of_cave.size() - 1);
+        select_Connection = dist(gen);
+
+        parent_outside.push_back(connections_of_cave[select_Connection].first);
+        connections_of_cave.erase(connections_of_cave.begin() + select_Connection);
+        connections_All[redirect_Cave] = connections_of_cave;
+
+        redirect_outside_Connections.push_back(make_pair(parent_outside[redirect_Cave - 1], parent_outside[redirect_Cave]));
+    }
+
+    redirect_outside_Connections.push_back(make_pair(parent_outside[parent_outside.size() - 1], parent_outside[0]));
+
+    string generation_population_Network = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/generation_Summary_File.csv";
+    function.config_File_delete_create(generation_population_Network, "Source\tTarget");
+
+    fstream network_Write;
+    network_Write.open(generation_population_Network, ios::app);
+
+    for (size_t i = 0; i < connections_All.size(); i++)
+    {
+        vector<pair<int, int>> connections_of_cave;
+        connections_of_cave = connections_All[i];
+
+        for (size_t x = 0; x < connections_of_cave.size(); x++)
+        {
+            network_Write << i << "_" << connections_of_cave[x].first << "\t" << i << "_" << connections_of_cave[x].second << "\n";
+            cout << i << "_" << connections_of_cave[x].first << "\t" << i << "_" << connections_of_cave[x].second << endl;
+        }
+        cout << endl;
+
+        int outside = i + 1;
+
+        if (outside >= connections_All.size())
+        {
+            outside = 0;
+        }
+
+        cout << "outside: ";
+        cout << i << "_" << redirect_outside_Connections[i].first << "\t" << outside << "_" << redirect_outside_Connections[i].second << endl;
+        network_Write << i << "_" << redirect_outside_Connections[i].first << "\t" << outside << "_" << redirect_outside_Connections[i].second << "\n";
+
+        cout << endl;
+    }
+
+    network_Write.close();
+}
+
+void network::ingress_flexible_caveman()
+{
+
+    functions_library function = functions_library();
+
+    int cave_number = 10;
+
+    int *per_cave_Stride = (int *)malloc((cave_number + 1) * sizeof(int));
+    per_cave_Stride[0] = 0;
+
+    cout << "Dynamic Caveman models\n\nNodes: " << cave_number << endl
+         << endl;
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    float shape_Nodes_per_cave = 10;
+    float scale_Nodes_per_cave = 1;
+
+    gamma_distribution<float> gamma(shape_Nodes_per_cave, scale_Nodes_per_cave);
+
+    for (size_t i = 0; i < cave_number; i++)
+    {
+        int number_of_Nodes = (int)round(gamma(gen));
+        cout << number_of_Nodes << endl;
+        per_cave_Stride[i + 1] = per_cave_Stride[i] + number_of_Nodes;
+    }
+
+    // float percent_Outside = 0.2;
+    int **network_Array = function.create_INT_2D_arrays(cave_number, 3);
+
+    vector<vector<int>> global_Nodes_per_Cave;
+}
+
+void network::sim_cLD()
+{
+    functions_library function = functions_library(tot_Blocks, tot_ThreadsperBlock, gpu_Limit, CPU_cores);
+
+    // random_device rd;
+    // mt19937 gen(rd());
+
+    default_random_engine generator;
+
+    cout << "cLD simulator\n"
+         << endl;
+
+    int generations = 10;
+
+    int eff_Population = 1000;
+
+    // PROGENY BINOMIAL
+    int n = 10;
+    float prob = 0.45;
+    binomial_distribution<int> binomialDist(n, prob);
+
+    // cout << x << endl;
+
+    float mutation_Rate = 2;
+    poisson_distribution<int> dist_Poisson(mutation_Rate);
+
+    int mutation_points = 10;
+    float recombination_Prob = 0.25;
+    int interactions = 1;
+
+    float **pop_GeneA_GeneB_Parent = function.create_Fill_2D_array_FLOAT(eff_Population, 3, 0);
+    for (size_t i = 0; i < eff_Population; i++)
+    {
+        pop_GeneA_GeneB_Parent[i][2] = 0.5;
+    }
+
+    for (int gen = 0; gen < generations; gen++)
+    {
+        cout << "Processing generation " << gen + 1 << " of "
+             << "generations\n"
+             << endl;
+        int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
+
+        for (size_t i = 0; i < eff_Population; i++)
+        {
+            parent_IDs[i] = i;
+        }
+
+        random_shuffle(&parent_IDs[0], &parent_IDs[eff_Population]);
+
+        int **parent_Pairs = function.create_INT_2D_arrays(eff_Population / 2, 3);
+        int sum_Progeny = 0;
+
+        cout << "Assigning parent pairs and children numbers\n";
+        for (size_t i = 0; i < eff_Population / 2; i++)
+        {
+            parent_Pairs[i][0] = parent_IDs[i];
+            parent_Pairs[i][1] = parent_IDs[i + 500];
+            int x = binomialDist(generator);
+            sum_Progeny = sum_Progeny + x;
+            parent_Pairs[i][2] = x;
+        }
+
+        cout << "Number of children to be simulated: " << sum_Progeny << endl;
+        float **pop_GeneA_GeneB_Progeny = function.create_Fill_2D_array_FLOAT(sum_Progeny, 3, 0);
+
+        int progeny_Fill_count = 0;
+        for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
+        {
+            for (int progeny = 0; progeny < parent_Pairs[parent_pair][2]; progeny++)
+            {
+                uniform_real_distribution<> dis(0.0, 1.0);
+
+                int mom_0_dad_1 = 0;
+                if (dis(generator) < 0.5)
+                {
+                    // cout << "dad" << endl;
+                    mom_0_dad_1 = 1;
+                }
+
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
+
+                // RECOMBINATION A
+
+                if (dis(generator) < recombination_Prob)
+                {
+                    mom_0_dad_1 = 0;
+                    if (dis(generator) < 0.5)
+                    {
+                        // cout << "dad recombinant A" << endl;
+                        mom_0_dad_1 = 1;
+                    }
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
+                }
+
+                // RECOMBINATION B
+                if (dis(generator) < recombination_Prob)
+                {
+                    mom_0_dad_1 = 0;
+                    if (dis(generator) < 0.5)
+                    {
+                        // cout << "dad recombinant B" << endl;
+                        mom_0_dad_1 = 1;
+                    }
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
+                }
+
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.5;
+
+                if (interactions == 1)
+                {
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
+                    {
+                        if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
+                        }
+                    }
+                    else
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                    }
+                }
+
+                progeny_Fill_count++;
+            }
+        }
+
+        // for (size_t i = 0; i < sum_Progeny; i++)
+        // {
+        //     cout << pop_GeneA_GeneB_Progeny[i][0] << "\t";
+        //     cout << pop_GeneA_GeneB_Progeny[i][1] << "\t";
+        //     cout << pop_GeneA_GeneB_Progeny[i][2] << "\n";
+        // }
+
+        // REMOVE
+        break;
+    }
+}
