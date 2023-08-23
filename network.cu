@@ -275,16 +275,16 @@ void network::sim_cLD()
 
     // PROGENY BINOMIAL
     int n = 20;
-    float prob = 0.50;
+    float prob = 0.70;
     binomial_distribution<int> binomialDist(n, prob);
 
     // cout << x << endl;
 
-    float mutation_Rate = 2;
+    float mutation_Rate = 0.8;
     poisson_distribution<int> dist_Poisson(mutation_Rate);
 
     // int mutation_points = 10;
-    float recombination_Prob = 0.25;
+    float recombination_Prob = 0.005;
     int interactions = 1;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
@@ -310,10 +310,11 @@ void network::sim_cLD()
         int sum_Progeny = 0;
 
         cout << "Assigning parent pairs and children numbers\n";
+        int increment = eff_Population / 2;
         for (size_t i = 0; i < eff_Population / 2; i++)
         {
             parent_Pairs[i][0] = parent_IDs[i];
-            parent_Pairs[i][1] = parent_IDs[i + 500];
+            parent_Pairs[i][1] = parent_IDs[i + increment];
             int x = binomialDist(generator);
             sum_Progeny = sum_Progeny + x;
             parent_Pairs[i][2] = x;
@@ -332,8 +333,11 @@ void network::sim_cLD()
 
         for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
         {
+            // cout << "\nProcessing parent pair: " << parent_pair << " of " << eff_Population / 2 << endl;
+
             for (int progeny = 0; progeny < parent_Pairs[parent_pair][2]; progeny++)
             {
+                // cout << "\nProcessing progeny: " << progeny << " of " << parent_Pairs[parent_pair][2] / 2;
                 uniform_real_distribution<> dis(0.0, 1.0);
 
                 int mom_0_dad_1 = 0;
@@ -371,21 +375,25 @@ void network::sim_cLD()
                     pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
                 }
 
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.5;
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.75;
 
-                if (interactions == 1)
+                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
                 {
-                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
                     {
-                        if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                        if (interactions == 1)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                        }
+                        else
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
                         }
                     }
-                    else
-                    {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
-                    }
+                }
+                else
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
                 }
 
                 // mutate
@@ -394,39 +402,85 @@ void network::sim_cLD()
                 int mutations_A = dist_Poisson(generator);
                 int mutations_B = dist_Poisson(generator);
 
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
                 // int check_A_B = 0;
 
-                if (mutations_A != 0)
-                {
-                    Pa++;
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
-                    // check_A_B++;
-                }
+                // if (mutations_A != 0)
+                // {
+                //     Pa++;
+                //     // pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
+                //     //  check_A_B++;
+                // }
 
-                if (mutations_B != 0)
-                {
-                    Pb++;
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
-                    // check_A_B++;
-                }
+                // if (mutations_B != 0)
+                // {
+                //     Pb++;
+                //     // pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
+                //     //  check_A_B++;
+                // }
 
-                if (mutations_A != 0 && mutations_B != 0)
-                {
-                    Pab++;
-                }
+                // if (mutations_A != 0 && mutations_B != 0)
+                // {
+                //     Pab++;
+                // }
+
+                // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] != 0)
+                // {
+                //     Pa++;
+                // }
+
+                // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                // {
+                //     Pb++;
+                // }
+
+                // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] != 0 && pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                // {
+                //     Pab++;
+                // }
 
                 if (interactions == 1)
                 {
                     if (mutations_A == mutations_B)
                     {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
-                        // cout << mutations_A << "\t" << mutations_B << "\n";
+                        if ((mutations_A + mutations_B) != 0)
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                        }
                     }
                     else
                     {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
                     }
                 }
+                else
+                {
+                    if ((mutations_A + mutations_B) != 0)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                    }
+                }
+
+                // if (mutations_A != 0 || mutations_B != 0)
+                // {
+                //     if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
+                //     {
+                //         if (interactions == 1)
+                //         {
+                //             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.25;
+                //         }
+                //         else
+                //         {
+                //             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                //         }
+                //         // cout << mutations_A << "\t" << mutations_B << "\n";
+                //     }
+                //     else
+                //     {
+                //         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.25;
+                //     }
+                // }
 
                 // cout << pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] << "\t";
                 bernoulli_distribution distribution(pop_GeneA_GeneB_Progeny[progeny_Fill_count][2]);
@@ -438,6 +492,18 @@ void network::sim_cLD()
                     progeny_surviving_ID.push_back(progeny_Fill_count);
                     // cout << "Yes\n";
                     //  cout << result << " Heads" << endl;
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] != 0)
+                    {
+                        Pa++;
+                    }
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                    {
+                        Pb++;
+                    }
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] != 0 && pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                    {
+                        Pab++;
+                    }
                 }
                 // else
                 // {
@@ -453,9 +519,13 @@ void network::sim_cLD()
         fstream cLD_writer;
         cLD_writer.open(cLD_write, ios::app);
 
-        Pa = Pa / sum_Progeny;
-        Pb = Pb / sum_Progeny;
-        Pab = Pab / sum_Progeny;
+        Pa = Pa / progeny_surviving_ID.size();
+        Pb = Pb / progeny_surviving_ID.size();
+        Pab = Pab / progeny_surviving_ID.size();
+
+        // Pa = Pa / sum_Progeny;
+        // Pb = Pb / sum_Progeny;
+        // Pab = Pab / sum_Progeny;
 
         cout << "\nPa: " << Pa << "\tPb: " << Pb << "\tPab: " << Pab << endl;
 
