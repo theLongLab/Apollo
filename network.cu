@@ -274,7 +274,7 @@ void network::sim_cLD()
     int eff_Population = 1000;
 
     // PROGENY BINOMIAL
-    int n = 20;
+    int n = 10;
     float prob = 0.70;
     binomial_distribution<int> binomialDist(n, prob);
 
@@ -285,7 +285,7 @@ void network::sim_cLD()
 
     // int mutation_points = 10;
     float recombination_Prob = 0.005;
-    int interactions = 1;
+    int interactions = 0;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
 
@@ -296,7 +296,7 @@ void network::sim_cLD()
         parent_IDs[i] = i;
     }
 
-    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD.csv";
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLDno.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     for (int gen = 0; gen < generations; gen++)
