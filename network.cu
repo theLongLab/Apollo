@@ -290,14 +290,65 @@ void network::sim_cLD()
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
 
     float **pop_GeneA_GeneB_Parent = function.create_Fill_2D_array_FLOAT(eff_Population, 3, 0);
+
+    cout << "Configure ideal population\n";
+    for (size_t i = 0; i < eff_Population / 2; i++)
+    {
+        pop_GeneA_GeneB_Parent[i][0] = 0;
+        pop_GeneA_GeneB_Parent[i][1] = 0;
+    }
+
+    for (size_t i = eff_Population / 2; i < eff_Population; i++)
+    {
+        pop_GeneA_GeneB_Parent[i][0] = 1;
+        pop_GeneA_GeneB_Parent[i][1] = 1;
+    }
+
+    float Pa = 0;
+    float Pb = 0;
+    float Pab = 0;
+
     for (size_t i = 0; i < eff_Population; i++)
     {
-        pop_GeneA_GeneB_Parent[i][2] = 0.5;
+        pop_GeneA_GeneB_Parent[i][2] = 0.70;
         parent_IDs[i] = i;
+
+        if (pop_GeneA_GeneB_Parent[i][0] != 0)
+        {
+            Pa++;
+        }
+        if (pop_GeneA_GeneB_Parent[i][1] != 0)
+        {
+            Pb++;
+        }
+        if (pop_GeneA_GeneB_Parent[i][0] != 0 && pop_GeneA_GeneB_Parent[i][1] != 0)
+        {
+            Pab++;
+        }
     }
+
+    Pa = Pa / eff_Population;
+    Pb = Pb / eff_Population;
+    Pab = Pab / eff_Population;
+
+    // Pa = Pa / sum_Progeny;
+    // Pb = Pb / sum_Progeny;
+    // Pab = Pab / sum_Progeny;
 
     string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLDno.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
+
+    fstream cLD_writer;
+    cLD_writer.open(cLD_write, ios::app);
+
+    cout << "\nPa: " << Pa << "\tPb: " << Pb << "\tPab: " << Pab << endl;
+
+    float cLD = pow((Pab - (Pa * Pb)), 2) / (Pa * (1 - Pa) * Pb * (1 - Pb));
+
+    cout << "cLD: " << cLD << endl
+         << endl;
+
+    cLD_writer << to_string(0) << "\t" << to_string(Pa) << "\t" << to_string(Pb) << "\t" << to_string(Pab) << "\t" << to_string(cLD) << "\n";
 
     for (int gen = 0; gen < generations; gen++)
     {
@@ -327,9 +378,9 @@ void network::sim_cLD()
 
         vector<int> progeny_surviving_ID;
 
-        float Pa = 0;
-        float Pb = 0;
-        float Pab = 0;
+        Pa = 0;
+        Pb = 0;
+        Pab = 0;
 
         for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
         {
@@ -375,7 +426,7 @@ void network::sim_cLD()
                     pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
                 }
 
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.75;
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.70;
 
                 if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
                 {
@@ -383,7 +434,7 @@ void network::sim_cLD()
                     {
                         if (interactions == 1)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
                         }
                         else
                         {
@@ -446,7 +497,7 @@ void network::sim_cLD()
                     {
                         if ((mutations_A + mutations_B) != 0)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
                         }
                     }
                     else
@@ -516,9 +567,6 @@ void network::sim_cLD()
             }
         }
 
-        fstream cLD_writer;
-        cLD_writer.open(cLD_write, ios::app);
-
         Pa = Pa / progeny_surviving_ID.size();
         Pb = Pb / progeny_surviving_ID.size();
         Pab = Pab / progeny_surviving_ID.size();
@@ -529,7 +577,7 @@ void network::sim_cLD()
 
         cout << "\nPa: " << Pa << "\tPb: " << Pb << "\tPab: " << Pab << endl;
 
-        float cLD = pow((Pab - (Pa * Pb)), 2) / (Pa * (1 - Pa) * Pb * (1 - Pb));
+        cLD = pow((Pab - (Pa * Pb)), 2) / (Pa * (1 - Pa) * Pb * (1 - Pb));
 
         cout << "cLD: " << cLD << endl
              << endl;
@@ -572,7 +620,6 @@ void network::sim_cLD()
         // {
         //     break;
         // }
-
-        cLD_writer.close();
     }
+    cLD_writer.close();
 }
