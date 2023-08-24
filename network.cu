@@ -271,7 +271,7 @@ void network::sim_cLD()
 
     int generations = 10;
 
-    int eff_Population = 1000;
+    int eff_Population = 500;
 
     // PROGENY BINOMIAL
     int n = 10;
@@ -505,40 +505,43 @@ void network::sim_cLD()
                 // cout << "TEST 5" << endl;
 
                 pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.80;
-
-                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
+                
+                if (interactions != 1)
                 {
-                    if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
+                    for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
                     {
-                        if (mutation_points_store_Progeny[mutation_Fill].first == mutation_points_store_Progeny[mutation_Fill].second)
+                        if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
                         {
-                            if (interactions == 1)
+                            if (mutation_points_store_Progeny[mutation_Fill].first == mutation_points_store_Progeny[mutation_Fill].second)
                             {
-                                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
-                            }
-                            else
-                            {
+                                // if (interactions == 1)
+                                // {
+                                //     pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                                // }
+                                // else
+                                // {
                                 pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.1;
+                                //}
                             }
                         }
+                        else if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second == 0)
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
+                        }
+                        else if (mutation_points_store_Progeny[mutation_Fill].first == 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
+                        }
                     }
-                    else if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second == 0)
-                    {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
-                    }
-                    else if (mutation_points_store_Progeny[mutation_Fill].first == 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
-                    {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
-                    }
-                }
 
-                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
-                {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.9;
-                }
-                else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
-                {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.1;
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.9;
+                    }
+                    else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.1;
+                    }
                 }
 
                 // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
@@ -659,7 +662,7 @@ void network::sim_cLD()
                     {
                         if (interactions == 1)
                         {
-                           // cout << "HIT 1" << endl;
+                            // cout << "HIT 1" << endl;
                             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
                         }
                         else
@@ -669,12 +672,12 @@ void network::sim_cLD()
                     }
                     else if (A_mutations_NEW[mutation_Fill] > 0 && B_mutations_NEW[mutation_Fill] == 0)
                     {
-                       // cout << "HIT 2" << endl;
+                        // cout << "HIT 2" << endl;
                         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
                     }
                     else if (A_mutations_NEW[mutation_Fill] == 0 && B_mutations_NEW[mutation_Fill] > 0)
                     {
-                       // cout << "HIT 3" << endl;
+                        // cout << "HIT 3" << endl;
                         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
                     }
                 }
