@@ -275,7 +275,7 @@ void network::sim_cLD()
 
     // PROGENY BINOMIAL
     int n = 10;
-    float prob = 0.70;
+    float prob = 0.60;
     binomial_distribution<int> binomialDist(n, prob);
 
     // cout << x << endl;
@@ -283,25 +283,60 @@ void network::sim_cLD()
     float mutation_Rate = 0.8;
     poisson_distribution<int> dist_Poisson(mutation_Rate);
 
-    // int mutation_points = 10;
+    int mutation_points = 10;
+
     float recombination_Prob = 0.005;
-    int interactions = 1;
+    int interactions = 0;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
 
     float **pop_GeneA_GeneB_Parent = function.create_Fill_2D_array_FLOAT(eff_Population, 3, 0);
+
+    vector<vector<pair<int, int>>> mutation_points_All_Parents;
 
     cout << "Configure ideal population\n";
     for (size_t i = 0; i < eff_Population / 2; i++)
     {
         pop_GeneA_GeneB_Parent[i][0] = 0;
         pop_GeneA_GeneB_Parent[i][1] = 0;
+
+        vector<pair<int, int>> mutation_points_store;
+
+        for (int point = 0; point < mutation_points; point++)
+        {
+            mutation_points_store.push_back(make_pair(0, 0));
+        }
+
+        mutation_points_All_Parents.push_back(mutation_points_store);
     }
+
+    uniform_int_distribution<int> mutation_point_Draw(0, mutation_points - 1);
 
     for (size_t i = eff_Population / 2; i < eff_Population; i++)
     {
         pop_GeneA_GeneB_Parent[i][0] = 1;
         pop_GeneA_GeneB_Parent[i][1] = 1;
+
+        vector<pair<int, int>> mutation_points_store;
+
+        for (int point = 0; point < mutation_points; point++)
+        {
+            mutation_points_store.push_back(make_pair(0, 0));
+        }
+
+        for (int location_Draw = 0; location_Draw < 1; location_Draw++)
+        {
+            int location = mutation_point_Draw(generator);
+            mutation_points_store[location].first = mutation_points_store[location].first + 1;
+        }
+
+        for (int location_Draw = 0; location_Draw < 1; location_Draw++)
+        {
+            int location = mutation_point_Draw(generator);
+            mutation_points_store[location].second = mutation_points_store[location].second + 1;
+        }
+
+        mutation_points_All_Parents.push_back(mutation_points_store);
     }
 
     float Pa = 0;
@@ -310,7 +345,7 @@ void network::sim_cLD()
 
     for (size_t i = 0; i < eff_Population; i++)
     {
-        pop_GeneA_GeneB_Parent[i][2] = 0.70;
+        pop_GeneA_GeneB_Parent[i][2] = 0.80;
         parent_IDs[i] = i;
 
         if (pop_GeneA_GeneB_Parent[i][0] != 0)
@@ -335,11 +370,12 @@ void network::sim_cLD()
     // Pb = Pb / sum_Progeny;
     // Pab = Pab / sum_Progeny;
 
-    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD.csv";
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_no.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     fstream cLD_writer;
     cLD_writer.open(cLD_write, ios::app);
+    cLD_writer.precision(9);
 
     cout << "\nPa: " << Pa << "\tPb: " << Pb << "\tPab: " << Pab << endl;
 
@@ -373,7 +409,7 @@ void network::sim_cLD()
 
         cout << "Number of children to be simulated: " << sum_Progeny << endl;
         float **pop_GeneA_GeneB_Progeny = function.create_Fill_2D_array_FLOAT(sum_Progeny, 3, 0);
-
+        // cout << "TEST 1" << endl;
         int progeny_Fill_count = 0;
 
         vector<int> progeny_surviving_ID;
@@ -382,12 +418,18 @@ void network::sim_cLD()
         Pb = 0;
         Pab = 0;
 
+        vector<vector<pair<int, int>>> mutation_points_All_Progeny;
+
+        // cout << "TEST 2" << endl;
+
         for (int parent_pair = 0; parent_pair < eff_Population / 2; parent_pair++)
         {
             // cout << "\nProcessing parent pair: " << parent_pair << " of " << eff_Population / 2 << endl;
 
             for (int progeny = 0; progeny < parent_Pairs[parent_pair][2]; progeny++)
             {
+                vector<pair<int, int>> mutation_points_store_Progeny;
+
                 // cout << "\nProcessing progeny: " << progeny << " of " << parent_Pairs[parent_pair][2] / 2;
                 uniform_real_distribution<> dis(0.0, 1.0);
 
@@ -398,64 +440,160 @@ void network::sim_cLD()
                     mom_0_dad_1 = 1;
                 }
 
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
+                // pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
+                // pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
 
-                // RECOMBINATION A
+                vector<pair<int, int>> mutation_points_store_Parent = mutation_points_All_Parents[parent_Pairs[parent_pair][mom_0_dad_1]];
 
-                if (dis(generator) < recombination_Prob)
+                // cout << parent_Pairs[parent_pair][mom_0_dad_1] << endl;
+                // cout << mutation_points_All_Parents.size() << endl;
+                //  cout << mutation_points_store_Parent.size() << endl;
+
+                // cout << "TEST 3" << endl;
+                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
                 {
-                    mom_0_dad_1 = 0;
-                    if (dis(generator) < 0.5)
-                    {
-                        // cout << "dad recombinant A" << endl;
-                        mom_0_dad_1 = 1;
-                    }
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
+                    // cout << mutation_points << endl;
+                    int A_value = mutation_points_store_Parent[mutation_Fill].first;
+                    int B_value = mutation_points_store_Parent[mutation_Fill].second;
+                    // cout << A_value << "\t" << B_value << endl;
+                    mutation_points_store_Progeny.push_back(make_pair(A_value, B_value));
+                    // cout << mutation_Fill << endl;
                 }
 
-                // RECOMBINATION B
-                if (dis(generator) < recombination_Prob)
-                {
-                    mom_0_dad_1 = 0;
-                    if (dis(generator) < 0.5)
-                    {
-                        // cout << "dad recombinant B" << endl;
-                        mom_0_dad_1 = 1;
-                    }
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
-                }
+                mutation_points_store_Parent.clear();
+                // cout << "TEST 4" << endl;
+                //  RECOMBINATION A
 
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.70;
-
-                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
+                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
                 {
-                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                    if (dis(generator) < recombination_Prob)
                     {
-                        if (interactions == 1)
+                        mom_0_dad_1 = 0;
+                        if (dis(generator) < 0.5)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
+                            // cout << "dad recombinant A" << endl;
+                            mom_0_dad_1 = 1;
                         }
-                        else
+
+                        mutation_points_store_Parent = mutation_points_All_Parents[parent_Pairs[parent_pair][mom_0_dad_1]];
+                        int A_value = mutation_points_store_Parent[mutation_Fill].first;
+                        mutation_points_store_Progeny[mutation_Fill].first = A_value;
+                        mutation_points_store_Parent.clear();
+
+                        // pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][0];
+                    }
+
+                    // RECOMBINATION B
+                    if (dis(generator) < recombination_Prob)
+                    {
+                        mom_0_dad_1 = 0;
+                        if (dis(generator) < 0.5)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                            // cout << "dad recombinant B" << endl;
+                            mom_0_dad_1 = 1;
                         }
+
+                        mutation_points_store_Parent = mutation_points_All_Parents[parent_Pairs[parent_pair][mom_0_dad_1]];
+                        int B_value = mutation_points_store_Parent[mutation_Fill].second;
+                        mutation_points_store_Progeny[mutation_Fill].second = B_value;
+                        mutation_points_store_Parent.clear();
+
+                        // pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Parent[parent_Pairs[parent_pair][mom_0_dad_1]][1];
                     }
                 }
-                else
+
+                // cout << "TEST 5" << endl;
+
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.80;
+
+                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
                 {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                    if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
+                    {
+                        if (mutation_points_store_Progeny[mutation_Fill].first == mutation_points_store_Progeny[mutation_Fill].second)
+                        {
+                            if (interactions == 1)
+                            {
+                                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                            }
+                            else
+                            {
+                                pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.1;
+                            }
+                        }
+                    }
+                    else if (mutation_points_store_Progeny[mutation_Fill].first > 0 && mutation_points_store_Progeny[mutation_Fill].second == 0)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
+                    }
+                    else if (mutation_points_store_Progeny[mutation_Fill].first == 0 && mutation_points_store_Progeny[mutation_Fill].second > 0)
+                    {
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
+                    }
                 }
+
+                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.9;
+                }
+                else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.1;
+                }
+
+                // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] == pop_GeneA_GeneB_Progeny[progeny_Fill_count][1])
+                // {
+                //     if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] != 0)
+                //     {
+                //         if (interactions == 1)
+                //         {
+                //             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
+                //         }
+                //         else
+                //         {
+                //             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                //         }
+                //     }
+                // }
+                // else
+                // {
+                //     pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                // }
 
                 // mutate
                 // reduce those with mismatc mutations survivability
 
+                vector<int> A_mutations_NEW;
+                vector<int> B_mutations_NEW;
+
+                for (size_t mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
+                {
+                    A_mutations_NEW.push_back(0);
+                    B_mutations_NEW.push_back(0);
+                }
+
                 int mutations_A = dist_Poisson(generator);
                 int mutations_B = dist_Poisson(generator);
 
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
-                pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
-                // int check_A_B = 0;
+                for (int mutation_Fill = 0; mutation_Fill < mutations_A; mutation_Fill++)
+                {
+                    int mut_Loc = mutation_point_Draw(generator);
+                    mutation_points_store_Progeny[mut_Loc].first = mutation_points_store_Progeny[mut_Loc].first + 1;
+                    A_mutations_NEW[mut_Loc] = A_mutations_NEW[mut_Loc] + 1;
+                    // mutation_points_store_Progeny[mutation_Fill].second = mutation_points_store_Progeny[mutation_Fill].second + mutations_B;
+                }
+
+                for (int mutation_Fill = 0; mutation_Fill < mutations_B; mutation_Fill++)
+                {
+                    int mut_Loc = mutation_point_Draw(generator);
+                    mutation_points_store_Progeny[mut_Loc].second = mutation_points_store_Progeny[mut_Loc].second + 1;
+                    B_mutations_NEW[mut_Loc] = B_mutations_NEW[mut_Loc] + 1;
+                    // mutation_points_store_Progeny[mutation_Fill].second = mutation_points_store_Progeny[mutation_Fill].second + mutations_B;
+                }
+
+                // pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutations_A;
+                // pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutations_B;
+                //  int check_A_B = 0;
 
                 // if (mutations_A != 0)
                 // {
@@ -491,26 +629,72 @@ void network::sim_cLD()
                 //     Pab++;
                 // }
 
-                if (interactions == 1)
+                // ADD regions for mutations and use that for interactions
+
+                // if (interactions == 1)
+                // {
+                //     if (mutations_A == mutations_B)
+                //     {
+                //         if ((mutations_A + mutations_B) != 0)
+                //         {
+                //             pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
+                //         }
+                //     }
+                //     else
+                //     {
+                //         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                //     }
+                // }
+                // else
+                // {
+                //     if ((mutations_A + mutations_B) != 0)
+                //     {
+                //         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                //     }
+                // }
+
+                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
                 {
-                    if (mutations_A == mutations_B)
+                    if (A_mutations_NEW[mutation_Fill] > 0 && B_mutations_NEW[mutation_Fill] > 0)
                     {
-                        if ((mutations_A + mutations_B) != 0)
+                        if (interactions == 1)
                         {
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.10;
+                           // cout << "HIT 1" << endl;
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                        }
+                        else
+                        {
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.1;
                         }
                     }
-                    else
+                    else if (A_mutations_NEW[mutation_Fill] > 0 && B_mutations_NEW[mutation_Fill] == 0)
                     {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
+                       // cout << "HIT 2" << endl;
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
+                    }
+                    else if (A_mutations_NEW[mutation_Fill] == 0 && B_mutations_NEW[mutation_Fill] > 0)
+                    {
+                       // cout << "HIT 3" << endl;
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.05;
                     }
                 }
-                else
+
+                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
                 {
-                    if ((mutations_A + mutations_B) != 0)
-                    {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] - 0.15;
-                    }
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.90;
+                }
+                else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.10;
+                }
+
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = 0;
+                pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = 0;
+
+                for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
+                {
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] + mutation_points_store_Progeny[mutation_Fill].first;
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][1] + mutation_points_store_Progeny[mutation_Fill].second;
                 }
 
                 // if (mutations_A != 0 || mutations_B != 0)
@@ -564,6 +748,7 @@ void network::sim_cLD()
                 // }
 
                 progeny_Fill_count++;
+                mutation_points_All_Progeny.push_back(mutation_points_store_Progeny);
             }
         }
 
@@ -582,7 +767,7 @@ void network::sim_cLD()
         cout << "cLD: " << cLD << endl
              << endl;
 
-        cLD_writer << to_string(gen + 1) << "\t" << to_string(Pa) << "\t" << to_string(Pb) << "\t" << to_string(Pab) << "\t" << to_string(cLD) << "\n";
+        cLD_writer << to_string(gen + 1) << "\t" << (Pa) << "\t" << (Pb) << "\t" << (Pab) << "\t" << (cLD) << "\n";
 
         cout << "Progeny moving to next generation: " << progeny_surviving_ID.size();
 
@@ -593,13 +778,18 @@ void network::sim_cLD()
         free(parent_IDs);
         parent_IDs = (int *)malloc((progeny_surviving_ID.size()) * sizeof(int));
 
+        mutation_points_All_Parents.clear();
+
         for (size_t i = 0; i < progeny_surviving_ID.size(); i++)
         {
             pop_GeneA_GeneB_Parent[i][0] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][0];
             pop_GeneA_GeneB_Parent[i][1] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][1];
             pop_GeneA_GeneB_Parent[i][2] = pop_GeneA_GeneB_Progeny[progeny_surviving_ID[i]][2];
             parent_IDs[i] = i;
+            mutation_points_All_Parents.push_back(mutation_points_All_Progeny[progeny_surviving_ID[i]]);
         }
+
+        mutation_points_All_Progeny.clear();
 
         function.clear_Array_float_CPU(pop_GeneA_GeneB_Progeny, progeny_surviving_ID.size());
         function.clear_Array_int_CPU(parent_Pairs, eff_Population / 2);
