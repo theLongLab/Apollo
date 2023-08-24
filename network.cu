@@ -274,19 +274,19 @@ void network::sim_cLD()
     int eff_Population = 500;
 
     // PROGENY BINOMIAL
-    int n = 10;
-    float prob = 0.60;
+    int n = 4;
+    float prob = 0.50;
     binomial_distribution<int> binomialDist(n, prob);
 
     // cout << x << endl;
 
-    float mutation_Rate = 0.8;
+    float mutation_Rate = 0.1;
     poisson_distribution<int> dist_Poisson(mutation_Rate);
 
     int mutation_points = 10;
 
-    float recombination_Prob = 0.005;
-    int interactions = 0;
+    float recombination_Prob = 0.5;
+    int interactions = 1;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
 
@@ -370,7 +370,7 @@ void network::sim_cLD()
     // Pb = Pb / sum_Progeny;
     // Pab = Pab / sum_Progeny;
 
-    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_no.csv";
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_0.5.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     fstream cLD_writer;
@@ -505,7 +505,7 @@ void network::sim_cLD()
                 // cout << "TEST 5" << endl;
 
                 pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.80;
-                
+
                 if (interactions != 1)
                 {
                     for (int mutation_Fill = 0; mutation_Fill < mutation_points; mutation_Fill++)
@@ -534,11 +534,12 @@ void network::sim_cLD()
                         }
                     }
 
-                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
-                    {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.9;
-                    }
-                    else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
+                    // if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
+                    // {
+                    //     pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.9;
+                    // }
+                    // else
+                    if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
                     {
                         pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.1;
                     }
