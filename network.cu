@@ -261,10 +261,10 @@ void network::sim_cLD()
 {
     functions_library function = functions_library(tot_Blocks, tot_ThreadsperBlock, gpu_Limit, CPU_cores);
 
-    // random_device rd;
-    // mt19937 gen(rd());
+    random_device rd;
+    mt19937 generator(rd());
 
-    default_random_engine generator;
+    // default_random_engine generator;
 
     cout << "cLD simulator\n"
          << endl;
@@ -285,8 +285,8 @@ void network::sim_cLD()
 
     int mutation_points = 10;
 
-    float recombination_Prob = 0.5;
-    int interactions = 1;
+    float recombination_Prob = 0.50;
+    int interactions = 0;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
 
@@ -370,7 +370,7 @@ void network::sim_cLD()
     // Pb = Pb / sum_Progeny;
     // Pab = Pab / sum_Progeny;
 
-    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_0.5.csv";
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_0.05_No.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     fstream cLD_writer;
