@@ -899,7 +899,54 @@ void network::ncbi_Read()
 
             if (gff_File != "" && fna_File != "")
             {
-                
+                // LOAD Sequence file to memory
+                vector<pair<string, string>> ID_sequences;
+
+                fstream sequence_Read;
+                sequence_Read.open(sequence_Folder_location + "/" + fna_File, ios::in);
+
+                if (sequence_Read.is_open())
+                {
+                    cout << "Processing sequence file\n";
+                    string line;
+                    int sequence_Catch = 0;
+
+                    string sequence_Full = "";
+                    string sequence_Name = "";
+
+                    while (getline(sequence_Read, line))
+                    {
+                        if (line.at(0) == '>')
+                        {
+                            // cout << line << endl;
+
+                            if (sequence_Catch == 1)
+                            {
+                                ID_sequences.push_back(make_pair(sequence_Name, sequence_Full));
+                                sequence_Name = line.substr(1, line.length());
+                                // sequence_Catch = 0;
+                                sequence_Full = "";
+                            }
+                            else
+                            {
+                                sequence_Catch = 1;
+                                sequence_Name = line.substr(1, line.length());
+                            }
+                        }
+                        else
+                        {
+                            sequence_Full.append(line);
+                        }
+                    }
+
+                    ID_sequences.push_back(make_pair(sequence_Name, sequence_Full));
+                    sequence_Read.close();
+                }
+
+                cout << ID_sequences.size() << " sequence(s) found\n\n";
+
+                // cout << ID_sequences[0].first << "\n"
+                //      << ID_sequences[0].second.size() << endl;
             }
 
             // REMOVE
