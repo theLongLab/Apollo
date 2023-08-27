@@ -947,6 +947,8 @@ void network::ncbi_Read()
 
                 // cout << ID_sequences[0].first << "\n"
                 //      << ID_sequences[0].second.size() << endl;
+
+                // GET genes from GFF
             }
 
             // REMOVE
