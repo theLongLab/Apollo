@@ -2,7 +2,7 @@
 #include "functions_library.cuh"
 #include "parameter_load.h"
 
-network::network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string multi_READ)
+network::network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string multi_READ, int activate)
 {
     cout << "\nNetwork Sim\n";
 
@@ -16,13 +16,16 @@ network::network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string mu
     cout << "Multiple read and write: " << this->multi_READ << endl
          << endl;
 
-    this->CUDA_device_number = CUDA_device_number;
-    function.print_Cuda_device(this->CUDA_device_number, this->tot_Blocks, this->tot_ThreadsperBlock);
+    if (activate == 1)
+    {
+        this->CUDA_device_number = CUDA_device_number;
+        function.print_Cuda_device(this->CUDA_device_number, this->tot_Blocks, this->tot_ThreadsperBlock);
 
-    this->gpu_Limit = gpu_Limit;
+        this->gpu_Limit = gpu_Limit;
 
-    cout << "Per round GPU max unit: " << this->gpu_Limit << endl
-         << endl;
+        cout << "Per round GPU max unit: " << this->gpu_Limit << endl
+             << endl;
+    }
 }
 
 void network::ingress()
@@ -269,23 +272,23 @@ void network::sim_cLD()
     cout << "cLD simulator\n"
          << endl;
 
-    int generations = 10;
+    int generations = 50;
 
-    int eff_Population = 500;
+    int eff_Population = 10;
 
     // PROGENY BINOMIAL
     int n = 4;
-    float prob = 0.50;
+    float prob = 0.75;
     binomial_distribution<int> binomialDist(n, prob);
 
     // cout << x << endl;
 
-    float mutation_Rate = 0.1;
+    float mutation_Rate = 0.01;
     poisson_distribution<int> dist_Poisson(mutation_Rate);
 
     int mutation_points = 10;
 
-    float recombination_Prob = 0.50;
+    float recombination_Prob = 0.01;
     int interactions = 0;
 
     int *parent_IDs = (int *)malloc((eff_Population) * sizeof(int));
@@ -370,7 +373,7 @@ void network::sim_cLD()
     // Pb = Pb / sum_Progeny;
     // Pab = Pab / sum_Progeny;
 
-    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_0.05_No.csv";
+    string cLD_write = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/cLD_check_0.010_No.csv";
     function.config_File_delete_create(cLD_write, "Generation\tPa\tPb\tPab\tcLD");
 
     fstream cLD_writer;
@@ -541,7 +544,7 @@ void network::sim_cLD()
                     // else
                     if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
                     {
-                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.1;
+                        pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0;
                     }
                 }
 
@@ -664,7 +667,7 @@ void network::sim_cLD()
                         if (interactions == 1)
                         {
                             // cout << "HIT 1" << endl;
-                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 0.05;
+                            pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] + 20;
                         }
                         else
                         {
@@ -683,13 +686,13 @@ void network::sim_cLD()
                     }
                 }
 
-                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 0.9)
+                if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] > 1)
                 {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.90;
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 1;
                 }
                 else if (pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] < 0)
                 {
-                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.10;
+                    pop_GeneA_GeneB_Progeny[progeny_Fill_count][2] = 0.00;
                 }
 
                 pop_GeneA_GeneB_Progeny[progeny_Fill_count][0] = 0;
@@ -773,6 +776,8 @@ void network::sim_cLD()
 
         cLD_writer << to_string(gen + 1) << "\t" << (Pa) << "\t" << (Pb) << "\t" << (Pab) << "\t" << (cLD) << "\n";
 
+        cLD_writer.flush();
+
         cout << "Progeny moving to next generation: " << progeny_surviving_ID.size();
 
         cout << "\nConfiguring next generation\n\n";
@@ -816,4 +821,91 @@ void network::sim_cLD()
         // }
     }
     cLD_writer.close();
+}
+
+void network::ncbi_Read()
+{
+    functions_library function = functions_library();
+
+    cout << "NCBI files\n\n";
+
+    string primary_Location = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Dr_Koul/New test";
+
+    vector<string> folders;
+
+    cout << "Looking for folders in: " << primary_Location << endl
+         << endl;
+
+    for (const auto &entry : filesystem::directory_iterator(primary_Location))
+    {
+        if (filesystem::is_directory(entry.status()))
+        {
+            string folder_Name = entry.path().filename().string();
+            folders.push_back(folder_Name);
+        }
+    }
+
+    cout << folders.size() << " folders found\n\n";
+
+    for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
+    {
+        cout << "Reading folder: " << folders[folder_ID] << endl
+             << endl;
+
+        string nest_Location = primary_Location + "/" + folders[folder_ID] + "/ncbi_dataset/data";
+        vector<string> sequence_GFF_folders;
+
+        for (const auto &entry : filesystem::directory_iterator(nest_Location))
+        {
+            if (filesystem::is_directory(entry.status()))
+            {
+                string folder_Name = entry.path().filename().string();
+                sequence_GFF_folders.push_back(folder_Name);
+                // cout << folder_Name << endl;
+            }
+        }
+
+        cout << sequence_GFF_folders.size() << " sequence folders found\n\n";
+
+        for (int seq_Folder_ID = 0; seq_Folder_ID < sequence_GFF_folders.size(); seq_Folder_ID++)
+        {
+            cout << "Processing: " << sequence_GFF_folders[seq_Folder_ID] << endl
+                 << endl;
+
+            string sequence_Folder_location = nest_Location + "/" + sequence_GFF_folders[seq_Folder_ID];
+
+            string fna_File = "";
+            string gff_File = "";
+
+            for (const auto &entry : filesystem::directory_iterator(sequence_Folder_location))
+            {
+                if (filesystem::is_regular_file(entry.status()))
+                {
+                    string file_Query = entry.path().filename().string();
+                    // cout << file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) << endl;
+                    if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fna" || file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fasta")
+                    {
+                        fna_File = file_Query;
+                    }
+                    else if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".gff")
+                    {
+                        gff_File = file_Query;
+                    }
+                }
+            }
+            cout << "GFF file\t: " << gff_File << "\n"
+                 << "Sequence file: " << fna_File << endl
+                 << endl;
+
+            if (gff_File != "" && fna_File != "")
+            {
+                
+            }
+
+            // REMOVE
+            break;
+        }
+        // REMOVE
+        break;
+    }
 }

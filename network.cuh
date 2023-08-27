@@ -53,11 +53,13 @@ private:
     string multi_READ = "NO";
 
 public:
-    network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string multi_READ);
+    network(int CUDA_device_number, int CPU_cores, int gpu_Limit, string multi_READ, int activate);
 
     void ingress();
     void ingress_2();
     void ingress_flexible_caveman();
 
     void sim_cLD();
+
+    void ncbi_Read();
 };

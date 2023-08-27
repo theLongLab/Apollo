@@ -225,4 +225,6 @@ public:
                                          float **current_gen_Parent_data, float *parent_Proof_reading_probability,
                                          int generation_Current, string parent_Profiles_Store,
                                          float **parent_survivability_Probabilities);
+
+    //void split(vector<string> &line_Data, string line, char delim);
 };
