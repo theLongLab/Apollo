@@ -831,6 +831,9 @@ void network::ncbi_Read()
 
     string primary_Location = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Dr_Koul/New test";
 
+    string output_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
+    function.config_Folder("/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/", "Sequence folder");
+
     vector<string> folders;
 
     cout << "Looking for folders in: " << primary_Location << endl
@@ -846,6 +849,8 @@ void network::ncbi_Read()
     }
 
     cout << folders.size() << " folders found\n\n";
+
+    vector<pair<string, int>> gene_Count;
 
     for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
     {
@@ -949,12 +954,126 @@ void network::ncbi_Read()
                 //      << ID_sequences[0].second.size() << endl;
 
                 // GET genes from GFF
+                fstream gff_Read;
+                gff_Read.open(sequence_Folder_location + "/" + gff_File, ios::in);
+
+                if (gff_Read.is_open())
+                {
+                    cout << "Processing GFF file\n";
+
+                    string line;
+
+                    while (getline(gff_Read, line))
+                    {
+                        if (line.at(0) != '#')
+                        {
+                            break;
+                        }
+                    }
+
+                    do
+                    {
+                        // cout << line << endl;
+                        vector<string> line_Split;
+                        function.split(line_Split, line, '\t');
+
+                        if (line_Split[1] == "RefSeq")
+                        {
+                            if (line_Split[2] == "gene")
+                            {
+                                string seq_ID = line_Split[0];
+                                int start = stoi(line_Split[3]) - 1;
+                                int stop = stoi(line_Split[4]);
+
+                                string gene_Name;
+
+                                // cout << seq_ID << "\t";
+                                // cout << start << "\t";
+                                // cout << stop << endl;
+
+                                vector<string> description_Split;
+                                function.split(description_Split, line_Split[line_Split.size() - 1], ';');
+                                for (string sub_Split : description_Split)
+                                {
+                                    vector<string> sub_Split_vector;
+                                    function.split(sub_Split_vector, sub_Split, '=');
+                                    if (sub_Split_vector[0] == "Name")
+                                    {
+                                        gene_Name = sub_Split_vector[1];
+                                        break;
+                                    }
+                                }
+
+                                // cout << "Processing gene: " << gene_Name << endl;
+
+                                for (int f_Seq = 0; f_Seq < ID_sequences.size(); f_Seq++)
+                                {
+                                    // cout << ID_sequences[f_Seq].first << endl;
+                                    // cout << "Sequence: " << seq_ID << endl;
+                                    if (ID_sequences[f_Seq].first.find(seq_ID) != string::npos)
+                                    {
+                                        cout << ID_sequences[f_Seq].first << endl;
+                                        cout << "Found sequence: " << seq_ID << endl;
+                                        string sequence = ID_sequences[f_Seq].second.substr(start, (stop-start));
+
+                                        // Write seq to file
+                                        string file_Write_Location = output_Folder + gene_Name + ".fasta";
+
+                                        if (!filesystem::exists(file_Write_Location))
+                                        {
+                                            function.create_File(file_Write_Location);
+                                            gene_Count.push_back(make_pair(gene_Name, 1));
+                                        }
+                                        else
+                                        {
+                                            for (int count_Genes = 0; count_Genes < gene_Count.size(); count_Genes++)
+                                            {
+                                                if (gene_Count[count_Genes].first == gene_Name)
+                                                {
+                                                    gene_Count[count_Genes].second = gene_Count[count_Genes].second + 1;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        fstream gene_Write;
+                                        gene_Write.open(file_Write_Location, ios::app);
+
+                                        gene_Write << ">" << folders[folder_ID] << " " << seq_ID << " " << gene_Name << " " << to_string(start + 1) << "_" << to_string(stop) << "\n";
+                                        gene_Write << sequence << "\n";
+
+                                        gene_Write.close();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        getline(gff_Read, line);
+                    } while (line.at(0) != '#');
+
+                    gff_Read.close();
+                }
             }
 
             // REMOVE
-            break;
+            // break;
         }
         // REMOVE
-        break;
+        // break;
     }
+
+    string final_Summary = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/summary.csv";
+
+    function.config_File_delete_create(final_Summary, "Gene_name\tCount");
+
+    fstream summary_Write;
+    summary_Write.open(final_Summary, ios::app);
+
+    for (int i = 0; i < gene_Count.size(); i++)
+    {
+        summary_Write << gene_Count[i].first << "\t" << to_string(gene_Count[i].second) << "\n";
+    }
+
+    summary_Write.close();
 }
