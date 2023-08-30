@@ -234,6 +234,7 @@ void network::ingress_flexible_caveman()
     int cave_number = 10;
 
     int *per_cave_Stride = (int *)malloc((cave_number + 1) * sizeof(int));
+    int **network_Array = function.create_INT_2D_arrays(cave_number, 3);
     per_cave_Stride[0] = 0;
 
     cout << "Dynamic Caveman models\n\nNodes: " << cave_number << endl
@@ -250,14 +251,118 @@ void network::ingress_flexible_caveman()
     for (size_t i = 0; i < cave_number; i++)
     {
         int number_of_Nodes = (int)round(gamma(gen));
-        cout << number_of_Nodes << endl;
-        per_cave_Stride[i + 1] = per_cave_Stride[i] + number_of_Nodes;
+        // cout << number_of_Nodes << endl;
+        network_Array[i][0] = number_of_Nodes;
+        per_cave_Stride[i + 1] = per_cave_Stride[i] + network_Array[i][0];
     }
 
-    // float percent_Outside = 0.2;
-    int **network_Array = function.create_INT_2D_arrays(cave_number, 3);
+    // min 1 needed
+    float percent_Neighbouring = 0.25;
+    float percent_Global_freedom = 0.25;
 
-    vector<vector<int>> global_Nodes_per_Cave;
+    cout << "Determining node counts\n\n";
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+        binomial_distribution<int> binomialDist_Neighbour(network_Array[cave_ID][0], percent_Neighbouring);
+        network_Array[cave_ID][1] = binomialDist_Neighbour(gen);
+        if (network_Array[cave_ID][1] < 1)
+        {
+            network_Array[cave_ID][1] = 1;
+        }
+        binomial_distribution<int> binomialDist_Global(network_Array[cave_ID][1], percent_Global_freedom);
+        network_Array[cave_ID][2] = binomialDist_Global(gen);
+    }
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+        for (int column = 0; column < 3; column++)
+        {
+            cout << network_Array[cave_ID][column] << "\t";
+        }
+        cout << "\n";
+    }
+
+    vector<vector<pair<int, int>>> each_Nodes_Connections;
+
+    int total_Nodes = per_cave_Stride[cave_number];
+    cout << "Total nodes in the network: " << total_Nodes << endl
+         << endl;
+
+    for (size_t i = 0; i < total_Nodes; i++)
+    {
+        vector<pair<int, int>> nodes_Intialize;
+        each_Nodes_Connections.push_back(nodes_Intialize);
+    }
+
+    // cout << each_Nodes_Connections.size() << endl;
+
+    // exit(-1);
+
+    string generation_population_Network = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/generation_Summary_File_flex.csv";
+    function.config_File_delete_create(generation_population_Network, "Source\tTarget");
+    fstream network_Write;
+    network_Write.open(generation_population_Network, ios::app);
+
+    string node_Summary_Path = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/node_Summary_File_flex.csv";
+    function.config_File_delete_create(node_Summary_Path, "ID\tCave_ID");
+    fstream node_Summary;
+    node_Summary.open(node_Summary_Path, ios::app);
+
+    // 1: 1 to 2
+    // 2: 2 to 1
+
+    // interconnect the caves nodes
+    // Assign nodes their relationships
+
+    cout << "Configuring local networks\n";
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+        int nodes_Total = network_Array[cave_ID][0];
+
+        // cout << cave_ID << endl;
+
+        for (int node_parent = 0; node_parent < nodes_Total; node_parent++)
+        {
+
+            int node_Count = per_cave_Stride[cave_ID] + node_parent;
+            // cout << node_Count << endl;
+
+            node_Summary << cave_ID << "_" << node_parent << "\t" << cave_ID << "\n";
+            for (int node_child = node_parent + 1; node_child < nodes_Total; node_child++)
+            {
+                int node_child_Main = node_Count + (node_child - node_parent);
+                network_Write << cave_ID << "_" << node_parent << "\t" << cave_ID << "_" << node_child << "\n";
+                each_Nodes_Connections[node_Count].push_back(make_pair(cave_ID, node_child));
+                each_Nodes_Connections[node_child_Main].push_back(make_pair(cave_ID, node_parent));
+                // cout << node_Count << "\t" << node_child_Main << endl;
+            }
+        }
+        // cout << endl;
+    }
+
+    node_Summary.close();
+    network_Write.close();
+
+    // cout << "hello\n";
+
+    // exit(-1);
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+        cout << "CAVE ID: " << cave_ID << endl
+             << endl;
+        for (size_t i = per_cave_Stride[cave_ID]; i < per_cave_Stride[cave_ID + 1]; i++)
+        {
+            for (int count = 0; count < each_Nodes_Connections[i].size(); count++)
+            {
+                cout << each_Nodes_Connections[i][count].first << "_" << each_Nodes_Connections[i][count].second << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
 }
 
 void network::sim_cLD()
@@ -1014,7 +1119,7 @@ void network::ncbi_Read()
                                     {
                                         cout << ID_sequences[f_Seq].first << endl;
                                         cout << "Found sequence: " << seq_ID << endl;
-                                        string sequence = ID_sequences[f_Seq].second.substr(start, (stop-start));
+                                        string sequence = ID_sequences[f_Seq].second.substr(start, (stop - start));
 
                                         // Write seq to file
                                         string file_Write_Location = output_Folder + gene_Name + ".fasta";
