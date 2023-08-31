@@ -466,6 +466,42 @@ void network::ingress_flexible_caveman()
         each_Nodes_Connections[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
     }
 
+    cout << "Configuring Global networks attachments\n";
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+
+        for (size_t i = 0; i < global_Nodes[cave_ID].size(); i++)
+        {
+
+            uniform_int_distribution<int> distribution_global_CAVEs(0, cave_number - 1);
+
+            int cave_Global;
+            do
+            {
+                cave_Global = distribution_global_CAVEs(gen);
+                // cout << cave_Global << endl;
+            } while (cave_Global == cave_ID);
+
+            if (global_Nodes[cave_Global].size() > 0)
+            {
+                uniform_int_distribution<int> distribution_Parent_attach(0, global_Nodes[cave_ID].size() - 1);
+                uniform_int_distribution<int> distribution_Global_attach(0, global_Nodes[cave_Global].size() - 1);
+
+                int parent_Cave_Node = global_Nodes[cave_ID][distribution_Parent_attach(gen)];
+                int Global_Cave_Node = global_Nodes[cave_Global][distribution_Parent_attach(gen)];
+
+                network_Write << cave_ID << "_" << parent_Cave_Node << "\t" << cave_Global << "_" << Global_Cave_Node << "\n";
+
+                int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Cave_Node;
+                int attach_Node_all_Index = per_cave_Stride[cave_Global] + Global_Cave_Node;
+
+                each_Nodes_Connections[parent_Node_all_Index].push_back(make_pair(cave_Global, Global_Cave_Node));
+                each_Nodes_Connections[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Cave_Node));
+            }
+        }
+    }
+
     network_Write.close();
 
     // cout << "hello\n";
