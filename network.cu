@@ -235,6 +235,10 @@ void network::ingress_flexible_caveman()
 
     int *per_cave_Stride = (int *)malloc((cave_number + 1) * sizeof(int));
     int **network_Array = function.create_INT_2D_arrays(cave_number, 3);
+
+    vector<vector<int>> neighbour_Nodes;
+    vector<vector<int>> global_Nodes;
+
     per_cave_Stride[0] = 0;
 
     cout << "Dynamic Caveman models\n\nNodes: " << cave_number << endl
@@ -254,34 +258,121 @@ void network::ingress_flexible_caveman()
         // cout << number_of_Nodes << endl;
         network_Array[i][0] = number_of_Nodes;
         per_cave_Stride[i + 1] = per_cave_Stride[i] + network_Array[i][0];
+
+        vector<int> intialize;
+        neighbour_Nodes.push_back(intialize);
+        global_Nodes.push_back(intialize);
     }
 
     // min 1 needed
     float percent_Neighbouring = 0.25;
     float percent_Global_freedom = 0.25;
 
-    cout << "Determining node counts\n\n";
+    cout << "Determining node counts and neighour and global nodes\n\n";
 
     for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
     {
         binomial_distribution<int> binomialDist_Neighbour(network_Array[cave_ID][0], percent_Neighbouring);
         network_Array[cave_ID][1] = binomialDist_Neighbour(gen);
+
+        uniform_int_distribution<int> distribution_Neighbour(0, network_Array[cave_ID][0] - 1);
+
         if (network_Array[cave_ID][1] < 1)
         {
             network_Array[cave_ID][1] = 1;
         }
+
+        vector<int> no_repetition;
+
+        while (neighbour_Nodes[cave_ID].size() < network_Array[cave_ID][1])
+        {
+            int check_indicator = 0;
+            int get_Node = distribution_Neighbour(gen);
+            for (int check = 0; check < no_repetition.size(); check++)
+            {
+                if (get_Node == no_repetition[check])
+                {
+                    check_indicator = 1;
+                    break;
+                }
+            }
+            if (check_indicator == 0)
+            {
+                neighbour_Nodes[cave_ID].push_back(get_Node);
+                no_repetition.push_back(get_Node);
+            }
+        }
+
+        // for (int test_Get = 0; test_Get < network_Array[cave_ID][1]; test_Get++)
+        // {
+        //     neighbour_Nodes[cave_ID].push_back(distribution_Neighbour(gen));
+        // }
+
         binomial_distribution<int> binomialDist_Global(network_Array[cave_ID][1], percent_Global_freedom);
         network_Array[cave_ID][2] = binomialDist_Global(gen);
+
+        uniform_int_distribution<int> distribution_Global(0, network_Array[cave_ID][1] - 1);
+
+        no_repetition.clear();
+
+        while (global_Nodes[cave_ID].size() < network_Array[cave_ID][2])
+        {
+            int check_indicator = 0;
+            int get_Index = distribution_Global(gen);
+
+            for (int check = 0; check < no_repetition.size(); check++)
+            {
+                if (get_Index == no_repetition[check])
+                {
+                    check_indicator = 1;
+                    break;
+                }
+            }
+
+            if (check_indicator == 0)
+            {
+                global_Nodes[cave_ID].push_back(neighbour_Nodes[cave_ID][get_Index]);
+                no_repetition.push_back(get_Index);
+            }
+        }
+
+        // for (int test_Get = 0; test_Get < network_Array[cave_ID][2]; test_Get++)
+        // {
+        //     int get_Index = distribution_Global(gen);
+        //     global_Nodes.push_back(neighbour_Nodes[cave_ID][get_Index]);
+        // }
     }
 
-    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
-    {
-        for (int column = 0; column < 3; column++)
-        {
-            cout << network_Array[cave_ID][column] << "\t";
-        }
-        cout << "\n";
-    }
+    // for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    // {
+    //     for (int column = 0; column < 3; column++)
+    //     {
+    //         cout << network_Array[cave_ID][column] << "\t";
+    //     }
+    //     cout << "\n";
+    // }
+
+    // cout << "\n";
+
+    // for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    // {
+    //     cout << "Local nodes: ";
+    //     for (int local = 0; local < neighbour_Nodes[cave_ID].size(); local++)
+    //     {
+    //         cout << cave_ID << "_" << neighbour_Nodes[cave_ID][local] << " ";
+    //     }
+    //     cout << endl;
+
+    //     cout << "Global nodes: ";
+    //     for (int global = 0; global < global_Nodes[cave_ID].size(); global++)
+    //     {
+    //         cout << cave_ID << "_" << global_Nodes[cave_ID][global] << " ";
+    //     }
+    //     cout << endl;
+    //     cout << endl;
+    // }
+
+    // exit(-1);
 
     vector<vector<pair<int, int>>> each_Nodes_Connections;
 
@@ -343,26 +434,58 @@ void network::ingress_flexible_caveman()
     }
 
     node_Summary.close();
+
+    cout << "Configuring Neighbouring networks attachments\n";
+
+    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    {
+        uniform_int_distribution<int> distribution_Neighbour_parent(0, neighbour_Nodes[cave_ID].size() - 1);
+
+        int parent_Node_Index = neighbour_Nodes[cave_ID][distribution_Neighbour_parent(gen)];
+
+        int attach_Cave = cave_ID + 1;
+        int attach_Node_Index;
+        if (attach_Cave != cave_number)
+        {
+            uniform_int_distribution<int> distribution_Neighbour_attach(0, neighbour_Nodes[attach_Cave].size() - 1);
+            attach_Node_Index = neighbour_Nodes[attach_Cave][distribution_Neighbour_attach(gen)];
+        }
+        else
+        {
+            attach_Cave = 0;
+            uniform_int_distribution<int> distribution_Neighbour_attach(0, neighbour_Nodes[attach_Cave].size() - 1);
+            attach_Node_Index = neighbour_Nodes[attach_Cave][distribution_Neighbour_attach(gen)];
+        }
+
+        network_Write << cave_ID << "_" << parent_Node_Index << "\t" << attach_Cave << "_" << attach_Node_Index << "\n";
+
+        int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Node_Index;
+        int attach_Node_all_Index = per_cave_Stride[attach_Cave] + attach_Node_Index;
+
+        each_Nodes_Connections[parent_Node_all_Index].push_back(make_pair(attach_Cave, attach_Node_Index));
+        each_Nodes_Connections[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
+    }
+
     network_Write.close();
 
     // cout << "hello\n";
 
     // exit(-1);
 
-    for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
-    {
-        cout << "CAVE ID: " << cave_ID << endl
-             << endl;
-        for (size_t i = per_cave_Stride[cave_ID]; i < per_cave_Stride[cave_ID + 1]; i++)
-        {
-            for (int count = 0; count < each_Nodes_Connections[i].size(); count++)
-            {
-                cout << each_Nodes_Connections[i][count].first << "_" << each_Nodes_Connections[i][count].second << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-    }
+    // for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
+    // {
+    //     cout << "CAVE ID: " << cave_ID << endl
+    //          << endl;
+    //     for (size_t i = per_cave_Stride[cave_ID]; i < per_cave_Stride[cave_ID + 1]; i++)
+    //     {
+    //         for (int count = 0; count < each_Nodes_Connections[i].size(); count++)
+    //         {
+    //             cout << each_Nodes_Connections[i][count].first << "_" << each_Nodes_Connections[i][count].second << " ";
+    //         }
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    // }
 }
 
 void network::sim_cLD()
