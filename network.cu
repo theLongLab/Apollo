@@ -231,7 +231,7 @@ void network::ingress_flexible_caveman()
 
     functions_library function = functions_library();
 
-    int cave_number = 10;
+    int cave_number = 50;
 
     int *per_cave_Stride = (int *)malloc((cave_number + 1) * sizeof(int));
     int **network_Array = function.create_INT_2D_arrays(cave_number, 3);
@@ -467,18 +467,21 @@ void network::ingress_flexible_caveman()
     }
 
     cout << "Configuring Global networks attachments\n";
-
+    cout << "Global processing caves: ";
     for (int cave_ID = 0; cave_ID < cave_number; cave_ID++)
     {
-
+        cout << cave_ID;
+        if (cave_ID + 1 != cave_number)
+        {
+            cout << ", ";
+        }
         for (size_t i = 0; i < global_Nodes[cave_ID].size(); i++)
         {
-
-            uniform_int_distribution<int> distribution_global_CAVEs(0, cave_number - 1);
 
             int cave_Global;
             do
             {
+                uniform_int_distribution<int> distribution_global_CAVEs(0, cave_number - 1);
                 cave_Global = distribution_global_CAVEs(gen);
                 // cout << cave_Global << endl;
             } while (cave_Global == cave_ID);
@@ -501,6 +504,8 @@ void network::ingress_flexible_caveman()
             }
         }
     }
+
+    cout << endl;
 
     network_Write.close();
 
