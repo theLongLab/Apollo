@@ -1641,19 +1641,19 @@ void network::ncbi_Read()
                                             if (!filesystem::exists(file_Write_Location))
                                             {
                                                 function.create_File(file_Write_Location);
-                                                gene_Count.push_back(make_pair(gene_Name, 1));
+                                               // gene_Count.push_back(make_pair(gene_Name, 1));
                                             }
-                                            else
-                                            {
-                                                for (int count_Genes = 0; count_Genes < gene_Count.size(); count_Genes++)
-                                                {
-                                                    if (gene_Count[count_Genes].first == gene_Name)
-                                                    {
-                                                        gene_Count[count_Genes].second = gene_Count[count_Genes].second + 1;
-                                                        break;
-                                                    }
-                                                }
-                                            }
+                                            // else
+                                            // {
+                                            //     for (int count_Genes = 0; count_Genes < gene_Count.size(); count_Genes++)
+                                            //     {
+                                            //         if (gene_Count[count_Genes].first == gene_Name)
+                                            //         {
+                                            //             gene_Count[count_Genes].second = gene_Count[count_Genes].second + 1;
+                                            //             break;
+                                            //         }
+                                            //     }
+                                            // }
                                             fstream gene_Write;
                                             gene_Write.open(file_Write_Location, ios::app);
 
@@ -1682,19 +1682,154 @@ void network::ncbi_Read()
         }
     }
 
-    // string final_Summary = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/summary.csv";
+    cout << "\n\nWriing summary\n\n";
 
-    // function.config_File_delete_create(final_Summary, "Gene_name\tCount");
+    string final_Summary = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/summary.csv";
 
-    // fstream summary_Write;
-    // summary_Write.open(final_Summary, ios::app);
+    function.config_File_delete_create(final_Summary, "Gene_name\tCount");
 
-    // for (int i = 0; i < gene_Count.size(); i++)
-    // {
-    //     summary_Write << gene_Count[i].first << "\t" << to_string(gene_Count[i].second) << "\n";
-    // }
+    fstream summary_Write;
+    summary_Write.open(final_Summary, ios::app);
 
-    // summary_Write.close();
+    for (int i = 0; i < gene_Count.size(); i++)
+    {
+        summary_Write << gene_Count[i].first << "\t" << to_string(gene_Count[i].second);
+
+        // for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
+        // {
+        //     int check_Exists = 0;
+        //     cout << "Reading folder: " << folders[folder_ID] << endl
+        //          << endl;
+
+        //     string nest_Location = primary_Location + "/" + folders[folder_ID] + "/ncbi_dataset/data";
+        //     vector<string> sequence_GFF_folders;
+
+        //     for (const auto &entry : filesystem::directory_iterator(nest_Location))
+        //     {
+        //         if (filesystem::is_directory(entry.status()))
+        //         {
+        //             string folder_Name = entry.path().filename().string();
+        //             sequence_GFF_folders.push_back(folder_Name);
+        //             // cout << folder_Name << endl;
+        //         }
+        //     }
+
+        //     cout << sequence_GFF_folders.size() << " sequence folders found\n\n";
+
+        //     vector<pair<string, int>> gene_Count_Folder;
+
+        //     for (int seq_Folder_ID = 0; seq_Folder_ID < sequence_GFF_folders.size(); seq_Folder_ID++)
+        //     {
+        //         cout << "Processing: " << sequence_GFF_folders[seq_Folder_ID] << endl
+        //              << endl;
+
+        //         string sequence_Folder_location = nest_Location + "/" + sequence_GFF_folders[seq_Folder_ID];
+
+        //         string fna_File = "";
+        //         string gff_File = "";
+
+        //         for (const auto &entry : filesystem::directory_iterator(sequence_Folder_location))
+        //         {
+        //             if (filesystem::is_regular_file(entry.status()))
+        //             {
+        //                 string file_Query = entry.path().filename().string();
+        //                 // cout << file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) << endl;
+        //                 if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fna" || file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fasta")
+        //                 {
+        //                     fna_File = file_Query;
+        //                 }
+        //                 else if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".gff")
+        //                 {
+        //                     gff_File = file_Query;
+        //                 }
+        //             }
+        //         }
+
+        //         cout << "GFF file\t: " << gff_File << "\n"
+        //              << "Sequence file: " << fna_File << endl
+        //              << endl;
+
+        //         if (gff_File != "" && fna_File != "")
+        //         {
+        //             fstream gff_Read;
+        //             gff_Read.open(sequence_Folder_location + "/" + gff_File, ios::in);
+
+        //             if (gff_Read.is_open())
+        //             {
+        //                 cout << "Processing GFF file\n";
+
+        //                 string line;
+
+        //                 while (getline(gff_Read, line))
+        //                 {
+        //                     if (line.at(0) != '#')
+        //                     {
+        //                         break;
+        //                     }
+        //                 }
+        //                 do
+        //                 {
+        //                     // cout << line << endl;
+        //                     vector<string> line_Split;
+        //                     function.split(line_Split, line, '\t');
+
+        //                     if (line_Split[1] == "RefSeq")
+        //                     {
+        //                         if (line_Split[2] == "gene")
+        //                         {
+        //                             string seq_ID = line_Split[0];
+        //                             int start = stoi(line_Split[3]) - 1;
+        //                             int stop = stoi(line_Split[4]);
+
+        //                             string gene_Name;
+
+        //                             // cout << seq_ID << "\t";
+        //                             // cout << start << "\t";
+        //                             // cout << stop << endl;
+
+        //                             vector<string> description_Split;
+        //                             function.split(description_Split, line_Split[line_Split.size() - 1], ';');
+        //                             for (string sub_Split : description_Split)
+        //                             {
+        //                                 vector<string> sub_Split_vector;
+        //                                 function.split(sub_Split_vector, sub_Split, '=');
+        //                                 if (sub_Split_vector[0] == "Name")
+        //                                 {
+        //                                     gene_Name = sub_Split_vector[1];
+        //                                     break;
+        //                                 }
+        //                             }
+
+        //                             if (gene_Count[i].first == gene_Name)
+        //                             {
+        //                                 check_Exists = 1;
+        //                                 break;
+        //                             }
+
+        //                             // cout << "Check\n";
+
+        //                             // cout << "Check\n";
+        //                             // cout << "Processing gene: " << gene_Name << endl;
+        //                         }
+        //                     }
+
+        //                     getline(gff_Read, line);
+        //                 } while (line.at(0) != '#');
+
+        //                 gff_Read.close();
+
+        //                 if (check_Exists == 0)
+        //                 {
+        //                     summary_Write << "\t" << folders[folder_ID];
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        summary_Write << "\n";
+    }
+
+    summary_Write.close();
 
     cout << "Done\n\n";
 }
