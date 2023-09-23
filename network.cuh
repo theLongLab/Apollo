@@ -62,4 +62,5 @@ public:
     void sim_cLD();
 
     void ncbi_Read();
+    void ncbi_find_conserved();
 };

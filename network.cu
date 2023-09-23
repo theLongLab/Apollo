@@ -1092,6 +1092,95 @@ void network::sim_cLD()
     cLD_writer.close();
 }
 
+void network::ncbi_find_conserved()
+{
+    functions_library function = functions_library();
+
+    cout << "Indetifying conserved regions\n\n";
+
+    string parent_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
+    string summary_File = parent_Folder + "/" + "summary_excel.csv";
+
+    fstream summary_File_read;
+    summary_File_read.open(summary_File, ios::in);
+
+    if (summary_File_read.is_open())
+    {
+        string line;
+        getline(summary_File_read, line);
+
+        vector<string> line_Data;
+
+        while (getline(summary_File_read, line))
+        {
+            function.split(line_Data, line, ',');
+            int sequences_Present = stoi(line_Data[1]);
+            if (sequences_Present >= 15)
+            {
+                string gene_Name = parent_Folder + "/alignments/" + line_Data[0] + ".fasta.align";
+                cout << "Processing: " << gene_Name << endl;
+                cout << "Sequences present: " << sequences_Present << endl;
+
+                fstream align_File;
+                align_File.open(gene_Name, ios::in);
+
+                if (align_File.is_open())
+                {
+                    string align_Line;
+                    vector<string> line_Data_Align;
+                    getline(align_File, align_Line);
+
+                    vector<string> sequence_Reconstruction;
+
+                    for (int i = 0; i < (sequences_Present + 1); i++)
+                    {
+                        sequence_Reconstruction.push_back("");
+                    }
+
+                    int count = 0;
+                    int char_Length = 0;
+                    while (getline(align_File, align_Line))
+                    {
+                        if (align_Line.length() > 0)
+                        {
+                            // cout << align_Line << endl;
+                            if (count < sequences_Present)
+                            {
+                                function.split(line_Data_Align, align_Line, ' ');
+                                // cout << line_Data_Align[1] << endl;
+                                sequence_Reconstruction[count] = sequence_Reconstruction[count].append(line_Data_Align[1]);
+                                if (char_Length == 0)
+                                {
+                                    char_Length = line_Data_Align[0].size() + 1;
+                                }
+                                count++;
+                            }
+                            else
+                            {
+                                // cout << align_Line.substr(char_Length, align_Line.size()) << endl;
+                                sequence_Reconstruction[count] = sequence_Reconstruction[count].append(align_Line.substr(char_Length, align_Line.size()));
+                                count = 0;
+                            }
+                        }
+                    }
+                    align_File.close();
+
+                    for (int i = 0; i < (sequences_Present + 1); i++)
+                    {
+                        cout << sequence_Reconstruction[i] << endl;
+                    }
+                }
+
+                cout << endl;
+
+                // REMOVE later
+                exit(-1);
+            }
+        }
+        summary_File_read.close();
+    }
+}
+
 void network::ncbi_Read()
 {
     functions_library function = functions_library();
@@ -1122,6 +1211,8 @@ void network::ncbi_Read()
     vector<pair<string, int>> gene_Count;
     vector<string> invalid_Genes;
 
+    vector<vector<pair<string, int>>> gene_Count_Folder;
+
     for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
     {
         cout << "Reading folder: " << folders[folder_ID] << endl
@@ -1142,7 +1233,7 @@ void network::ncbi_Read()
 
         cout << sequence_GFF_folders.size() << " sequence folders found\n\n";
 
-        vector<pair<string, int>> gene_Count_Folder;
+        vector<pair<string, int>> gene_Count_Folder_ONLY;
 
         for (int seq_Folder_ID = 0; seq_Folder_ID < sequence_GFF_folders.size(); seq_Folder_ID++)
         {
@@ -1229,11 +1320,11 @@ void network::ncbi_Read()
 
                                 // cout << "Check\n";
                                 int already_Present = 0;
-                                for (int check_Name = 0; check_Name < gene_Count_Folder.size(); check_Name++)
+                                for (int check_Name = 0; check_Name < gene_Count_Folder_ONLY.size(); check_Name++)
                                 {
-                                    if (gene_Count_Folder[check_Name].first == gene_Name)
+                                    if (gene_Count_Folder_ONLY[check_Name].first == gene_Name)
                                     {
-                                        gene_Count_Folder[check_Name].second = gene_Count_Folder[check_Name].second + 1;
+                                        gene_Count_Folder_ONLY[check_Name].second = gene_Count_Folder_ONLY[check_Name].second + 1;
                                         already_Present = 1;
                                         break;
                                     }
@@ -1241,7 +1332,7 @@ void network::ncbi_Read()
 
                                 if (already_Present == 0)
                                 {
-                                    gene_Count_Folder.push_back(make_pair(gene_Name, 1));
+                                    gene_Count_Folder_ONLY.push_back(make_pair(gene_Name, 1));
                                 }
 
                                 // cout << "Check\n";
@@ -1414,14 +1505,110 @@ void network::ncbi_Read()
         }
 
         // cout << "Check\n";
-        for (int add_Check = 0; add_Check < gene_Count_Folder.size(); add_Check++)
+        // for (int add_Check = 0; add_Check < gene_Count_Folder.size(); add_Check++)
+        // {
+        //     if (gene_Count_Folder[add_Check].second == 1)
+        //     {
+        //         int check_Caught = 0;
+        //         for (int invalid_Check = 0; invalid_Check < invalid_Genes.size(); invalid_Check++)
+        //         {
+        //             if (invalid_Genes[invalid_Check] == gene_Count_Folder[add_Check].first)
+        //             {
+        //                 check_Caught = 1;
+        //                 break;
+        //             }
+        //         }
+        //         if (check_Caught == 0)
+        //         {
+        //             int check_Present = 0;
+        //             for (int check_Present_int = 0; check_Present_int < gene_Count.size(); check_Present_int++)
+        //             {
+        //                 if (gene_Count[check_Present_int].first == gene_Count_Folder[add_Check].first)
+        //                 {
+        //                     gene_Count[check_Present_int].second = gene_Count[check_Present_int].second + 1;
+        //                     check_Present = 1;
+        //                     break;
+        //                 }
+        //             }
+        //             if (check_Present == 0)
+        //             {
+        //                 gene_Count.push_back(make_pair(gene_Count_Folder[add_Check].first, gene_Count_Folder[add_Check].second));
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         invalid_Genes.push_back(gene_Count_Folder[add_Check].first);
+        //     }
+        // }
+        // REMOVE
+        // break;
+
+        gene_Count_Folder.push_back(gene_Count_Folder_ONLY);
+    }
+
+    for (size_t i = 0; i < gene_Count_Folder.size(); i++)
+    {
+
+        vector<pair<string, int>> gene_Count_Folder_ONLY;
+        gene_Count_Folder_ONLY = gene_Count_Folder[i];
+
+        for (int add_Check = 0; add_Check < gene_Count_Folder_ONLY.size(); add_Check++)
         {
-            if (gene_Count_Folder[add_Check].second == 1)
+            if (gene_Count_Folder_ONLY[add_Check].second != 1)
             {
                 int check_Caught = 0;
                 for (int invalid_Check = 0; invalid_Check < invalid_Genes.size(); invalid_Check++)
                 {
-                    if (invalid_Genes[invalid_Check] == gene_Count_Folder[add_Check].first)
+                    if (invalid_Genes[invalid_Check] == gene_Count_Folder_ONLY[add_Check].first)
+                    {
+                        check_Caught = 1;
+                        break;
+                    }
+                }
+                if (check_Caught == 0)
+                {
+                    invalid_Genes.push_back(gene_Count_Folder_ONLY[add_Check].first);
+                }
+                // if (check_Caught == 0)
+                // {
+                //     int check_Present = 0;
+                //     for (int check_Present_int = 0; check_Present_int < gene_Count.size(); check_Present_int++)
+                //     {
+                //         if (gene_Count[check_Present_int].first == gene_Count_Folder[add_Check].first)
+                //         {
+                //             gene_Count[check_Present_int].second = gene_Count[check_Present_int].second + 1;
+                //             check_Present = 1;
+                //             break;
+                //         }
+                //     }
+                //     if (check_Present == 0)
+                //     {
+                //         gene_Count.push_back(make_pair(gene_Count_Folder[add_Check].first, gene_Count_Folder[add_Check].second));
+                //     }
+                // }
+            }
+            // else
+            // {
+            //     invalid_Genes.push_back(gene_Count_Folder[add_Check].first);
+            // }
+        }
+    }
+
+    for (size_t i = 0; i < gene_Count_Folder.size(); i++)
+    {
+
+        vector<pair<string, int>> gene_Count_Folder_ONLY;
+        gene_Count_Folder_ONLY = gene_Count_Folder[i];
+
+        for (int add_Check = 0; add_Check < gene_Count_Folder_ONLY.size(); add_Check++)
+        {
+            if (gene_Count_Folder_ONLY[add_Check].second == 1)
+            {
+                int check_Caught = 0;
+                for (int invalid_Check = 0; invalid_Check < invalid_Genes.size(); invalid_Check++)
+                {
+                    if (invalid_Genes[invalid_Check] == gene_Count_Folder_ONLY[add_Check].first)
                     {
                         check_Caught = 1;
                         break;
@@ -1432,7 +1619,7 @@ void network::ncbi_Read()
                     int check_Present = 0;
                     for (int check_Present_int = 0; check_Present_int < gene_Count.size(); check_Present_int++)
                     {
-                        if (gene_Count[check_Present_int].first == gene_Count_Folder[add_Check].first)
+                        if (gene_Count[check_Present_int].first == gene_Count_Folder_ONLY[add_Check].first)
                         {
                             gene_Count[check_Present_int].second = gene_Count[check_Present_int].second + 1;
                             check_Present = 1;
@@ -1441,28 +1628,25 @@ void network::ncbi_Read()
                     }
                     if (check_Present == 0)
                     {
-                        gene_Count.push_back(make_pair(gene_Count_Folder[add_Check].first, gene_Count_Folder[add_Check].second));
+                        gene_Count.push_back(make_pair(gene_Count_Folder_ONLY[add_Check].first, gene_Count_Folder_ONLY[add_Check].second));
                     }
                 }
             }
-            else
-            {
-                invalid_Genes.push_back(gene_Count_Folder[add_Check].first);
-            }
+            // else
+            // {
+            //     invalid_Genes.push_back(gene_Count_Folder[add_Check].first);
+            // }
         }
-        // REMOVE
-        // break;
     }
-
     // cout << "Done\n\n";
 
-    for (int print = 0; print < gene_Count.size(); print++)
-    {
-        if (gene_Count[print].second == 5)
-        {
-            cout << gene_Count[print].first << "\t" << gene_Count[print].second << "\n";
-        }
-    }
+    // for (int print = 0; print < gene_Count.size(); print++)
+    // {
+    //     if (gene_Count[print].second == 5)
+    //     {
+    //         cout << gene_Count[print].first << "\t" << gene_Count[print].second << "\n";
+    //     }
+    // }
 
     cout << "Getting genes out\n\n";
 
@@ -1641,7 +1825,7 @@ void network::ncbi_Read()
                                             if (!filesystem::exists(file_Write_Location))
                                             {
                                                 function.create_File(file_Write_Location);
-                                               // gene_Count.push_back(make_pair(gene_Name, 1));
+                                                // gene_Count.push_back(make_pair(gene_Name, 1));
                                             }
                                             // else
                                             // {
@@ -1657,7 +1841,7 @@ void network::ncbi_Read()
                                             fstream gene_Write;
                                             gene_Write.open(file_Write_Location, ios::app);
 
-                                            gene_Write << ">" << folders[folder_ID] << " " << seq_ID << " " << gene_Name << " " << to_string(start + 1) << "_" << to_string(stop) << "\n";
+                                            gene_Write << ">" << folders[folder_ID] << "_" << seq_ID << "_" << gene_Name << "_" << to_string(start + 1) << "-" << to_string(stop) << "\n";
                                             gene_Write << sequence << "\n";
 
                                             gene_Write.close();
@@ -1694,6 +1878,54 @@ void network::ncbi_Read()
     for (int i = 0; i < gene_Count.size(); i++)
     {
         summary_Write << gene_Count[i].first << "\t" << to_string(gene_Count[i].second);
+
+        if (gene_Count[i].second < folders.size())
+        {
+            string gene_File = output_Folder + gene_Count[i].first + ".fasta";
+
+            fstream gene_Read;
+            gene_Read.open(gene_File, ios::in);
+
+            if (gene_Read.is_open())
+            {
+                vector<string> ID_names;
+                vector<string> not_Found;
+
+                cout << "Processing sequence file: " << gene_File << "\n";
+
+                string line;
+
+                while (getline(gene_Read, line))
+                {
+                    if (line.at(0) == '>')
+                    {
+                        vector<string> line_Data;
+                        function.split(line_Data, line, '_');
+                        ID_names.push_back(line_Data[0].substr(1, line_Data[0].length()));
+                        // cout << line_Data[0].substr(1, line_Data[0].length()) << endl;
+                    }
+                }
+
+                for (int folder = 0; folder < folders.size(); folder++)
+                {
+                    int found = -1;
+                    for (int IDs = 0; IDs < ID_names.size(); IDs++)
+                    {
+                        if (ID_names[IDs] == folders[folder])
+                        {
+                            found = IDs;
+                            break;
+                        }
+                    }
+                    if (found == -1)
+                    {
+                        summary_Write << "\t" << folders[folder];
+                    }
+                }
+
+                gene_Read.close();
+            }
+        }
 
         // for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
         // {
