@@ -1106,8 +1106,10 @@ void network::ncbi_find_conserved()
 
     string align_Files = parent_Folder + "/" + "summary_ALIGN.csv";
 
+    function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
+
     fstream align_Write;
-    align_Write.open(align_Files, ios::out);
+    align_Write.open(align_Files, ios::app);
 
     fstream summary_File_read;
     summary_File_read.open(summary_File, ios::in);
@@ -1234,14 +1236,15 @@ void network::ncbi_find_conserved()
                                     {
                                         if (check_Sequence.at(count_Stars) == '*')
                                         {
-                                            //string base = sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars);
-                                            reconstructured.append(1,sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars));
+                                            // string base = sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars);
+                                            reconstructured.append(1, sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars));
                                         }
                                         else
                                         {
                                             reconstructured.append("-");
                                         }
                                     }
+                                    //function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
                                     cout << reconstructured << endl;
                                 }
                             }
