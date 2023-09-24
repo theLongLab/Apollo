@@ -1097,7 +1097,7 @@ void network::ncbi_find_conserved()
     functions_library function = functions_library();
 
     float min_Length = 100;
-    float min_Percentage = 0.25;
+    float min_Percentage = 0.35;
 
     cout << "Indetifying conserved regions\n\n";
 
@@ -1230,7 +1230,7 @@ void network::ncbi_find_conserved()
                                 if (real_Percent >= min_Percentage)
                                 {
                                     cout << (real_Percent * 100) << endl;
-                                    // cout << check_Sequence << endl;
+                                    //  cout << check_Sequence << endl;
                                     string reconstructured = "";
                                     for (int count_Stars = 0; count_Stars < check_Sequence.size(); count_Stars++)
                                     {
@@ -1244,8 +1244,8 @@ void network::ncbi_find_conserved()
                                             reconstructured.append("-");
                                         }
                                     }
-                                    //function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
-                                    cout << reconstructured << endl;
+                                    // function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
+                                    align_Write << line_Data[0] << "\t" << to_string(check_Sequence.size()) << "\t" << to_string(real_Percent * 100) << "\t" << reconstructured << endl;
                                 }
                             }
                         }
@@ -1255,7 +1255,7 @@ void network::ncbi_find_conserved()
                 cout << endl;
 
                 // REMOVE later
-                exit(-1);
+                //exit(-1);
             }
         }
         summary_File_read.close();
