@@ -1096,10 +1096,18 @@ void network::ncbi_find_conserved()
 {
     functions_library function = functions_library();
 
+    float min_Length = 100;
+    float min_Percentage = 0.25;
+
     cout << "Indetifying conserved regions\n\n";
 
     string parent_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
     string summary_File = parent_Folder + "/" + "summary_excel.csv";
+
+    string align_Files = parent_Folder + "/" + "summary_ALIGN.csv";
+
+    fstream align_Write;
+    align_Write.open(align_Files, ios::out);
 
     fstream summary_File_read;
     summary_File_read.open(summary_File, ios::in);
@@ -1165,9 +1173,79 @@ void network::ncbi_find_conserved()
                     }
                     align_File.close();
 
-                    for (int i = 0; i < (sequences_Present + 1); i++)
+                    // for (int i = 0; i < (sequences_Present + 1); i++)
+                    // {
+                    //     cout << sequence_Reconstruction[i] << endl;
+                    // }
+
+                    // cout << endl;
+                    // cout << sequence_Reconstruction[0].size() << endl;
+                    // cout << sequence_Reconstruction[sequence_Reconstruction.size() - 1].size() << endl;
+
+                    // cout << sequence_Reconstruction[0] << endl;
+                    // exit(-1);
+
+                    vector<int> positions_conserved;
+
+                    string sequence = sequence_Reconstruction[sequence_Reconstruction.size() - 1];
+
+                    for (size_t i = 0; i < sequence.size(); i++)
                     {
-                        cout << sequence_Reconstruction[i] << endl;
+                        if (sequence.at(i) == '*')
+                        {
+                            positions_conserved.push_back(i);
+                        }
+                    }
+
+                    cout << "Conserved positions: " << positions_conserved.size();
+
+                    for (size_t i = 0; i < positions_conserved.size(); i++)
+                    {
+                        for (int check = min_Length; check < sequence.length(); check++)
+                        {
+                            string check_Sequence = sequence.substr(positions_conserved[i], check);
+                            if (check_Sequence.size() < min_Length)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                // cout << check_Sequence << endl;
+
+                                float start_Count = 0;
+
+                                for (int count_Stars = 0; count_Stars < check_Sequence.size(); count_Stars++)
+                                {
+                                    if (check_Sequence.at(count_Stars) == '*')
+                                    {
+                                        start_Count++;
+                                    }
+                                }
+
+                                float real_Percent = start_Count / (float)check_Sequence.size();
+                                // cout << real_Percent << endl;
+
+                                if (real_Percent >= min_Percentage)
+                                {
+                                    cout << (real_Percent * 100) << endl;
+                                    // cout << check_Sequence << endl;
+                                    string reconstructured = "";
+                                    for (int count_Stars = 0; count_Stars < check_Sequence.size(); count_Stars++)
+                                    {
+                                        if (check_Sequence.at(count_Stars) == '*')
+                                        {
+                                            //string base = sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars);
+                                            reconstructured.append(1,sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars));
+                                        }
+                                        else
+                                        {
+                                            reconstructured.append("-");
+                                        }
+                                    }
+                                    cout << reconstructured << endl;
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -1179,6 +1257,7 @@ void network::ncbi_find_conserved()
         }
         summary_File_read.close();
     }
+    align_Write.close();
 }
 
 void network::ncbi_Read()
