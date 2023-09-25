@@ -30,8 +30,7 @@ void functions_library::print_Cuda_device(int cuda_ID, int &tot_Blocks, int &tot
     cout << "GPU block(s) per multiprocessor\t: " << prop.maxBlocksPerMultiProcessor << endl;
     tot_Blocks = prop.maxBlocksPerMultiProcessor;
     tot_ThreadsperBlock = prop.maxThreadsPerBlock;
-    cout << "GPU thread(s) per block\t: " << tot_ThreadsperBlock << endl
-         << endl;
+    cout << "GPU thread(s) per block\t: " << tot_ThreadsperBlock << endl;
 }
 
 float functions_library::beta_Distribution(float &alpha, float &beta, mt19937 &gen)
@@ -58,7 +57,7 @@ void functions_library::config_Folder(string location, string type_Folder)
         cout << "Creating " << type_Folder << " folder: " << location;
         filesystem::create_directory(location);
     }
-    cout << "\n\n";
+    cout << "\n";
 }
 
 string functions_library::read_Reference(string file_location, string &header, int &genome_Size)
@@ -4617,7 +4616,7 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
         clear_Array_float_CPU(current_gen_Progeny_data, sum_Progeny);
         clear_Array_float_CPU(progeny_survivability_Probabilities, sum_Progeny);
 
-        //exit(-1);
+        // exit(-1);
     }
     else
     {

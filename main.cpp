@@ -24,6 +24,8 @@
 #include "functions_library.cuh"
 #include "extract_seq.cuh"
 
+#include "simulator_Master.cuh"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -57,7 +59,13 @@ int main(int argc, char *argv[])
 
      parameter_load Parameters = parameter_load();
 
-     if (function == "--extract")
+     if (function == "--simulator")
+     {
+          cout << "Simulator for within host viral replication\n\n";
+
+          simulator_Master simulator = simulator_Master(parameter_MASTER_file);
+     }
+     else if (function == "--extract")
      {
           cout << "Extraction\n";
 
@@ -100,6 +108,8 @@ int main(int argc, char *argv[])
           net.ncbi_find_conserved();
           exit(-1);
      }
+
+     exit(-1);
 
      vector<string> parameters_List = {
          "\"CUDA Device ID\"",

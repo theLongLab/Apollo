@@ -1,0 +1,8 @@
+{
+  # Select network type
+  # Barabasi Albert model is selected by typing BA_model
+  "Network type":"BA model",
+
+  "BA model number of nodes":5
+
+}
