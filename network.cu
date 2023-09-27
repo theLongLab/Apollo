@@ -1096,17 +1096,17 @@ void network::ncbi_find_conserved()
 {
     functions_library function = functions_library();
 
-    float min_Length = 100;
-    float min_Percentage = 0.35;
+    float min_Length = 45;
+    float min_Percentage = 0.45;
 
     cout << "Indetifying conserved regions\n\n";
 
     string parent_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
     string summary_File = parent_Folder + "/" + "summary_excel.csv";
 
-    string align_Files = parent_Folder + "/" + "summary_ALIGN.csv";
+    string align_Files = parent_Folder + "/" + "summary_ALIGN_Pairs.csv";
 
-    function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
+    function.create_File(align_Files, "Gene_name\tLength_1\tPercentage_match_1\tLength_2\tPercentage_match_2\tDistance\tSequence_1\tSequence_2");
 
     fstream align_Write;
     align_Write.open(align_Files, ios::app);
@@ -1199,7 +1199,7 @@ void network::ncbi_find_conserved()
                         }
                     }
 
-                    cout << "Conserved positions: " << positions_conserved.size();
+                    cout << "Conserved positions: " << positions_conserved.size() << endl;
 
                     for (size_t i = 0; i < positions_conserved.size(); i++)
                     {
@@ -1229,6 +1229,7 @@ void network::ncbi_find_conserved()
 
                                 if (real_Percent >= min_Percentage)
                                 {
+                                    cout << "Position 1 found: \n";
                                     cout << (real_Percent * 100) << endl;
                                     //  cout << check_Sequence << endl;
                                     string reconstructured = "";
@@ -1244,8 +1245,61 @@ void network::ncbi_find_conserved()
                                             reconstructured.append("-");
                                         }
                                     }
-                                    // function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
-                                    align_Write << line_Data[0] << "\t" << to_string(check_Sequence.size()) << "\t" << to_string(real_Percent * 100) << "\t" << reconstructured << endl;
+                                    // cout << "Looking for 2\n";
+                                    for (int move = 0; move < sequence.length(); move++)
+                                    {
+                                        for (int check_2 = min_Length; check_2 < sequence.length(); check_2++)
+                                        {
+                                            // cout << " 1 Looking for 2\n";
+                                            if ((positions_conserved[i] + check_Sequence.size() + move) < sequence.size())
+                                            {
+                                                string check_Sequence_2 = sequence.substr(positions_conserved[i] + check_Sequence.size() + move, check_2);
+                                                // function.create_File(align_Files, "Gene_name\tLength\tPercentage_match\tSequence");
+                                                if (check_Sequence_2.size() < min_Length)
+                                                {
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    float start_Count_2 = 0;
+
+                                                    for (int count_Stars_2 = 0; count_Stars_2 < check_Sequence_2.size(); count_Stars_2++)
+                                                    {
+                                                        if (check_Sequence_2.at(count_Stars_2) == '*')
+                                                        {
+                                                            start_Count_2++;
+                                                        }
+                                                    }
+
+                                                    float real_Percent_2 = start_Count_2 / (float)check_Sequence_2.size();
+
+                                                    if (real_Percent_2 >= min_Percentage)
+                                                    {
+                                                        cout << "Position 2 found: ";
+                                                        cout << (real_Percent_2 * 100) << endl;
+
+                                                        string reconstructured_2 = "";
+
+                                                        for (int count_Stars_2 = 0; count_Stars_2 < check_Sequence_2.size(); count_Stars_2++)
+                                                        {
+                                                            if (check_Sequence_2.at(count_Stars_2) == '*')
+                                                            {
+                                                                // string base = sequence_Reconstruction[0].at(positions_conserved[i] + count_Stars);
+                                                                reconstructured_2.append(1, sequence_Reconstruction[0].at(positions_conserved[i] + check_Sequence.size() + move + count_Stars_2));
+                                                            }
+                                                            else
+                                                            {
+                                                                reconstructured_2.append("-");
+                                                            }
+                                                        }
+                                                        int distance = (sequence_Reconstruction[0].at(positions_conserved[i] + check_Sequence.size()) + move) - sequence_Reconstruction[0].at(positions_conserved[i]);
+                                                        // "Gene_name\tLength_1\tPercentage_match_1\tLength_2\tPercentage_match_2\tSequence_1\tSequence_2"
+                                                        align_Write << line_Data[0] << "\t" << to_string(check_Sequence.size()) << "\t" << to_string(real_Percent * 100) << "\t" << to_string(check_Sequence_2.size()) << "\t" << to_string(real_Percent_2 * 100) << "\t" << distance << "\t" << reconstructured << "\t" << reconstructured_2 << endl;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1255,7 +1309,7 @@ void network::ncbi_find_conserved()
                 cout << endl;
 
                 // REMOVE later
-                //exit(-1);
+                // exit(-1);
             }
         }
         summary_File_read.close();

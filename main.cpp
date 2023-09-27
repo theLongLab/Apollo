@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
           cout << "Simulator for within host viral replication\n\n";
 
           simulator_Master simulator = simulator_Master(parameter_MASTER_file);
+          simulator.ingress();
      }
      else if (function == "--extract")
      {

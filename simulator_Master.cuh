@@ -56,8 +56,24 @@ private:
 
     string multi_Read;
 
+    string network_Model = "NA";
+    int number_of_Nodes_BA = 0;
+
+    string connection_Model = "FIXED";
+
+    int BA_FIXED = 1;
+
+    int BA_NB_sucesses = 0;
+    float BA_NB_probability = 0;
+
+    float BA_Poisson_mean = 0;
+
 public:
     simulator_Master(string parameter_Master_Location);
 
     void configure_Network_Profile(string network_Profile_File, parameter_load &Parameters);
+
+    void ingress();
+
+    void BA_Model_Engine();
 };
