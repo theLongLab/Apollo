@@ -1096,15 +1096,15 @@ void network::ncbi_find_conserved()
 {
     functions_library function = functions_library();
 
-    float min_Length = 45;
-    float min_Percentage = 0.45;
+    float min_Length = 35;
+    float min_Percentage = 0.50;
 
     cout << "Indetifying conserved regions\n\n";
 
     string parent_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
     string summary_File = parent_Folder + "/" + "summary_excel.csv";
 
-    string align_Files = parent_Folder + "/" + "summary_ALIGN_Pairs.csv";
+    string align_Files = parent_Folder + "/" + "summary_ALIGN_Pairs_0.50.csv";
 
     function.create_File(align_Files, "Gene_name\tLength_1\tPercentage_match_1\tLength_2\tPercentage_match_2\tDistance\tSequence_1\tSequence_2");
 

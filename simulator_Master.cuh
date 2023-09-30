@@ -35,7 +35,6 @@ using namespace std;
 class simulator_Master
 {
 private:
-    mt19937 gen;
 
     shared_mutex g_mutex;
     mutex gi_mutex;
@@ -68,6 +67,8 @@ private:
 
     float BA_Poisson_mean = 0;
 
+    string network_File_location = "";
+
 public:
     simulator_Master(string parameter_Master_Location);
 
@@ -75,5 +76,5 @@ public:
 
     void ingress();
 
-    void BA_Model_Engine();
+    void BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
 };

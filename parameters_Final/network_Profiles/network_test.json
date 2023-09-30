@@ -7,13 +7,13 @@
   # FIXED, evey new connection will have a set number of connections to the existing nodes
   # Negative binomial, every new connection will determined by a negative binomial distribution
   # Poisson, every new connection will determined by a gamma distribution
-  "BA model standard new connections":"Fixed",
+  "BA model standard new connections":"Negative binomial",
 
   "BA model fixed new connections":1,
 
   "BA model Negative binomial sucesses":1,
-  "BA model Negative binomial probability":1,
+  "BA model Negative binomial probability":"0.75",
 
-  "BA model Poisson mean":1
+  "BA model Poisson mean":"1"
 
 }
