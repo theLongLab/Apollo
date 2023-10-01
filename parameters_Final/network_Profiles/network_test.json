@@ -1,7 +1,8 @@
 {
   # Select network type
-  # Barabasi Albert model is selected by typing BA_model
-  "Network type":"BA model",
+  # Barabasi Albert model is selected by typing BA model
+  # Standard Caveman Model i selected by typing SC model
+  "Network type":"SC model",
 
   "BA model number of nodes":50,
   # FIXED, evey new connection will have a set number of connections to the existing nodes
@@ -14,6 +15,9 @@
   "BA model Negative binomial sucesses":1,
   "BA model Negative binomial probability":"0.75",
 
-  "BA model Poisson mean":"1"
+  "BA model Poisson mean":"1",
+
+  "SC_model number of caves":10,
+  "SC_model number of nodes per caves":10
 
 }

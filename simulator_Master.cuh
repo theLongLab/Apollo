@@ -35,7 +35,6 @@ using namespace std;
 class simulator_Master
 {
 private:
-
     shared_mutex g_mutex;
     mutex gi_mutex;
 
@@ -56,7 +55,7 @@ private:
     string multi_Read;
 
     string network_Model = "NA";
-    int number_of_Nodes_BA = 0;
+    int Total_number_of_Nodes = 0;
 
     string connection_Model = "FIXED";
 
@@ -67,6 +66,11 @@ private:
 
     float BA_Poisson_mean = 0;
 
+    int SCM_number_of_caves = 0;
+    int SCM_number_of_nodes_per_cave = 0;
+    // int Total_num_Nodes_SCM = 0;
+
+    string output_Network_location = "";
     string network_File_location = "";
 
 public:
@@ -76,5 +80,7 @@ public:
 
     void ingress();
 
+    void network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions, vector<int> &node_cave_IDs);
     void BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+    void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions, vector<int> &node_cave_IDs);
 };
