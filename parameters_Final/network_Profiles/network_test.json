@@ -2,12 +2,12 @@
   # Select network type
   # Barabasi Albert model is selected by typing BA model
   # Standard Caveman Model i selected by typing SC model
-  "Network type":"SC model",
+  "Network type":"DC model",
 
   "BA model number of nodes":50,
   # FIXED, evey new connection will have a set number of connections to the existing nodes
   # Negative binomial, every new connection will determined by a negative binomial distribution
-  # Poisson, every new connection will determined by a gamma distribution
+  # Poisson, every new connection will determined by a Poisson distribution
   "BA model standard new connections":"Negative binomial",
 
   "BA model fixed new connections":1,
@@ -18,6 +18,18 @@
   "BA model Poisson mean":"1",
 
   "SC_model number of caves":10,
-  "SC_model number of nodes per caves":10
+  "SC_model number of nodes per caves":10,
+
+  "DC_model number of caves":25,
+
+  "DC_model node distribution":"Negative binomial",
+
+  "DC_model node Negative binomial sucesses":10,
+  "DC_model node Negative binomial probability":"0.55",
+
+  "DC_model node Poisson mean":1,
+
+  "DC_model neighbouring nodes percentage":"0.25",
+  "DC_model global nodes percentage":"0.55"
 
 }

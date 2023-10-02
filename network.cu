@@ -492,7 +492,7 @@ void network::ingress_flexible_caveman()
                 uniform_int_distribution<int> distribution_Global_attach(0, global_Nodes[cave_Global].size() - 1);
 
                 int parent_Cave_Node = global_Nodes[cave_ID][distribution_Parent_attach(gen)];
-                int Global_Cave_Node = global_Nodes[cave_Global][distribution_Parent_attach(gen)];
+                int Global_Cave_Node = global_Nodes[cave_Global][distribution_Global_attach(gen)];
 
                 network_Write << cave_ID << "_" << parent_Cave_Node << "\t" << cave_Global << "_" << Global_Cave_Node << "\n";
 

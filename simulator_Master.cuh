@@ -70,6 +70,17 @@ private:
     int SCM_number_of_nodes_per_cave = 0;
     // int Total_num_Nodes_SCM = 0;
 
+    int DCM_number_of_caves = 0;
+    int *per_cave_Stride;
+
+    int DC_ND_sucesses = 0;
+    float DC_ND_probability = 0;
+
+    float DC_Poisson_mean = 0;
+
+    float DC_percent_Neighbouring = 0;
+    float DC_percent_Global_freedom = 0;
+
     string output_Network_location = "";
     string network_File_location = "";
 
@@ -80,7 +91,8 @@ public:
 
     void ingress();
 
-    void network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions, vector<int> &node_cave_IDs);
+    void network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
     void BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
-    void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions, vector<int> &node_cave_IDs);
+    void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+    void DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
 };
