@@ -92,7 +92,9 @@ public:
     void ingress();
 
     void network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+
     void BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
     void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
     void DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+    void RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
 };

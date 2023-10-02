@@ -2,7 +2,9 @@
   # Select network type
   # Barabasi Albert model is selected by typing BA model
   # Standard Caveman Model i selected by typing SC model
-  "Network type":"DC model",
+  "Network type":"Random model",
+
+  "Random model number of nodes":100,
 
   "BA model number of nodes":50,
   # FIXED, evey new connection will have a set number of connections to the existing nodes

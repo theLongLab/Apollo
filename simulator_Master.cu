@@ -173,6 +173,16 @@ void simulator_Master::configure_Network_Profile(string network_Profile_File, pa
             cout << "Poisson mean: " << DC_Poisson_mean << endl;
         }
     }
+    else if (Parameters.get_STRING(found_Parameters[0]) == "RANDOM MODEL")
+    {
+        cout << "\nRandom model selected: \n";
+        network_Model = "RANDOM";
+
+        parameters_List = {"\"Random model number of nodes\""};
+        found_Parameters = Parameters.get_parameters(network_Profile_File, parameters_List);
+
+        Total_number_of_Nodes = Parameters.get_INT(found_Parameters[0]);
+    }
     else
     {
         cout << "ERROR Incorrect network selected. Please check \"Network type\" in the network parameter file: \"" << network_Profile_File << "\"";
@@ -228,11 +238,54 @@ void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Node
     {
         DCM_Model_Engine(each_Nodes_Connection, functions);
     }
+    else if (network_Model == "RANDOM")
+    {
+        RANDOM_Model_Engine(each_Nodes_Connection, functions);
+    }
     else
     {
         cout << "ERROR Incorrect network selected. Please check \"Network type\" in the network parameter file.\n";
         exit(-1);
     }
+}
+
+void simulator_Master::RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+{
+    cout << "Intializing Random model network engine\n";
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    fstream network_File;
+    network_File.open(network_File_location, ios::app);
+
+    cout << "Forming node to node relationships\n";
+
+    cout << "Configuring node 1 of " << Total_number_of_Nodes << " node(s)" << endl;
+
+    for (int node = 1; node < Total_number_of_Nodes; node++)
+    {
+        cout << "Configuring node " << (node + 1) << " of " << Total_number_of_Nodes << " node(s)" << endl;
+
+        uniform_int_distribution<int> distribution_Neighbour(0, node - 1);
+
+        int attach_Node = -1;
+        do
+        {
+            attach_Node = distribution_Neighbour(gen);
+        } while (attach_Node == node);
+
+        each_Nodes_Connection[node].push_back(make_pair(0, attach_Node));
+        each_Nodes_Connection[attach_Node].push_back(make_pair(0, node));
+
+        network_File << "0"
+                     << "_" << node << "\t"
+                     << "0"
+                     << "_" << attach_Node << "\n";
+    }
+
+    network_File.close();
+    cout << endl;
 }
 
 void simulator_Master::DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
