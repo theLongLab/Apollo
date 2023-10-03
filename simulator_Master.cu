@@ -203,7 +203,7 @@ void simulator_Master::ingress()
 
     network_Manager(each_Nodes_Connection, functions);
 
-    cout << "STEP 2: Infection of Population\n\n";
+    cout << "STEP 2: Configuring of Population profiles\n\n";
 }
 
 void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)

@@ -1,0 +1,111 @@
+{
+  # Contains all intial sequences
+  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/reference_Genomes",
+
+  "Fitness profile file":"/mnt/FITNESS_profile.csv",
+  "Survivability profile file":"/mnt/SURVIVABILITY_profile.csv",
+
+  "Proof reading availability":"Yes",
+  "Proof reading profile file":"/mnt/PROOF_READING_profile.csv",
+
+  "Mutation availability":"Yes",
+  "Recombination availability":"Yes",
+  "Recombination profiles folder":"/mnt/Recombination_Profiles/",
+
+  "Reference Fitness":"1",
+  "Reference Survivability":"0.5",
+  "Reference Proof Reading":"0.75",
+
+  "Mutations":{
+
+    "Number of regions":2,
+
+    "Hotspot 1":{
+
+      "Region":"100:2000",
+      # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
+      "Clock model":"Poisson",
+
+      "Clock model Poisson mean":"2",
+      "Clock model Negative Binomial sucesses":"10",
+      "Clock model Negative Binomial probability":"0.5",
+      "Clock model Fixed probability":"0.5",
+
+      "AA":"0.25",
+      "AG":"0.25",
+      "AT":"0.25",
+      "AC":"0.25",
+
+      "GA":"0.25",
+      "GG":"0.25",
+      "GT":"0.25",
+      "GC":"0.25",
+
+      "TT":"0.25",
+      "TC":"0.25",
+      "TA":"0.25",
+      "TG":"0.25",
+
+      "CT":"0.25",
+      "CC":"0.25",
+      "CA":"0.25",
+      "CG":"0.25"
+    },
+
+    "Hotspot 2":{
+
+      "Region":"10000:20000",
+      # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
+      "Clock model":"Negative Binomial",
+
+      "Clock model Poisson mean":"2",
+      "Clock model Negative Binomial sucesses":"10",
+      "Clock model Negative Binomial probability":"0.5",
+      "Clock model Fixed probability":"0.5",
+
+      "AA":"0.25",
+      "AG":"0.25",
+      "AT":"0.25",
+      "AC":"0.25",
+
+      "GA":"0.25",
+      "GG":"0.25",
+      "GT":"0.25",
+      "GC":"0.25",
+
+      "TT":"0.25",
+      "TC":"0.25",
+      "TA":"0.25",
+      "TG":"0.25",
+
+      "CT":"0.25",
+      "CC":"0.25",
+      "CA":"0.25",
+      "CG":"0.25"
+    },
+  },
+
+  "Recombination":{
+
+    "Number of regions":3,
+
+    "Hotspot 1":{
+      "Region":"100:200"
+      "Reference probability of recombination":"0.5",
+      "Reference selectivity":"1",
+    },
+
+    "Hotspot 2":{
+      "Region":"10:50"
+      "Reference probability of recombination":"0.75",
+      "Reference selectivity":"1",
+    },
+
+    "Hotspot 3":{
+      "Region":"10000:20000"
+      "Reference probability of recombination":"0.05",
+      "Reference selectivity":"1",
+    },
+  },
+
+}

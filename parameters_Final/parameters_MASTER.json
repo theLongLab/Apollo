@@ -12,15 +12,12 @@
 
   "Seed":"x",
 
-  # Contains all intial sequences
-  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/reference_Genomes",
-
   # Network profile
   "Network profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/network_Profiles/network_test.json",
 
-  # Replication profiles
-  "Replication profile folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/replication_profiles/",
+  # Node profile master
+  "Node profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/node_Master.json",
 
   # Sequence profiles
-  "Sequence profile folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_profiles/"
+  "Sequence profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/sequence_Master.json"
 }
