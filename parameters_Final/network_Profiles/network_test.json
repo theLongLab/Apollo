@@ -1,5 +1,6 @@
 {
   # Select network type
+
   # Random Model is selected by tying Random model
   # Barabasi Albert Model is selected by typing BA model
   # Standard Caveman Model is selected by typing SC model

@@ -1,0 +1,66 @@
+{
+  "Profile name":"Adults",
+
+  "Tissue profiles":{
+
+    "Tissue 1":{
+      "Cell limit":"YES",
+      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial probability":"0.50",
+
+      "Replication phases":{
+
+        "Number of phases":1,
+
+        "Phase 1 Mode":"Neutral",
+        "Phase 1 Time ratio":"1",
+        "Phase 1 Variance":"100",
+        "Phase 1 Alpha":"100",
+        "Phase 1 Beta":"100",
+      },
+    },
+
+    "Tissue 2":{
+      "Cell limit":"No",
+      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial probability":"0.10",
+
+      "Replication phases":{
+
+        "Number of phases":2,
+
+        "Phase 1 Mode":"Neutral",
+        "Phase 1 Time ratio":"0.5",
+
+        "Phase 2 Mode":"Stationary",
+        "Phase 2 Time ratio":"0.5",
+        "Phase 2 Variance":"100",
+      },
+    },
+
+    "Tissue 3":{
+      "Cell limit":"NO",
+      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial probability":"0.10",
+
+      "Replication phases":{
+
+        "Number of phases":3,
+
+        "Phase 1 Mode":"Neutral",
+        "Phase 1 Time ratio":"0.2",
+
+        "Phase 2 Mode":"Stationary",
+        "Phase 2 Time ratio":"0.5",
+        "Phase 2 Variance":"100",
+
+        "Phase 3 Mode":"Depriciation",
+        "Phase 2 Time ratio":"0.3",
+        "Phase 3 Alpha":"100",
+        "Phase 3 Beta":"100",
+      },
+    },
+
+  },
+
+}
