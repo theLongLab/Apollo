@@ -1,5 +1,4 @@
 #include "parameter_load.h"
-#include "functions_library.cuh"
 
 parameter_load::parameter_load()
 {
@@ -177,4 +176,116 @@ int parameter_load::get_INT(string value)
 string parameter_load::get_STRING(string value)
 {
     return (value.substr(1, value.length() - 2));
+}
+
+vector<pair<string, string>> parameter_load::get_block_from_File(string &file_parameter_Location, string block_Header)
+{
+    vector<pair<string, string>> block_Data;
+    int activate_Collection = 0;
+
+    functions_library function = functions_library();
+
+    fstream parameter_File;
+    parameter_File.open(file_parameter_Location, ios::in);
+
+    if (parameter_File.is_open())
+    {
+        string line;
+        getline(parameter_File, line);
+
+        vector<string> line_Data;
+
+        while (getline(parameter_File, line))
+        {
+            line_Data = clean_Line(line, function);
+
+            if (line_Data.size() != 0)
+            {
+                if (line_Data[0] == "\"" + block_Header + "\"")
+                {
+                    activate_Collection = 1;
+                    // cout << line_Data[0] << endl;
+                    break;
+                }
+            }
+        }
+
+        if (activate_Collection == 1)
+        {
+            int count_bracket = 0;
+
+            while (getline(parameter_File, line))
+            {
+                line_Data = clean_Line(line, function);
+
+                if (line_Data.size() != 0)
+                {
+                    if (line_Data.size() > 1)
+                    {
+                        // cout << line << endl;
+                        // cout << line_Data[1] << endl;
+                        // exit(-1);
+                        if (line_Data[1] == "{")
+                        {
+                            count_bracket++;
+                        }
+
+                        if (count_bracket >= 0)
+                        {
+                            block_Data.push_back(make_pair(line_Data[0], line_Data[1]));
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else if (line_Data[0] == "}")
+                    {
+                        count_bracket--;
+
+                        if (count_bracket >= 0)
+                        {
+                            block_Data.push_back(make_pair(line_Data[0], ""));
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        parameter_File.close();
+    }
+
+    return block_Data;
+}
+
+vector<string> parameter_load::clean_Line(string line, functions_library &function)
+{
+    vector<string> line_Data;
+
+    if (line != "")
+    {
+        // string trim_Line = line;
+        int i = 0;
+        while (line[i] == ' ')
+        {
+            i++; // Skip leading spaces
+        }
+
+        line.erase(0, i);
+
+        if (line.at(0) != '#')
+        {
+            if (line.at(line.size() - 1) == ',')
+            {
+                line = line.substr(0, line.length() - 1);
+            }
+            function.split(line_Data, line, ':');
+        }
+    }
+
+    return line_Data;
 }

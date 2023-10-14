@@ -10,6 +10,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "functions_library.cuh"
+
 using namespace std;
 
 class parameter_load
@@ -30,4 +32,9 @@ public:
     int get_INT(string value);
     string get_STRING(string value);
     float get_FLOAT(string value);
+
+    vector<pair<string, string>> get_block_from_File(string &file_parameter_Location, string block_Header);
+    vector<pair<string, string>> get_block_from_block(vector<pair<string, string>> &block, string block_Header);
+
+    vector<string> clean_Line(string line, functions_library &function);
 };

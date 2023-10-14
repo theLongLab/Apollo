@@ -230,6 +230,4 @@ public:
 
     // void split(vector<string> &line_Data, string line, char delim);
 
-    vector<pair<string, string>> block_from_File(string &file_parameter_Location, string &block_Header);
-    vector<pair<string, string>> block_from_block(vector<pair<string, string>> &block, string &block_Header);
 };

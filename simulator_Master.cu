@@ -322,7 +322,12 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         progeny_distribution_Parameters.clear();
 
         // Configure tissue profile read
-        
+        vector<pair<string, string>> Viral_migration_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");
+
+        for (size_t i = 0; i < Viral_migration_block_Data.size(); i++)
+        {
+            cout << Viral_migration_block_Data[i].first << " : " << Viral_migration_block_Data[i].second << endl;
+        }
     }
     else
     {
