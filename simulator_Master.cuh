@@ -52,6 +52,8 @@ private:
     string intermediate_Folders;
     string intermediate_sequence_Store;
 
+    string node_Master_location;
+
     string multi_Read;
 
     string network_Model = "NA";
@@ -81,6 +83,30 @@ private:
     float DC_percent_Neighbouring = 0;
     float DC_percent_Global_freedom = 0;
 
+    float generation_Time = 0;
+
+    float shape_days_in_Host = 0;
+    float scale_days_in_Host = 0;
+
+    int trials_Sampling = -1;
+    float sampling_trials = 0;
+    float sampling_probability = 0;
+    string sampling_effect= "No";
+
+    string progeny_distribution_Model = "NA";
+
+    int progeny_NB_sucesses = 0;
+    float progeny_NB_probability = 0;
+
+    float progeny_Poisson_mean = 0;
+
+    float progeny_Gamma_shape = 0;
+    float progeny_Gamma_scale = 0;
+
+    int number_of_node_Profiles = 0;
+    string node_Profile_folder_Location = "";
+    int *profile_Distributions;
+
     string output_Network_location = "";
     string network_File_location = "";
 
@@ -97,4 +123,6 @@ public:
     void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
     void DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
     void RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+
+    void node_Master_Manager(functions_library &functions);
 };

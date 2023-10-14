@@ -14,7 +14,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Intermediate folders\"",
         "\"Output folders\"",
         "\"Multi read\"",
-        "\"Network profile\""};
+        "\"Network profile\"",
+        "\"Nodes master profile\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -30,6 +31,9 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     function.config_Folder(output_Network_location, "Network");
     network_File_location = output_Network_location + "/node_node_Relationships.csv";
     function.create_File(network_File_location, "Source\tTarget");
+
+    cout << "\nConfiguring parameter profiles:\n";
+    node_Master_location = Parameters.get_STRING(found_Parameters[7]);
 
     cout << "\nConfiguring hardware resources:\n\n";
     this->CPU_cores = Parameters.get_INT(found_Parameters[1]);
@@ -203,7 +207,129 @@ void simulator_Master::ingress()
 
     network_Manager(each_Nodes_Connection, functions);
 
-    cout << "STEP 2: Configuring of Population profiles\n\n";
+    cout << "STEP 2: Configuring within host mechanics\n\n";
+    node_Master_Manager(functions);
+
+    cout << "STEP 3: Configuring of Population profiles\n\n";
+}
+
+void simulator_Master::node_Master_Manager(functions_library &functions)
+{
+    parameter_load Parameters = parameter_load();
+    cout << "Loading nodes master profile: " << this->node_Master_location << endl;
+
+    vector<string> parameters_List = {
+        "\"Shape replication time\"",
+        "\"Scale replication time\"",
+        "\"Shape days in host\"",
+        "\"Scale days in host\"",
+        "\"Sampling present\"",
+        "\"Progeny distribution type\"",
+        "\"Number of node profiles\"",
+        "\"Location of node profiles\""};
+
+    vector<string> found_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+    parameters_List.clear();
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    gamma_distribution<float> days_in_Host(Parameters.get_FLOAT(found_Parameters[0]), Parameters.get_FLOAT(found_Parameters[1]));
+    this->generation_Time = days_in_Host(gen);
+
+    if (this->generation_Time > 0)
+    {
+        cout << "\n";
+        cout << "Time taken for viral replication (from cell attachment to release) (days): " << generation_Time << endl;
+
+        this->shape_days_in_Host = Parameters.get_FLOAT(found_Parameters[2]);
+        this->scale_days_in_Host = Parameters.get_FLOAT(found_Parameters[3]);
+        cout << "Days in host gamma distribution: Shape: " << this->shape_days_in_Host << " Scale: " << this->scale_days_in_Host << endl;
+
+        cout << "\nSampling status: ";
+        if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[4])) == "YES")
+        {
+            cout << "Active\n";
+            parameters_List = {"\"Sampling effect\"",
+                               "\"Sampling rate Binomial trials\"",
+                               "\"Sampling rate Binomial probability\""};
+
+            vector<string> sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+
+            sampling_effect = Parameters.get_STRING(sampling_Parameters[0]);
+            transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
+
+            cout << "Effect of sampling: " << sampling_effect << endl;
+
+            sampling_trials = Parameters.get_INT(sampling_Parameters[1]);
+            sampling_probability = Parameters.get_FLOAT(sampling_Parameters[2]);
+
+            cout << "Sampling rate distribution trials: " << sampling_trials << endl;
+            cout << "Sampling rate distribution probability: " << sampling_probability << endl;
+        }
+        else
+        {
+            cout << "Inactive\n";
+        }
+
+        progeny_distribution_Model = Parameters.get_STRING(found_Parameters[5]);
+        transform(progeny_distribution_Model.begin(), progeny_distribution_Model.end(), progeny_distribution_Model.begin(), ::toupper);
+
+        vector<string> progeny_distribution_Parameters;
+
+        if (progeny_distribution_Model == "NEGATIVE BINOMIAL")
+        {
+            parameters_List = {"\"Progeny Negative Binomial sucesses\"",
+                               "\"Progeny Negative Binomial probability\""};
+
+            progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+
+            this->progeny_NB_sucesses = Parameters.get_INT(progeny_distribution_Parameters[0]);
+            this->progeny_NB_probability = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
+
+            cout << "\nProgeny generation via a Negative Binomial disribution\n";
+            cout << "Negative Binomial sucesses: " << progeny_NB_sucesses
+                 << "\nNegative Binomial probability: " << progeny_NB_probability << endl;
+        }
+        else if (progeny_distribution_Model == "GAMMA")
+        {
+            parameters_List = {"\"Progeny Gamma shape\"",
+                               "\"Progeny Gamma scale\""};
+
+            progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+            this->progeny_Gamma_shape = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
+            this->progeny_Gamma_scale = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
+
+            cout << "\nProgeny generation via a Gamma disribution\n";
+            cout << "Gamma shape: " << progeny_Gamma_shape
+                 << "\nGamma scale: " << progeny_Gamma_scale << endl;
+        }
+        else if (progeny_distribution_Model == "POISSON")
+        {
+            parameters_List = {"\"Progeny Poisson mean\""};
+
+            progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+            this->progeny_Poisson_mean = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
+
+            cout << "\nProgeny generation via a Poisson disribution\n";
+            cout << "Poisson mean: " << progeny_Poisson_mean << endl;
+        }
+        else
+        {
+            cout << "\nERROR: PROGENY GENERATION DISTRIBUTION MODEL TYPE\n";
+            exit(-1);
+        }
+        progeny_distribution_Parameters.clear();
+
+        // Configure tissue profile read
+        
+    }
+    else
+    {
+        cout << "\nERROR: GENERATION SHOULE BE A NON ZERO POSITIVE VALUE. PLEASE CHECK THE REPLICATION PARAMETERS\n";
+        exit(-1);
+    }
+    cout << endl;
 }
 
 void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)

@@ -114,6 +114,8 @@ public:
 
     void split(vector<string> &line_Data, string line, char delim);
 
+    string to_Upper_Case(const string &text);
+
     vector<string> get_Files(string folder, string extension);
 
     int **create_INT_2D_arrays(int rows, int columns);
@@ -226,5 +228,8 @@ public:
                                          int generation_Current, string parent_Profiles_Store,
                                          float **parent_survivability_Probabilities);
 
-    //void split(vector<string> &line_Data, string line, char delim);
+    // void split(vector<string> &line_Data, string line, char delim);
+
+    vector<pair<string, string>> block_from_File(string &file_parameter_Location, string &block_Header);
+    vector<pair<string, string>> block_from_block(vector<pair<string, string>> &block, string &block_Header);
 };

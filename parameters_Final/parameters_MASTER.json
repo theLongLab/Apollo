@@ -16,7 +16,7 @@
   "Network profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/network_Profiles/network_test.json",
 
   # Node profile master
-  "Node profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/node_Master.json",
+  "Nodes master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/node_Master.json",
 
   # Sequence profiles
   "Sequence profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/sequence_Master.json"

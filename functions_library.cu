@@ -13,6 +13,18 @@ functions_library::functions_library(int tot_Blocks, int tot_ThreadsperBlock, in
     this->CPU_cores = CPU_cores;
 }
 
+string functions_library::to_Upper_Case(const string &text)
+{
+    string result = text;
+
+    for (char &c : result)
+    {
+        c = toupper(c);
+    }
+
+    return result;
+}
+
 void functions_library::print_Cuda_device(int cuda_ID, int &tot_Blocks, int &tot_ThreadsperBlock)
 {
     cudaSetDevice(cuda_ID);
