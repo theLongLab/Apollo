@@ -91,7 +91,7 @@ private:
     int trials_Sampling = -1;
     float sampling_trials = 0;
     float sampling_probability = 0;
-    string sampling_effect= "No";
+    string sampling_effect = "No";
 
     string progeny_distribution_Model = "NA";
 
@@ -105,7 +105,23 @@ private:
 
     int number_of_node_Profiles = 0;
     string node_Profile_folder_Location = "";
-    int *profile_Distributions;
+    float *node_profile_Distributions;
+    vector<string> profile_names;
+
+    int num_tissues_per_Node = 0;
+    vector<string> tissue_Names;
+
+    int entry_tissues = 0;
+    int *entry_array;
+
+    int infectious_tissues = 0;
+    int *infectious_array;
+
+    int terminal_tissues = 0;
+    int *terminal_array;
+
+    string viral_Migration = "No";
+    float **viral_Migration_Values;
 
     string output_Network_location = "";
     string network_File_location = "";

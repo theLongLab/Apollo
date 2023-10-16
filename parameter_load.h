@@ -36,5 +36,11 @@ public:
     vector<pair<string, string>> get_block_from_File(string &file_parameter_Location, string block_Header);
     vector<pair<string, string>> get_block_from_block(vector<pair<string, string>> &block, string block_Header);
 
+    vector<pair<string, string>> check_block_from_block(vector<pair<string, string>> &block, string block_Header);
+
+    int get_INT(vector<pair<string, string>> block, string value);
+    string get_STRING(vector<pair<string, string>> block, string value);
+    float get_FLOAT(vector<pair<string, string>> block, string value);
+
     vector<string> clean_Line(string line, functions_library &function);
 };

@@ -255,6 +255,11 @@ vector<pair<string, string>> parameter_load::get_block_from_File(string &file_pa
                 }
             }
         }
+        else
+        {
+            cout << "SYSTEM ERROR: " << block_Header << " DOES NOT EXIST IN THE CURRENT BLOCK.\n";
+            exit(-1);
+        }
 
         parameter_File.close();
     }
@@ -309,6 +314,128 @@ vector<pair<string, string>> parameter_load::get_block_from_block(vector<pair<st
     }
 
     return block_Data;
+}
+
+vector<pair<string, string>> parameter_load::check_block_from_block(vector<pair<string, string>> &block, string block_Header)
+{
+    vector<pair<string, string>> block_Data;
+
+    int catch_Index = -1;
+
+    for (int check = 0; check < block.size(); check++)
+    {
+        if (block[check].first == "\"" + block_Header + "\"")
+        {
+            catch_Index = check + 1;
+            break;
+        }
+    }
+
+    if (catch_Index != -1)
+    {
+        int count_bracket = 0;
+
+        for (int check = catch_Index; check < block.size(); check++)
+        {
+            if (block[check].second == "{")
+            {
+                count_bracket++;
+            }
+            else if (block[check].first == "}")
+            {
+                count_bracket--;
+            }
+
+            if (count_bracket >= 0)
+            {
+                block_Data.push_back(make_pair(block[check].first, block[check].second));
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    return block_Data;
+}
+
+int parameter_load::get_INT(vector<pair<string, string>> block, string value)
+{
+    int integer_Value;
+    int found = -1;
+
+    for (int i = 0; i < block.size(); i++)
+    {
+        if (block[i].first == "\"" + value + "\"")
+        {
+            integer_Value = stoi(block[i].second);
+            found = 1;
+            break;
+        }
+    }
+
+    if (found == 1)
+    {
+        return integer_Value;
+    }
+    else
+    {
+        cout << "SYSTEM ERROR: " << value << " DOES NOT EXIST IN THE CURRENT BLOCK.\n";
+        exit(-1);
+    }
+}
+
+float parameter_load::get_FLOAT(vector<pair<string, string>> block, string value)
+{
+    float return_Value;
+    int found = -1;
+
+    for (int i = 0; i < block.size(); i++)
+    {
+        if (block[i].first == "\"" + value + "\"")
+        {
+            return_Value = stof(block[i].second.substr(1, block[i].second.length() - 2));
+            found = 1;
+            break;
+        }
+    }
+
+    if (found == 1)
+    {
+        return return_Value;
+    }
+    else
+    {
+        cout << "SYSTEM ERROR: " << value << " DOES NOT EXIST IN THE CURRENT BLOCK.\n";
+        exit(-1);
+    }
+}
+
+string parameter_load::get_STRING(vector<pair<string, string>> block, string value)
+{
+    string return_Value;
+    int found = -1;
+
+    for (int i = 0; i < block.size(); i++)
+    {
+        if (block[i].first == "\"" + value + "\"")
+        {
+            return_Value = block[i].second.substr(1, block[i].second.length() - 2);
+            found = 1;
+            break;
+        }
+    }
+
+    if (found == 1)
+    {
+        return return_Value;
+    }
+    else
+    {
+        cout << "SYSTEM ERROR: " << value << " DOES NOT EXIST IN THE CURRENT BLOCK.\n";
+        exit(-1);
+    }
 }
 
 vector<string> parameter_load::clean_Line(string line, functions_library &function)

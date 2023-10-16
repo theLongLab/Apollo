@@ -324,18 +324,168 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         // Configure tissue profile read
         vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");
 
-        for (size_t i = 0; i < Tissue_profiles_block_Data.size(); i++)
+        // for (size_t i = 0; i < Tissue_profiles_block_Data.size(); i++)
+        // {
+        //     cout << Tissue_profiles_block_Data[i].first << " : " << Tissue_profiles_block_Data[i].second << endl;
+        // }
+
+        num_tissues_per_Node = Parameters.get_INT(Tissue_profiles_block_Data, "Number of tissues");
+
+        if (num_tissues_per_Node > 0)
         {
-            cout << Tissue_profiles_block_Data[i].first << " : " << Tissue_profiles_block_Data[i].second << endl;
+            cout << "\nNumber of tissues in a node: " << num_tissues_per_Node << endl;
+
+            for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+            {
+                string check_Tissue = "Tissue " + to_string(tissue + 1) + " Name";
+                tissue_Names.push_back(Parameters.get_STRING(Tissue_profiles_block_Data, check_Tissue));
+                cout << check_Tissue << ": " << tissue_Names[tissue] << endl;
+            }
+        }
+        else
+        {
+            cout << "ERROR: TISSUE NUMBER HAS TO BE GREATER THAN ZERO.\n\n";
         }
 
-        cout << "******\n\n";
+        cout << endl;
 
-        vector<pair<string, string>> Viral_migration_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, "Viral migration");
+        string viral_Entry = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral entry tissues");
+        string viral_Infectious = Parameters.get_STRING(Tissue_profiles_block_Data, "Infectious load tissues");
+        string viral_Terminal = Parameters.get_STRING(Tissue_profiles_block_Data, "Terminal load tissues");
 
-        for (size_t i = 0; i < Viral_migration_block_Data.size(); i++)
+        vector<string> viral_tissue_Split;
+
+        functions.split(viral_tissue_Split, viral_Entry, ',');
+        this->entry_tissues = viral_tissue_Split.size();
+        entry_array = (int *)malloc(entry_tissues * sizeof(int));
+        cout << this->entry_tissues << " tissue(s) availble for entry: ";
+        for (size_t i = 0; i < entry_tissues; i++)
         {
-            cout << Viral_migration_block_Data[i].first << " : " << Viral_migration_block_Data[i].second << endl;
+            entry_array[i] = stoi(viral_tissue_Split[i]) - 1;
+            cout << tissue_Names[entry_array[i]];
+
+            if ((i + 1) != entry_tissues)
+            {
+                cout << ", ";
+            }
+            else
+            {
+                cout << endl;
+            }
+        }
+
+        functions.split(viral_tissue_Split, viral_Infectious, ',');
+        this->infectious_tissues = viral_tissue_Split.size();
+        this->infectious_array = (int *)malloc(infectious_tissues * sizeof(int));
+        cout << this->infectious_tissues << " tissue(s) determine node infectivity: ";
+        for (size_t i = 0; i < infectious_tissues; i++)
+        {
+            infectious_array[i] = stoi(viral_tissue_Split[i]) - 1;
+            cout << tissue_Names[infectious_array[i]];
+
+            if ((i + 1) != infectious_tissues)
+            {
+                cout << ", ";
+            }
+            else
+            {
+                cout << endl;
+            }
+        }
+
+        functions.split(viral_tissue_Split, viral_Terminal, ',');
+        this->terminal_tissues = viral_tissue_Split.size();
+        this->terminal_array = (int *)malloc(terminal_tissues * sizeof(int));
+        cout << this->terminal_tissues << " tissue(s) determine node termination (death): ";
+        for (size_t i = 0; i < terminal_tissues; i++)
+        {
+            terminal_array[i] = stoi(viral_tissue_Split[i]) - 1;
+            cout << tissue_Names[terminal_array[i]];
+
+            if ((i + 1) != terminal_tissues)
+            {
+                cout << ", ";
+            }
+            else
+            {
+                cout << endl;
+            }
+        }
+
+        cout << endl;
+
+        // cout << "******\n\n";
+        viral_Migration = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral tissue migration");
+        transform(viral_Migration.begin(), viral_Migration.end(), viral_Migration.begin(), ::toupper);
+
+        if (viral_Migration == "YES")
+        {
+            cout << "Viral migration: Activated\n";
+
+            viral_Migration_Values = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * (num_tissues_per_Node - 1), 2, -1);
+
+            vector<pair<string, string>> Viral_migration_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, "Viral migration");
+
+            cout << "Configuring tissue to tissue migrations:\n\n";
+
+            for (int migration_Check = 0; migration_Check < (num_tissues_per_Node * (num_tissues_per_Node - 1)); migration_Check++)
+            {
+                int source = migration_Check / (num_tissues_per_Node - 1);
+                int destination = migration_Check % (num_tissues_per_Node - 1);
+
+                if (destination >= source)
+                {
+                    destination = destination + 1;
+                }
+
+                string check_source_destination = to_string(source + 1) + "_" + to_string(destination + 1);
+
+                vector<pair<string, string>> block_Migration = Parameters.check_block_from_block(Viral_migration_block_Data, check_source_destination);
+
+                if (block_Migration.size() > 0)
+                {
+                    cout << "From " << tissue_Names[source] << " to " << tissue_Names[destination] << endl;
+                    for (int i = 0; i < block_Migration.size(); i++)
+                    {
+                        if (Parameters.get_STRING(block_Migration[i].first) == "Cell migration Binomial trials")
+                        {
+                            viral_Migration_Values[migration_Check][0] = Parameters.get_INT(block_Migration[i].second);
+                        }
+                        else if (Parameters.get_STRING(block_Migration[i].first) == "Cell migration Binomial probability")
+                        {
+                            viral_Migration_Values[migration_Check][1] = Parameters.get_FLOAT(block_Migration[i].second);
+                        }
+                        else
+                        {
+                            cout << "ERROR INVALID ENTRY AT " << check_source_destination << endl;
+                            exit(-1);
+                        }
+                    }
+                    cout << "Cell migration Binomial trials: " << viral_Migration_Values[migration_Check][0] << endl;
+                    cout << "Cell migration Binomial probability: " << viral_Migration_Values[migration_Check][1] << endl;
+                    cout << endl;
+                }
+            }
+        }
+        else
+        {
+            cout << "Viral migration: Does not occur\n";
+        }
+        // for (size_t i = 0; i < Viral_migration_block_Data.size(); i++)
+        // {
+        //     cout << Viral_migration_block_Data[i].first << " : " << Viral_migration_block_Data[i].second << endl;
+        // }
+
+        number_of_node_Profiles = Parameters.get_INT(found_Parameters[6]);
+        if (number_of_node_Profiles > 0)
+        {
+            cout << number_of_node_Profiles << " node profiles present" << endl;
+            node_Profile_folder_Location = Parameters.get_STRING(found_Parameters[7]);
+            cout << "Extracting profiles from: " << node_Profile_folder_Location << endl;
+        }
+        else
+        {
+            cout << "ERROR: NUMBER OF PROFILES MUST BE GREATER THAN ZERO\n\n";
         }
     }
     else
