@@ -262,6 +262,55 @@ vector<pair<string, string>> parameter_load::get_block_from_File(string &file_pa
     return block_Data;
 }
 
+vector<pair<string, string>> parameter_load::get_block_from_block(vector<pair<string, string>> &block, string block_Header)
+{
+    vector<pair<string, string>> block_Data;
+
+    int catch_Index = -1;
+
+    for (int check = 0; check < block.size(); check++)
+    {
+        if (block[check].first == "\"" + block_Header + "\"")
+        {
+            catch_Index = check + 1;
+            break;
+        }
+    }
+
+    if (catch_Index != -1)
+    {
+        int count_bracket = 0;
+
+        for (int check = catch_Index; check < block.size(); check++)
+        {
+            if (block[check].second == "{")
+            {
+                count_bracket++;
+            }
+            else if (block[check].first == "}")
+            {
+                count_bracket--;
+            }
+
+            if (count_bracket >= 0)
+            {
+                block_Data.push_back(make_pair(block[check].first, block[check].second));
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        cout << "SYSTEM ERROR: " << block_Header << " DOES NOT EXIST IN THE CURRENT BLOCK.\n";
+        exit(-1);
+    }
+
+    return block_Data;
+}
+
 vector<string> parameter_load::clean_Line(string line, functions_library &function)
 {
     vector<string> line_Data;
