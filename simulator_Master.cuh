@@ -120,6 +120,8 @@ private:
     int terminal_tissues = 0;
     int *terminal_array;
 
+    float **profile_tissue_Limits;
+
     string viral_Migration = "No";
     float **viral_Migration_Values;
 

@@ -480,12 +480,75 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         if (number_of_node_Profiles > 0)
         {
             cout << number_of_node_Profiles << " node profiles present" << endl;
+
+            // (int *)malloc(infectious_tissues * sizeof(int));
+            node_profile_Distributions = (float *)malloc(sizeof(float) * number_of_node_Profiles);
+            profile_tissue_Limits = functions.create_FLOAT_2D_arrays(num_tissues_per_Node * number_of_node_Profiles, 3);
+
             node_Profile_folder_Location = Parameters.get_STRING(found_Parameters[7]);
-            cout << "Extracting profiles from: " << node_Profile_folder_Location << endl;
+            cout << "Extracting profiles from: " << node_Profile_folder_Location << endl
+                 << endl;
+
+            parameters_List = {"\"Profile name\"",
+                               "\"Probability of occurence\""};
+
+            for (int profile = 0; profile < number_of_node_Profiles; profile++)
+            {
+                string profile_check = node_Profile_folder_Location + "/profile_" + to_string(profile + 1) + ".json";
+                if (filesystem::exists(profile_check))
+                {
+                    cout << profile + 1 << " Profile found: " << profile_check << endl;
+
+                    vector<string> profile_Parameters = Parameters.get_parameters(profile_check, parameters_List);
+                    profile_names.push_back(Parameters.get_STRING(profile_Parameters[0]));
+                    node_profile_Distributions[profile] = Parameters.get_FLOAT(profile_Parameters[1]);
+
+                    cout << "Configuring profile: " << profile_names[profile] << endl;
+                    cout << "Probability of occurence: " << node_profile_Distributions[profile] << endl;
+
+                    // Configure tisses and their phases
+
+                    cout << "\nCollecting tissue data\n";
+                    vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");
+
+                    for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+                    {
+                        string get_Tissue = "Tissue " + to_string(tissue + 1);
+                        cout << "Processing " << get_Tissue << endl;
+
+                        
+                    }
+
+                    cout << endl;
+                }
+                else
+                {
+                    cout << "ERROR: " << profile + 1 << " PROFILE NOT FOUND, PLEASE CHECK LOCATION: " << profile_check << endl;
+                    exit(-1);
+                }
+            }
+
+            // Finally check profiles distributions
+            float distribution_Check = 0;
+            cout << "Performing profile distribution check: ";
+            for (int profile = 0; profile < number_of_node_Profiles; profile++)
+            {
+                distribution_Check = distribution_Check + node_profile_Distributions[profile];
+            }
+            if (distribution_Check != 1)
+            {
+                cout << "ERROR: PROFILE DISTRIBUTIONS MUST SUM UPTO 1, NOW THEY SUM UPTO: " << distribution_Check << endl;
+                exit(-1);
+            }
+            else
+            {
+                cout << "\nDistribution check passed\n";
+            }
         }
         else
         {
             cout << "ERROR: NUMBER OF PROFILES MUST BE GREATER THAN ZERO\n\n";
+            exit(-1);
         }
     }
     else
