@@ -2,6 +2,10 @@
   "Profile name":"Adults Medicated",
 
   "Probability of occurence":"0.75",
+  # Sampled individuals can be REMOVED from the infectious population or become LESS INFECTIOUS or NO CHANGE to infectivity
+  "Sampling effect":"Removed",
+  "Sampling less infectious effect Alpha":"5",
+  "Sampling less infectious effect Beta":"10",
 
   "Tissue profiles":{
 

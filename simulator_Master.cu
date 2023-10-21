@@ -250,19 +250,18 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[4])) == "YES")
         {
             cout << "Active\n";
-            parameters_List = {"\"Sampling effect\"",
-                               "\"Sampling rate Binomial trials\"",
+            parameters_List = {"\"Sampling rate Binomial trials\"",
                                "\"Sampling rate Binomial probability\""};
 
             vector<string> sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
 
-            sampling_effect = Parameters.get_STRING(sampling_Parameters[0]);
-            transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
+            // sampling_effect = Parameters.get_STRING(sampling_Parameters[0]);
+            // transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
 
-            cout << "Effect of sampling: " << sampling_effect << endl;
+            // cout << "Effect of sampling: " << sampling_effect << endl;
 
-            sampling_trials = Parameters.get_INT(sampling_Parameters[1]);
-            sampling_probability = Parameters.get_FLOAT(sampling_Parameters[2]);
+            sampling_trials = Parameters.get_INT(sampling_Parameters[0]);
+            sampling_probability = Parameters.get_FLOAT(sampling_Parameters[1]);
 
             cout << "Sampling rate distribution trials: " << sampling_trials << endl;
             cout << "Sampling rate distribution probability: " << sampling_probability << endl;
@@ -484,13 +483,15 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             // (int *)malloc(infectious_tissues * sizeof(int));
             node_profile_Distributions = (float *)malloc(sizeof(float) * number_of_node_Profiles);
             profile_tissue_Limits = functions.create_FLOAT_2D_arrays(num_tissues_per_Node * number_of_node_Profiles, 3);
+            node_sampling_effect = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, 0);
 
             node_Profile_folder_Location = Parameters.get_STRING(found_Parameters[7]);
             cout << "Extracting profiles from: " << node_Profile_folder_Location << endl
                  << endl;
 
             parameters_List = {"\"Profile name\"",
-                               "\"Probability of occurence\""};
+                               "\"Probability of occurence\"",
+                               "\"Sampling effect\""};
 
             for (int profile = 0; profile < number_of_node_Profiles; profile++)
             {
@@ -507,6 +508,38 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                     cout << "Probability of occurence: " << node_profile_Distributions[profile] << endl;
 
                     // Configure tisses and their phases
+                    string sampling_effect = Parameters.get_STRING(profile_Parameters[2]);
+                    transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
+
+                    if (sampling_effect == "NO CHANGE" || sampling_effect == "REMOVED" || sampling_effect == "LESS INFECTIOUS")
+                    {
+                        if (sampling_effect == "REMOVED")
+                        {
+                            node_sampling_effect[profile][0] = 1;
+                        }
+                        else if (sampling_effect == "LESS INFECTIOUS")
+                        {
+                            node_sampling_effect[profile][0] = -1;
+                            parameters_List = {"\"Sampling less infectious effect Alpha\"",
+                                               "\"Sampling less infectious effect Beta\""};
+                            vector<string> profile_sampling_Less = Parameters.get_parameters(profile_check, parameters_List);
+                            node_sampling_effect[profile][1] = Parameters.get_FLOAT(profile_sampling_Less[0]);
+                            node_sampling_effect[profile][2] = Parameters.get_FLOAT(profile_sampling_Less[1]);
+                        }
+                    }
+                    else
+                    {
+                        cout << "ERROR: " << profile + 1 << " SAMPLING EFFECT: " << sampling_effect << "IS NOT A VALID ENTRY." << endl;
+                        cout << "IT HAS TO BE ONE OF THE FOLLOWING: NO CHANGE, REMOVED OR LESS INFECTIOUS.\n";
+                        exit(-1);
+                    }
+
+                    cout << "Sampling effect: " << sampling_effect << endl;
+                    if (node_sampling_effect[profile][0] == -1)
+                    {
+                        cout << "Beta distribution alpha value: " << node_sampling_effect[profile][1] << endl;
+                        cout << "Beta distribution beta value: " << node_sampling_effect[profile][2] << endl;
+                    }
 
                     cout << "\nCollecting tissue data\n";
                     vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");

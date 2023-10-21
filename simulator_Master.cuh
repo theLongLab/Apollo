@@ -91,7 +91,6 @@ private:
     int trials_Sampling = -1;
     float sampling_trials = 0;
     float sampling_probability = 0;
-    string sampling_effect = "No";
 
     string progeny_distribution_Model = "NA";
 
@@ -107,6 +106,11 @@ private:
     string node_Profile_folder_Location = "";
     float *node_profile_Distributions;
     vector<string> profile_names;
+
+    // 0 = No Change
+    // 1 = Removed
+    //-1 = Less infectious
+    float **node_sampling_effect;
 
     int num_tissues_per_Node = 0;
     vector<string> tissue_Names;

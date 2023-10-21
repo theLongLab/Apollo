@@ -8,8 +8,6 @@
   "Scale days in host":"0.27",
 
   "Sampling present":"Yes",
-  # Sampled individuals can be REMOVED from the infectious population or become LESS INFECTIOUS or NO CHANGE to infectivity
-  "Sampling effect":"Removed",
   "Sampling rate Binomial trials":2,
   "Sampling rate Binomial probability":"0.5",
 
