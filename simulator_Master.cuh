@@ -124,10 +124,17 @@ private:
     int terminal_tissues = 0;
     int *terminal_array;
 
-    float **profile_tissue_Limits;
-
     string viral_Migration = "No";
     float **viral_Migration_Values;
+
+    float **profile_tissue_Limits;
+
+    int *tissue_param_profile_Stride;
+    vector<vector<int>> replication_phases_Profile_tissues;
+
+    vector<float> time_Ratios;
+    vector<string> phase_Type;
+    vector<pair<float, float>> phase_paramaters;
 
     string output_Network_location = "";
     string network_File_location = "";

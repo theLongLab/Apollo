@@ -482,8 +482,11 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
             // (int *)malloc(infectious_tissues * sizeof(int));
             node_profile_Distributions = (float *)malloc(sizeof(float) * number_of_node_Profiles);
-            profile_tissue_Limits = functions.create_FLOAT_2D_arrays(num_tissues_per_Node * number_of_node_Profiles, 3);
+            profile_tissue_Limits = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * number_of_node_Profiles, 3, 0);
             node_sampling_effect = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, 0);
+
+            tissue_param_profile_Stride = (int *)malloc(sizeof(int) * (number_of_node_Profiles + 1));
+            tissue_param_profile_Stride[0] = 0;
 
             node_Profile_folder_Location = Parameters.get_STRING(found_Parameters[7]);
             cout << "Extracting profiles from: " << node_Profile_folder_Location << endl
@@ -503,6 +506,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                     vector<string> profile_Parameters = Parameters.get_parameters(profile_check, parameters_List);
                     profile_names.push_back(Parameters.get_STRING(profile_Parameters[0]));
                     node_profile_Distributions[profile] = Parameters.get_FLOAT(profile_Parameters[1]);
+                    vector<int> replication_phases_tissues;
 
                     cout << "Configuring profile: " << profile_names[profile] << endl;
                     cout << "Probability of occurence: " << node_profile_Distributions[profile] << endl;
@@ -542,14 +546,65 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                     }
 
                     cout << "\nCollecting tissue data\n";
-                    vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");
+                    vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(profile_check, "Tissue profiles");
+
+                    // for (int test = 0; test < Tissue_profiles_block_Data.size(); test++)
+                    // {
+                    //     cout << Tissue_profiles_block_Data[test].first << endl;
+                    // }
+
+                    int tissue_Limit_Start = profile * num_tissues_per_Node;
 
                     for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
                     {
                         string get_Tissue = "Tissue " + to_string(tissue + 1);
-                        cout << "Processing " << get_Tissue << endl;
+                        cout << "Processing: " << get_Tissue << endl;
 
-                        
+                        vector<pair<string, string>> current_tissue_Profile_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, get_Tissue);
+
+                        string cell_Limit = Parameters.get_STRING(current_tissue_Profile_block_Data, "Cell limit");
+                        transform(cell_Limit.begin(), cell_Limit.end(), cell_Limit.begin(), ::toupper);
+
+                        cout << tissue_Names[tissue] << " tissue cell limit: ";
+
+                        if (cell_Limit == "YES")
+                        {
+                            cout << "YES\n";
+                            profile_tissue_Limits[tissue_Limit_Start + tissue][0] = 1;
+                            profile_tissue_Limits[tissue_Limit_Start + tissue][1] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial sucesses");
+                            profile_tissue_Limits[tissue_Limit_Start + tissue][2] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial probability");
+
+                            cout << "Cell limit Binomial sucesses: " << profile_tissue_Limits[tissue_Limit_Start + tissue][1] << endl
+                                 << "Cell limit Binomial probability: " << profile_tissue_Limits[tissue_Limit_Start + tissue][2] << endl;
+                        }
+                        else
+                        {
+                            cout << " NO\n";
+                        }
+                        cout << endl;
+
+                        cout << "Configuring Tissue " << tissue + 1 << " replication phases: \n";
+                        vector<pair<string, string>> replication_Phases_Block = Parameters.get_block_from_block(current_tissue_Profile_block_Data, "Replication phases");
+                        int num_Phases = Parameters.get_INT(replication_Phases_Block, "Number of phases");
+
+                        if (num_Phases > 0)
+                        {
+                            replication_phases_tissues.push_back(num_Phases);
+                            cout << "Number of phases: " << replication_phases_tissues[replication_phases_tissues.size() - 1] << endl;
+
+                            for (int rep_Phase = 0; rep_Phase < num_Phases; rep_Phase++)
+                            {
+                                string phase_keyword = "Phase " + to_string(rep_Phase + 1);
+                                string phase_Mode = phase_keyword + " Mode";
+                                string phase_Time_ratio = phase_keyword + " Time ratio";
+                            }
+                        }
+                        else
+                        {
+                            cout << "ERROR: " << profile + 1 << " PROFILE TISSUE: " << tissue + 1 << " CANNOT HAVE LESS THAN ONE PHASES." << endl;
+                            exit(-1);
+                        }
+                        cout << endl;
                     }
 
                     cout << endl;
