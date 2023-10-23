@@ -129,12 +129,8 @@ private:
 
     float **profile_tissue_Limits;
 
-    int *tissue_param_profile_Stride;
-    vector<vector<int>> replication_phases_Profile_tissues;
-
-    vector<float> time_Ratios;
-    vector<string> phase_Type;
-    vector<pair<float, float>> phase_paramaters;
+    int *num_replication_phases;
+    float **tissue_replication_data;
 
     string output_Network_location = "";
     string network_File_location = "";

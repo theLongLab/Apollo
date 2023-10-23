@@ -480,6 +480,13 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         {
             cout << number_of_node_Profiles << " node profiles present" << endl;
 
+            int *tissue_param_profile_Stride;
+            vector<vector<int>> replication_phases_Profile_tissues;
+
+            vector<float> time_Ratios;
+            vector<string> phase_Type;
+            vector<pair<float, float>> phase_paramaters;
+
             // (int *)malloc(infectious_tissues * sizeof(int));
             node_profile_Distributions = (float *)malloc(sizeof(float) * number_of_node_Profiles);
             profile_tissue_Limits = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * number_of_node_Profiles, 3, 0);
@@ -597,6 +604,44 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                                 string phase_keyword = "Phase " + to_string(rep_Phase + 1);
                                 string phase_Mode = phase_keyword + " Mode";
                                 string phase_Time_ratio = phase_keyword + " Time ratio";
+
+                                phase_Type.push_back(Parameters.get_STRING(replication_Phases_Block, phase_Mode));
+                                time_Ratios.push_back(Parameters.get_FLOAT(replication_Phases_Block, phase_Time_ratio));
+
+                                transform(phase_Type[phase_Type.size() - 1].begin(), phase_Type[phase_Type.size() - 1].end(), phase_Type[phase_Type.size() - 1].begin(), ::toupper);
+
+                                if (phase_Type[phase_Type.size() - 1] == "NEUTRAL")
+                                {
+                                    phase_paramaters.push_back(make_pair(-1, -1));
+                                }
+                                else if (phase_Type[phase_Type.size() - 1] == "STATIONARY")
+                                {
+                                    phase_paramaters.push_back(make_pair(Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Variance"), -1));
+                                }
+                                else if (phase_Type[phase_Type.size() - 1] == "DEPRICIATION")
+                                {
+                                    phase_paramaters.push_back(make_pair(Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Alpha"), Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Beta")));
+                                }
+                                else
+                                {
+                                    cout << "ERROR " << profile + 1 << " PROFILE TISSUE: " << tissue + 1 << "TISSUE REPLICATION MODE HAS TO BE ONE OF NEUTRAL, STATIONARY OT DEPRICIATION.\n";
+                                    exit(-1);
+                                }
+
+                                cout << "\nPhase " << rep_Phase + 1 << ": \n";
+                                cout << "Mode: " << phase_Type[phase_Type.size() - 1] << endl;
+                                // CHECK TIME RATIO ADDITIONS
+                                cout << "Time ratio: " << time_Ratios[time_Ratios.size() - 1] << endl;
+
+                                if (phase_paramaters[phase_paramaters.size() - 1].first != -1 && phase_paramaters[phase_paramaters.size() - 1].second == -1)
+                                {
+                                    cout << "Variance of Stationary: " << phase_paramaters[phase_paramaters.size() - 1].first << endl;
+                                }
+                                else if (phase_paramaters[phase_paramaters.size() - 1].first != -1 && phase_paramaters[phase_paramaters.size() - 1].second != -1)
+                                {
+                                    cout << "Alpha of Depriciation: " << phase_paramaters[phase_paramaters.size() - 1].first;
+                                    cout << " ; Beta of Depriciation: " << phase_paramaters[phase_paramaters.size() - 1].second << endl;
+                                }
                             }
                         }
                         else
@@ -606,6 +651,9 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                         }
                         cout << endl;
                     }
+
+                    replication_phases_Profile_tissues.push_back(replication_phases_tissues);
+                    tissue_param_profile_Stride[profile + 1] = phase_Type.size();
 
                     cout << endl;
                 }
@@ -618,6 +666,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
             // Finally check profiles distributions
             float distribution_Check = 0;
+            cout << "Final configuration of profiles\n";
             cout << "Performing profile distribution check: ";
             for (int profile = 0; profile < number_of_node_Profiles; profile++)
             {
@@ -632,6 +681,96 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             {
                 cout << "\nDistribution check passed\n";
             }
+
+            cout << endl;
+
+            cout << "Performing profile tissue configurations and checks: \n";
+            num_replication_phases = (int *)malloc(sizeof(int) * number_of_node_Profiles * num_tissues_per_Node);
+            tissue_replication_data = functions.create_Fill_2D_array_FLOAT(time_Ratios.size(), 4, -1);
+
+            for (int profile = 0; profile < number_of_node_Profiles; profile++)
+            {
+                cout << "\nConfiguring Profile " << profile + 1 << endl;
+                vector<int> phases_per_Tissue = replication_phases_Profile_tissues[profile];
+
+                for (int tissue = 0; tissue < phases_per_Tissue.size(); tissue++)
+                {
+                    num_replication_phases[(profile * num_tissues_per_Node) + tissue] = phases_per_Tissue[tissue];
+                }
+
+                int tissue = 0;
+                int num_phases_per_tissue = 0;
+
+                float time_Check = 0;
+
+                for (int param_Index = tissue_param_profile_Stride[profile]; param_Index < tissue_param_profile_Stride[profile + 1]; param_Index++)
+                {
+                    tissue_replication_data[param_Index][0] = time_Ratios[param_Index];
+
+                    time_Check = time_Check + tissue_replication_data[param_Index][0];
+
+                    num_phases_per_tissue++;
+
+                    if (num_phases_per_tissue == num_replication_phases[(profile * num_tissues_per_Node) + tissue])
+                    {
+                        num_phases_per_tissue = 0;
+                        tissue++;
+                        if (time_Check == 1)
+                        {
+                            cout << "Tissue " << tissue << " passed\n";
+                        }
+                        else
+                        {
+                            cout << "ERROR TISSUE " << tissue << " FAILED, PHASES SHOULD ADD TO 1 NOT " << time_Check << "\n";
+                            exit(-1);
+                        }
+                        time_Check = 0;
+                    }
+
+                    if (phase_Type[param_Index] == "NEUTRAL")
+                    {
+                        tissue_replication_data[param_Index][1] = 0;
+                    }
+                    else if (phase_Type[param_Index] == "STATIONARY")
+                    {
+                        tissue_replication_data[param_Index][1] = 1;
+                        tissue_replication_data[param_Index][2] = phase_paramaters[param_Index].first;
+                    }
+                    else if (phase_Type[param_Index] == "DEPRICIATION")
+                    {
+                        tissue_replication_data[param_Index][1] = 2;
+                        tissue_replication_data[param_Index][2] = phase_paramaters[param_Index].first;
+                        tissue_replication_data[param_Index][3] = phase_paramaters[param_Index].second;
+                    }
+                }
+            }
+
+            // for (int profile = 0; profile < number_of_node_Profiles; profile++)
+            // {
+            //     cout << "Profile :" << profile + 1 << endl;
+
+            //     vector<int> phases_per_Tissue = replication_phases_Profile_tissues[profile];
+
+            //     int tissue = 0;
+            //     int phase_Count = 0;
+
+            //     cout << "Tissue: " << tissue + 1 << endl;
+
+            //     for (size_t i = tissue_param_profile_Stride[profile]; i < tissue_param_profile_Stride[profile + 1]; i++)
+            //     {
+            //         cout << "Time: " << time_Ratios[i] << endl;
+            //         phase_Count++;
+
+            //         if (phase_Count == phases_per_Tissue[tissue])
+            //         {
+            //             cout << "********\n";
+            //             tissue++;
+            //             cout << "Tissue: " << tissue + 1 << endl;
+            //             phase_Count = 0;
+            //         }
+            //     }
+            //     break;
+            // }
         }
         else
         {

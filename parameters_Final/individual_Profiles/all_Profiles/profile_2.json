@@ -33,7 +33,7 @@
 
       "Replication phases":{
 
-        "Number of phases":1,
+        "Number of phases":2,
 
         "Phase 1 Mode":"Neutral",
         "Phase 1 Time ratio":"0.5",
@@ -61,7 +61,7 @@
         "Phase 2 Variance":"100",
 
         "Phase 3 Mode":"Depriciation",
-        "Phase 2 Time ratio":"0.3",
+        "Phase 3 Time ratio":"0.3",
         "Phase 3 Alpha":"100",
         "Phase 3 Beta":"100",
       },
