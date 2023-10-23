@@ -1317,6 +1317,212 @@ void network::ncbi_find_conserved()
     align_Write.close();
 }
 
+void network::ncbi_gene_Count()
+{
+    functions_library function = functions_library();
+
+    cout << "NCBI files\n\n";
+
+    string primary_Location = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Dr_Koul/New test";
+
+    string output_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/";
+    function.config_Folder("/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/", "Sequence folder");
+
+    vector<string> folders;
+    set<string> gene_Names;
+
+    cout << "Looking for folders in: " << primary_Location << endl
+         << endl;
+
+    for (const auto &entry : filesystem::directory_iterator(primary_Location))
+    {
+        if (filesystem::is_directory(entry.status()))
+        {
+            string folder_Name = entry.path().filename().string();
+            folders.push_back(folder_Name);
+        }
+    }
+
+    cout << folders.size() << " folders found\n\n";
+
+    vector<vector<pair<string, int>>> gene_Count_Folder;
+
+    for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
+    {
+        cout << "Reading folder: " << folders[folder_ID] << endl
+             << endl;
+
+        string nest_Location = primary_Location + "/" + folders[folder_ID] + "/ncbi_dataset/data";
+        vector<string> sequence_GFF_folders;
+
+        for (const auto &entry : filesystem::directory_iterator(nest_Location))
+        {
+            if (filesystem::is_directory(entry.status()))
+            {
+                string folder_Name = entry.path().filename().string();
+                sequence_GFF_folders.push_back(folder_Name);
+                // cout << folder_Name << endl;
+            }
+        }
+
+        cout << sequence_GFF_folders.size() << " sequence folders found\n\n";
+        vector<pair<string, int>> gene_Count_Folder_ONLY;
+
+        for (int seq_Folder_ID = 0; seq_Folder_ID < sequence_GFF_folders.size(); seq_Folder_ID++)
+        {
+            cout << "Processing: " << sequence_GFF_folders[seq_Folder_ID] << endl
+                 << endl;
+
+            string sequence_Folder_location = nest_Location + "/" + sequence_GFF_folders[seq_Folder_ID];
+
+            string fna_File = "";
+            string gff_File = "";
+
+            for (const auto &entry : filesystem::directory_iterator(sequence_Folder_location))
+            {
+                if (filesystem::is_regular_file(entry.status()))
+                {
+                    string file_Query = entry.path().filename().string();
+                    // cout << file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) << endl;
+                    if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fna" || file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fasta")
+                    {
+                        fna_File = file_Query;
+                    }
+                    else if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".gff")
+                    {
+                        gff_File = file_Query;
+                    }
+                }
+            }
+            cout << "GFF file\t: " << gff_File << "\n"
+                 << "Sequence file: " << fna_File << endl
+                 << endl;
+
+            if (gff_File != "" && fna_File != "")
+            {
+                fstream gff_Read;
+                gff_Read.open(sequence_Folder_location + "/" + gff_File, ios::in);
+
+                if (gff_Read.is_open())
+                {
+                    cout << "Processing GFF file\n";
+
+                    string line;
+
+                    while (getline(gff_Read, line))
+                    {
+                        if (line.at(0) != '#')
+                        {
+                            break;
+                        }
+                    }
+
+                    do
+                    {
+                        vector<string> line_Split;
+                        function.split(line_Split, line, '\t');
+
+                        if (line_Split[1] == "RefSeq")
+                        {
+                            if (line_Split[2] == "gene")
+                            {
+                                string seq_ID = line_Split[0];
+                                int start = stoi(line_Split[3]) - 1;
+                                int stop = stoi(line_Split[4]);
+
+                                string gene_Name;
+
+                                // cout << seq_ID << "\t";
+                                // cout << start << "\t";
+                                // cout << stop << endl;
+
+                                vector<string> description_Split;
+                                function.split(description_Split, line_Split[line_Split.size() - 1], ';');
+                                for (string sub_Split : description_Split)
+                                {
+                                    vector<string> sub_Split_vector;
+                                    function.split(sub_Split_vector, sub_Split, '=');
+                                    if (sub_Split_vector[0] == "Name")
+                                    {
+                                        gene_Name = sub_Split_vector[1];
+                                        break;
+                                    }
+                                }
+
+                                int already_Present = 0;
+                                for (int check_Name = 0; check_Name < gene_Count_Folder_ONLY.size(); check_Name++)
+                                {
+                                    if (gene_Count_Folder_ONLY[check_Name].first == gene_Name)
+                                    {
+                                        gene_Count_Folder_ONLY[check_Name].second = gene_Count_Folder_ONLY[check_Name].second + 1;
+                                        already_Present = 1;
+                                        break;
+                                    }
+                                }
+
+                                if (already_Present == 0)
+                                {
+                                    gene_Count_Folder_ONLY.push_back(make_pair(gene_Name, 1));
+                                    gene_Names.emplace(gene_Name);
+                                }
+                            }
+                        }
+                        getline(gff_Read, line);
+                    } while (line.at(0) != '#');
+                    gff_Read.close();
+                }
+            }
+        }
+        gene_Count_Folder.push_back(gene_Count_Folder_ONLY);
+    }
+
+    cout << "\n\nWriing summary\n\n";
+
+    string final_Summary = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/gene_Sequences/gene_Count.csv";
+
+    string header = "Gene_name";
+
+    for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
+    {
+        header = header + "\t" + folders[folder_ID];
+    }
+
+    function.config_File_delete_create(final_Summary, header);
+    fstream summary_Write;
+    summary_Write.open(final_Summary, ios::app);
+
+    for (const string &element : gene_Names)
+    {
+        summary_Write << element;
+        for (int folder_ID = 0; folder_ID < folders.size(); folder_ID++)
+        {
+            vector<pair<string, int>> gene_Count_Folder_ONLY;
+            gene_Count_Folder_ONLY = gene_Count_Folder[folder_ID];
+
+            int found = 0;
+
+            for (int get_Gene = 0; get_Gene < gene_Count_Folder_ONLY.size(); get_Gene++)
+            {
+                if (gene_Count_Folder_ONLY[get_Gene].first == element)
+                {
+                    summary_Write << "\t" << gene_Count_Folder_ONLY[get_Gene].second;
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (found == 0)
+            {
+                summary_Write << "\t0";
+            }
+        }
+        summary_Write << "\n";
+    }
+    summary_Write.close();
+
+    cout << "Done\n\n";
+}
+
 void network::ncbi_Read()
 {
     functions_library function = functions_library();

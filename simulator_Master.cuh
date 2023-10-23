@@ -150,4 +150,6 @@ public:
     void RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
 
     void node_Master_Manager(functions_library &functions);
+
+    void sequence_Master_Manager(functions_library &functions);
 };

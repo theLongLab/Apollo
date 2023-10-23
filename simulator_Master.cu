@@ -207,10 +207,17 @@ void simulator_Master::ingress()
 
     network_Manager(each_Nodes_Connection, functions);
 
-    cout << "STEP 2: Configuring within host mechanics\n\n";
+    cout << "STEP 2: Configuring node profiles and within host mechanics\n\n";
     node_Master_Manager(functions);
 
-    cout << "STEP 3: Configuring of Population profiles\n\n";
+    cout << "STEP 3: Configuring sequence profiles\n\n";
+    sequence_Master_Manager(functions);
+}
+
+void simulator_Master::sequence_Master_Manager(functions_library &functions)
+{
+    parameter_load Parameters = parameter_load();
+    
 }
 
 void simulator_Master::node_Master_Manager(functions_library &functions)
