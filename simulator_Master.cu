@@ -15,7 +15,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Output folders\"",
         "\"Multi read\"",
         "\"Network profile\"",
-        "\"Nodes master profile\""};
+        "\"Nodes master profile\"",
+        "\"Sequence master profile\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -32,8 +33,11 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     network_File_location = output_Network_location + "/node_node_Relationships.csv";
     function.create_File(network_File_location, "Source\tTarget");
 
-    cout << "\nConfiguring parameter profiles:\n";
+    cout << "\nConfiguring node master profiles:\n";
     node_Master_location = Parameters.get_STRING(found_Parameters[7]);
+
+    cout << "\nConfiguring sequence master profiles:\n";
+    sequence_Master_location = Parameters.get_STRING(found_Parameters[8]);
 
     cout << "\nConfiguring hardware resources:\n\n";
     this->CPU_cores = Parameters.get_INT(found_Parameters[1]);
@@ -217,7 +221,102 @@ void simulator_Master::ingress()
 void simulator_Master::sequence_Master_Manager(functions_library &functions)
 {
     parameter_load Parameters = parameter_load();
-    
+    cout << "Loading sequence master profile: " << this->sequence_Master_location << endl;
+
+    vector<string> parameters_List = {
+        "\"Parent sequences folder\"",
+        "\"Mutation availability\"",
+        "\"Recombination availability\"",
+        "\"Reference Fitness\"",
+        "\"Reference Survivability\""};
+
+    vector<string> found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+
+    parent_Sequence_Folder = Parameters.get_STRING(found_Parameters[0]);
+    cout << "\nParent sequences folder: " << parent_Sequence_Folder << endl;
+
+    cout << "\nConfiguring reference genome parameters:\n";
+    Reference_fitness_survivability_proof_reading = (float *)malloc(sizeof(float) * 3);
+
+    cout << "Reference Fitness: ";
+    Reference_fitness_survivability_proof_reading[0] = Parameters.get_FLOAT(found_Parameters[3]);
+    cout << Reference_fitness_survivability_proof_reading[0] << endl;
+
+    cout << "Reference Survivability: ";
+    Reference_fitness_survivability_proof_reading[1] = Parameters.get_FLOAT(found_Parameters[4]);
+    cout << Reference_fitness_survivability_proof_reading[1] << endl;
+
+    mutation_recombination_proof_Reading_availability = (int *)malloc(sizeof(int) * 3);
+    cout << "\nSequence mechanisms: \n";
+
+    string status;
+
+    for (int i = 1; i <= 2; i++)
+    {
+        status = Parameters.get_STRING(found_Parameters[i]);
+        transform(status.begin(), status.end(), status.begin(), ::toupper);
+
+        if (i == 1)
+        {
+            cout << "Mutations: ";
+        }
+        else
+        {
+            cout << "Recombinations: ";
+        }
+        if (status == "YES")
+        {
+            mutation_recombination_proof_Reading_availability[i - 1] = 1;
+            cout << "Active\n";
+
+            if (i == 1)
+            {
+                vector<string> parameter_Proof_Reading = {"\"Proof reading availability\""};
+                vector<string> found_Proof_Reading = Parameters.get_parameters(sequence_Master_location, parameter_Proof_Reading);
+
+                transform(found_Proof_Reading[0].begin(), found_Proof_Reading[0].end(), found_Proof_Reading[0].begin(), ::toupper);
+
+                cout << "Proof reading: ";
+                if (Parameters.get_STRING(found_Proof_Reading[0]) == "YES")
+                {
+                    mutation_recombination_proof_Reading_availability[2] = 1;
+                    cout << "Active\n";
+
+                    parameter_Proof_Reading = {"\"Reference Proof Reading\""};
+                    found_Proof_Reading = Parameters.get_parameters(sequence_Master_location, parameter_Proof_Reading);
+                    cout << "Reference Proof reading: ";
+                    Reference_fitness_survivability_proof_reading[2] = Parameters.get_FLOAT(found_Proof_Reading[0]);
+                    cout << Reference_fitness_survivability_proof_reading[2] << endl;
+                }
+                else
+                {
+                    mutation_recombination_proof_Reading_availability[2] = 0;
+                    Reference_fitness_survivability_proof_reading[2] = -1;
+                    cout << "Not active\n";
+                }
+            }
+        }
+        else
+        {
+            mutation_recombination_proof_Reading_availability[i - 1] = 0;
+            if (i == 1)
+            {
+                mutation_recombination_proof_Reading_availability[2] = 0;
+                Reference_fitness_survivability_proof_reading[2] = -1;
+            }
+            cout << "Not active\n";
+        }
+    }
+
+    cout << "Configuring profiles\n";
+    if (mutation_recombination_proof_Reading_availability[0] == 1 || mutation_recombination_proof_Reading_availability[1] == 1)
+    {
+        parameters_List = {
+            "\"Fitness profile file\"",
+            "\"Survivability profile file\""};
+
+        found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+    }
 }
 
 void simulator_Master::node_Master_Manager(functions_library &functions)

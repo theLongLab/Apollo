@@ -53,6 +53,7 @@ private:
     string intermediate_sequence_Store;
 
     string node_Master_location;
+    string sequence_Master_location;
 
     string multi_Read;
 
@@ -131,6 +132,15 @@ private:
 
     int *num_replication_phases;
     float **tissue_replication_data;
+
+    string parent_Sequence_Folder;
+    // row 0 = mutations
+    // row 1 = recombination
+    // row 2 = proof reading
+    // 0 = inactive 1 = activated
+    int *mutation_recombination_proof_Reading_availability;
+
+    float *Reference_fitness_survivability_proof_reading;
 
     string output_Network_location = "";
     string network_File_location = "";

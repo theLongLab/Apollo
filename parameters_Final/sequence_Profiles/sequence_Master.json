@@ -2,15 +2,16 @@
   # Contains all intial sequences
   "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/reference_Genomes",
 
-  "Fitness profile file":"/mnt/FITNESS_profile.csv",
-  "Survivability profile file":"/mnt/SURVIVABILITY_profile.csv",
+  "Mutation availability":"Yes",
+
+  "Fitness profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/profiles/sequence_Fitness_Profile.csv",
+  "Survivability profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/profiles/sequence_Survivability_Profile.csv",
 
   "Proof reading availability":"Yes",
-  "Proof reading profile file":"/mnt/PROOF_READING_profile.csv",
+  "Proof reading profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/profiles/sequence_Proof_Reading_Profile.csv"",
 
-  "Mutation availability":"Yes",
   "Recombination availability":"Yes",
-  "Recombination profiles folder":"/mnt/Recombination_Profiles/",
+  "Recombination profiles folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/recombination_profiles",
 
   "Reference Fitness":"1",
   "Reference Survivability":"0.5",
