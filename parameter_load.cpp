@@ -178,6 +178,89 @@ string parameter_load::get_STRING(string value)
     return (value.substr(1, value.length() - 2));
 }
 
+float **parameter_load::get_Profile_Array(string profile_File_location, int &num_Sites, functions_library &function)
+{
+    float **profile_Array;
+
+    num_Sites = 0;
+
+    fstream profile_File;
+    profile_File.open(profile_File_location, ios::in);
+
+    if (profile_File.is_open())
+    {
+        cout << "Reading profile file: " << profile_File_location << endl;
+        string line;
+        getline(profile_File, line);
+
+        vector<string> line_Data_Positions;
+
+        char split_Char = ',';
+
+        // getline(profile_File, line);
+        // cout << line << endl;
+
+        function.split(line_Data_Positions, line, split_Char);
+
+        if (line_Data_Positions.size() == 1)
+        {
+            split_Char = '\t';
+            function.split(line_Data_Positions, line, split_Char);
+        }
+
+        if (line_Data_Positions.size() == 1)
+        {
+            cout << "ERROR: PROFILE FILE SHOULD BE COMMA(,) OR TAB DELIMITED.\n";
+            exit(-1);
+        }
+
+        vector<int> positions;
+        num_Sites = line_Data_Positions.size() - 1;
+
+        for (int column = 1; column < line_Data_Positions.size(); column++)
+        {
+            positions.push_back(stoi(line_Data_Positions[column]));
+        }
+
+        sort(positions.begin(), positions.end());
+
+        // for (const auto &pair : positions)
+        // {
+        //     cout << pair.first << ", " << pair.second << endl;
+        // }
+
+        profile_Array = function.create_FLOAT_2D_arrays(num_Sites, 5);
+
+        for (int position = 0; position < positions.size(); position++)
+        {
+            profile_Array[position][0] = positions[position];
+        }
+
+        vector<string> line_Data;
+
+        while (getline(profile_File, line))
+        {
+            function.split(line_Data, line, split_Char);
+
+            int base_Index = function.get_base_Index(line_Data[0]) + 1;
+
+            for (int column = 1; column < line_Data.size(); column++)
+            {
+                profile_Array[function.binary_Search(positions, stoi(line_Data_Positions[column]))][base_Index] = stof(line_Data[column]);
+            }
+        }
+
+        profile_File.close();
+    }
+    else
+    {
+        cout << "ERROR: UNABLE TO OPEN PROFILE FILE: " << profile_File_location << endl;
+        exit(-1);
+    }
+
+    return profile_Array;
+}
+
 vector<pair<string, string>> parameter_load::get_block_from_File(string &file_parameter_Location, string block_Header)
 {
     vector<pair<string, string>> block_Data;

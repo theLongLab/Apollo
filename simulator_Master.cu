@@ -308,7 +308,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         }
     }
 
-    cout << "Configuring profiles\n";
+    cout << "\nConfiguring profiles:\n\n";
     if (mutation_recombination_proof_Reading_availability[0] == 1 || mutation_recombination_proof_Reading_availability[1] == 1)
     {
         parameters_List = {
@@ -316,6 +316,88 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
             "\"Survivability profile file\""};
 
         found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+
+        string fitness_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+        string survivability_Profile_Location = Parameters.get_STRING(found_Parameters[1]);
+
+        num_effect_Segregating_sites = (int *)malloc(sizeof(int) * 3);
+
+        if (fitness_Profile_Location != "NA")
+        {
+            sequence_Fitness_changes = Parameters.get_Profile_Array(fitness_Profile_Location, num_effect_Segregating_sites[0], functions);
+
+            cout << "Printing Fitness matrix:\n";
+
+            for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
+            {
+                for (int col = 0; col < 5; col++)
+                {
+                    cout << sequence_Fitness_changes[row][col] << "\t";
+                }
+                cout << endl;
+            }
+            cout << endl;
+        }
+        else
+        {
+            cout << "No fitness profile\n\n";
+            num_effect_Segregating_sites[0] = 0;
+        }
+
+        if (survivability_Profile_Location != "NA")
+        {
+            sequence_Survivability_changes = Parameters.get_Profile_Array(survivability_Profile_Location, num_effect_Segregating_sites[1], functions);
+
+            cout << "Printing Survivability matrix:\n";
+
+            for (int row = 0; row < num_effect_Segregating_sites[1]; row++)
+            {
+                for (int col = 0; col < 5; col++)
+                {
+                    cout << sequence_Survivability_changes[row][col] << "\t";
+                }
+                cout << endl;
+            }
+            cout << endl;
+        }
+        else
+        {
+            cout << "No survivability profile\n\n";
+            num_effect_Segregating_sites[1] = 0;
+        }
+
+        if (mutation_recombination_proof_Reading_availability[0] == 1)
+        {
+            if (mutation_recombination_proof_Reading_availability[2] == 1)
+            {
+                parameters_List = {
+                    "\"Proof reading profile file\""};
+
+                found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+                string proof_Reading_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+
+                if (proof_Reading_Profile_Location != "NA")
+                {
+                    sequence_Proof_reading_changes = Parameters.get_Profile_Array(proof_Reading_Profile_Location, num_effect_Segregating_sites[2], functions);
+
+                    cout << "Printing Proof reading matrix:\n";
+
+                    for (int row = 0; row < num_effect_Segregating_sites[2]; row++)
+                    {
+                        for (int col = 0; col < 5; col++)
+                        {
+                            cout << sequence_Proof_reading_changes[row][col] << "\t";
+                        }
+                        cout << endl;
+                    }
+                }
+                else
+                {
+                    cout << "No proof reading profile\n\n";
+                    num_effect_Segregating_sites[2] = 0;
+                }
+            }
+        }
     }
 }
 

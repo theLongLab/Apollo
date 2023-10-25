@@ -43,4 +43,6 @@ public:
     float get_FLOAT(vector<pair<string, string>> block, string value);
 
     vector<string> clean_Line(string line, functions_library &function);
+
+    float **get_Profile_Array(string profile_File_location, int &num_Sites, functions_library &function);
 };

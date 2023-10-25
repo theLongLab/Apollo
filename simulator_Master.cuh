@@ -142,6 +142,21 @@ private:
 
     float *Reference_fitness_survivability_proof_reading;
 
+    // columns
+    // 0 = position-1;
+    // 1 = A
+    // 2 = T
+    // 3 = G
+    // 4 = C
+    float **sequence_Fitness_changes;
+    float **sequence_Survivability_changes;
+    float **sequence_Proof_reading_changes;
+
+    // 0 = fitness
+    // 1 = survivability
+    // 2 = proof reading
+    int *num_effect_Segregating_sites;
+
     string output_Network_location = "";
     string network_File_location = "";
 

@@ -888,6 +888,57 @@ int **functions_library::progeny_distribution_CUDA(string &distribution_Type, in
     return cuda_Progeny_numbers;
 }
 
+int functions_library::get_base_Index(string base)
+{
+    if (base == "A" || base == "a")
+    {
+        return 0;
+    }
+    else if (base == "T" || base == "t")
+    {
+        return 1;
+    }
+    else if (base == "G" || base == "g")
+    {
+        return 2;
+    }
+    else if (base == "C" || base == "c")
+    {
+        return 3;
+    }
+    else
+    {
+        cout << "BASES SHOULD BE EITHER A, T , G OR C\n";
+        exit(-1);
+    }
+}
+
+int functions_library::binary_Search(vector<int> &values, int value)
+{
+    int top = 0;
+    int bottom = values.size() - 1;
+
+    while (top <= bottom)
+    {
+        int mid = top + (bottom - top) / 2;
+
+        if (values[mid] == value)
+        {
+            return mid;
+        }
+        else if (values[mid] < value)
+        {
+            top = mid + 1;
+        }
+        else
+        {
+            bottom = mid - 1;
+        }
+    }
+
+    return -1;
+}
+
 void functions_library::get_base_mutation(string query, char &base, int &mutation)
 {
     base = toupper(query.at(0));

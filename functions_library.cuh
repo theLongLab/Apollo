@@ -230,4 +230,7 @@ public:
 
     // void split(vector<string> &line_Data, string line, char delim);
 
+    int get_base_Index(string base);
+
+    int binary_Search(vector<int> &values, int value);
 };
