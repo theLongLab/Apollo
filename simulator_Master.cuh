@@ -157,6 +157,16 @@ private:
     // 2 = proof reading
     int *num_effect_Segregating_sites;
 
+    int mutation_Hotspots = 0;
+    int recombination_Hotspots = 0;
+
+    float **A_0_mutation;
+    float **T_1_mutation;
+    float **G_2_mutation;
+    float **C_3_mutation;
+
+    float **mutation_hotspot_parameters;
+
     string output_Network_location = "";
     string network_File_location = "";
 

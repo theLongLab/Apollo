@@ -397,6 +397,120 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                     num_effect_Segregating_sites[2] = 0;
                 }
             }
+
+            // CREATE MUTATION ARRAYs
+            vector<pair<string, string>> mutations_Block = Parameters.get_block_from_File(sequence_Master_location, "Mutations");
+
+            mutation_Hotspots = Parameters.get_INT(mutations_Block, "Number of hotspots");
+
+            if (mutation_Hotspots > 0)
+            {
+                cout << "\nProcessing " << this->mutation_Hotspots << " mutation hotspots: \n";
+                A_0_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
+                T_1_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
+                G_2_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
+                C_3_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
+
+                mutation_hotspot_parameters = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 5, -1);
+
+                for (int mutation_hotspot = 0; mutation_hotspot < mutation_Hotspots; mutation_hotspot++)
+                {
+                    string hotspot_ID = "Hotspot " + to_string(mutation_hotspot + 1);
+                    cout << "\nProcessing: " << hotspot_ID << endl;
+                    vector<pair<string, string>> mutations_hotspot_Block = Parameters.get_block_from_block(mutations_Block, hotspot_ID);
+
+                    string region = Parameters.get_STRING(mutations_hotspot_Block, "Region");
+                    string clock_Model = Parameters.get_STRING(mutations_hotspot_Block, "Clock model");
+                    transform(clock_Model.begin(), clock_Model.end(), clock_Model.begin(), ::toupper);
+
+                    vector<string> split_Region;
+                    functions.split(split_Region, region, '_');
+
+                    mutation_hotspot_parameters[mutation_hotspot][0] = stof(split_Region[0]);
+                    mutation_hotspot_parameters[mutation_hotspot][1] = stof(split_Region[1]);
+                    cout << "Region: From " << mutation_hotspot_parameters[mutation_hotspot][0] << " to " << mutation_hotspot_parameters[mutation_hotspot][1] << endl;
+
+                    cout << "Clock model: " << clock_Model << endl;
+
+                    if (clock_Model == "POISSON")
+                    {
+                        mutation_hotspot_parameters[mutation_hotspot][2] = 0;
+                        mutation_hotspot_parameters[mutation_hotspot][3] = Parameters.get_FLOAT(mutations_hotspot_Block, "Clock model Poisson mean");
+
+                        cout << "Poisson mean: " << mutation_hotspot_parameters[mutation_hotspot][3] << endl;
+                    }
+                    else if (clock_Model == "NEGATIVE BINOMIAL")
+                    {
+                        mutation_hotspot_parameters[mutation_hotspot][2] = 1;
+                        mutation_hotspot_parameters[mutation_hotspot][3] = Parameters.get_FLOAT(mutations_hotspot_Block, "Clock model Negative Binomial sucesses");
+                        mutation_hotspot_parameters[mutation_hotspot][4] = Parameters.get_FLOAT(mutations_hotspot_Block, "Clock model Negative Binomial probability");
+
+                        cout << "Negative Binomial sucesses: " << mutation_hotspot_parameters[mutation_hotspot][3] << endl;
+                        cout << "Negative Binomial probability: " << mutation_hotspot_parameters[mutation_hotspot][4] << endl;
+                    }
+                    else if (clock_Model == "FIXED")
+                    {
+                        mutation_hotspot_parameters[mutation_hotspot][2] = 2;
+                        mutation_hotspot_parameters[mutation_hotspot][3] = Parameters.get_FLOAT(mutations_hotspot_Block, "Clock model Fixed probability");
+
+                        cout << "Fixed probability: " << mutation_hotspot_parameters[mutation_hotspot][3] << endl;
+                    }
+                    else
+                    {
+                        cout << "HOTSPOT " << mutation_hotspot + 1 << "'S CLOCK MODEL HAS TO BE POISSON, NEGATIVE BINOMIAL OR FIXED.\n";
+                        exit(-1);
+                    }
+
+                    vector<string> bases = {"A", "T", "G", "C"};
+
+                    cout << "\nConfiguring mutation probabilities:\n";
+
+                    for (int reference_Base = 0; reference_Base < bases.size(); reference_Base++)
+                    {
+                        for (int mutation_Base = 0; mutation_Base < bases.size(); mutation_Base++)
+                        {
+                            string search_Query = bases[reference_Base] + bases[mutation_Base];
+                            cout << search_Query << ": ";
+
+                            if (reference_Base == 0)
+                            {
+                                A_0_mutation[mutation_hotspot][mutation_Base] = Parameters.get_FLOAT(mutations_hotspot_Block, search_Query);
+                                cout << A_0_mutation[mutation_hotspot][mutation_Base];
+                            }
+                            else if (reference_Base == 1)
+                            {
+                                T_1_mutation[mutation_hotspot][mutation_Base] = Parameters.get_FLOAT(mutations_hotspot_Block, search_Query);
+                                cout << T_1_mutation[mutation_hotspot][mutation_Base];
+                            }
+                            else if (reference_Base == 2)
+                            {
+                                G_2_mutation[mutation_hotspot][mutation_Base] = Parameters.get_FLOAT(mutations_hotspot_Block, search_Query);
+                                cout << G_2_mutation[mutation_hotspot][mutation_Base];
+                            }
+                            else
+                            {
+                                C_3_mutation[mutation_hotspot][mutation_Base] = Parameters.get_FLOAT(mutations_hotspot_Block, search_Query);
+                                cout << C_3_mutation[mutation_hotspot][mutation_Base];
+                            }
+
+                            if ((mutation_Base + 1) != bases.size())
+                            {
+                                cout << " | ";
+                            }
+                        }
+                        cout << endl;
+                    }
+                }
+            }
+            else
+            {
+                cout << "No mutational hotspots present to configure.\n";
+            }
+        }
+
+        if (mutation_recombination_proof_Reading_availability[1] == 1)
+        {
+            
         }
     }
 }

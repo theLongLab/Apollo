@@ -20,11 +20,11 @@
 
   "Mutations":{
 
-    "Number of regions":2,
+    "Number of hotspots":2,
 
     "Hotspot 1":{
 
-      "Region":"100:2000",
+      "Region":"100_2000",
       # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
       "Clock model":"Poisson",
 
@@ -56,7 +56,7 @@
 
     "Hotspot 2":{
 
-      "Region":"10000:20000",
+      "Region":"10000_20000",
       # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
       "Clock model":"Negative Binomial",
 
@@ -80,10 +80,10 @@
       "TA":"0.25",
       "TG":"0.25",
 
-      "CT":"0.25",
-      "CC":"0.25",
-      "CA":"0.25",
-      "CG":"0.25"
+      "CT":"0.10",
+      "CC":"0.50",
+      "CA":"0.20",
+      "CG":"0.30"
     },
   },
 
@@ -92,19 +92,19 @@
     "Number of regions":3,
 
     "Hotspot 1":{
-      "Region":"100:200"
+      "Region":"100_200"
       "Reference probability of recombination":"0.5",
       "Reference selectivity":"1",
     },
 
     "Hotspot 2":{
-      "Region":"10:50"
+      "Region":"10_50"
       "Reference probability of recombination":"0.75",
       "Reference selectivity":"1",
     },
 
     "Hotspot 3":{
-      "Region":"10000:20000"
+      "Region":"10000_20000"
       "Reference probability of recombination":"0.05",
       "Reference selectivity":"1",
     },
