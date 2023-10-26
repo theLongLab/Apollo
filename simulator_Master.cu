@@ -510,7 +510,41 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
 
         if (mutation_recombination_proof_Reading_availability[1] == 1)
         {
-            
+            vector<pair<string, string>> recombinations_Block = Parameters.get_block_from_File(sequence_Master_location, "Recombination");
+
+            recombination_Hotspots = Parameters.get_INT(recombinations_Block, "Number of hotspots");
+
+            if (recombination_Hotspots > 0)
+            {
+                cout << "\nProcessing " << this->recombination_Hotspots << " recombination hotspots: \n";
+                recombination_hotspot_parameters = functions.create_Fill_2D_array_FLOAT(recombination_Hotspots, 4, -1);
+
+                for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
+                {
+                    string hotspot_ID = "Hotspot " + to_string(recombination_hotspot + 1);
+                    cout << "\nProcessing: " << hotspot_ID << endl;
+                    vector<pair<string, string>> recombination_hotspot_Block = Parameters.get_block_from_block(recombinations_Block, hotspot_ID);
+
+                    string region = Parameters.get_STRING(recombination_hotspot_Block, "Region");
+
+                    vector<string> split_Region;
+                    functions.split(split_Region, region, '_');
+
+                    recombination_hotspot_parameters[recombination_hotspot][0] = stof(split_Region[0]);
+                    recombination_hotspot_parameters[recombination_hotspot][1] = stof(split_Region[1]);
+                    cout << "Region: From " << recombination_hotspot_parameters[recombination_hotspot][0] << " to " << recombination_hotspot_parameters[recombination_hotspot][1] << endl;
+
+                    recombination_hotspot_parameters[recombination_hotspot][2] = Parameters.get_FLOAT(recombination_hotspot_Block, "Reference probability of recombination");
+                    recombination_hotspot_parameters[recombination_hotspot][3] = Parameters.get_FLOAT(recombination_hotspot_Block, "Reference selectivity");
+
+                    cout << "Reference probability of recombination: " << recombination_hotspot_parameters[recombination_hotspot][2] << endl;
+                    cout << "Reference selectivity: " << recombination_hotspot_parameters[recombination_hotspot][3] << endl;
+                }
+            }
+            else
+            {
+                cout << "No recombination hotspots present to configure.\n";
+            }
         }
     }
 }

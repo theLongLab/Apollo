@@ -166,6 +166,7 @@ private:
     float **C_3_mutation;
 
     float **mutation_hotspot_parameters;
+    float **recombination_hotspot_parameters;
 
     string output_Network_location = "";
     string network_File_location = "";

@@ -89,7 +89,7 @@
 
   "Recombination":{
 
-    "Number of regions":3,
+    "Number of hotspots":3,
 
     "Hotspot 1":{
       "Region":"100_200"
