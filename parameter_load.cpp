@@ -261,7 +261,7 @@ float **parameter_load::get_Profile_Array(string profile_File_location, int &num
     return profile_Array;
 }
 
-vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Parameters(string parameter, string hotspot, string path_to_file, functions_library &function, int &max)
+vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Parameters(string parameter, string hotspot, string path_to_file, functions_library &function, int &total)
 {
     vector<pair<int, vector<float>>> recom_matrix;
 
@@ -306,7 +306,7 @@ vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Param
             if (get_Hotspot_ID[1] == hotspot)
             {
                 transform(parameter.begin(), parameter.end(), parameter.begin(), ::toupper);
-                cout << "Extracting " << parameter << " mutation data from: " << path_to_file << endl;
+                cout << "Extracting " << parameter << " mutation data\nFrom: " << path_to_file << endl;
 
                 int catch_Parameter = 0;
 
@@ -324,12 +324,27 @@ vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Param
 
                 if (catch_Parameter == 1)
                 {
-                    cout << line_Data.size() - 1 << " mutation effect sites found" << endl;
-                    if (line_Data.size() - 1 > max)
+                    // int sites_Total = 0;
+                    vector<int> positions;
+                    for (int check_Data = 1; check_Data < line_Data.size(); check_Data++)
                     {
-                        max = line_Data.size() - 1;
+                        if (line_Data[check_Data].size() > 0)
+                        {
+                            positions.push_back(stoi(line_Data[check_Data]));
+                            // sites_Total++;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    for (int site = 1; site < line_Data.size(); site++)
+
+                    cout << positions.size() << " mutation effect sites found" << endl;
+                    // if (positions.size() > max)
+                    // {
+                    total = total + positions.size();
+                    //  }
+                    for (int site = 0; site < positions.size(); site++)
                     {
                         vector<float> bases;
                         for (int base = 0; base < 4; base++)
@@ -337,7 +352,43 @@ vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Param
                             bases.push_back(0);
                         }
 
-                        recom_matrix.push_back(make_pair(stoi(line_Data[site]), bases));
+                        recom_matrix.push_back(make_pair(positions[site], bases));
+                    }
+
+                    for (int base = 0; base < 4; base++)
+                    {
+                        getline(parameter_File, line);
+                        line_clean = function.clean_Line(line);
+
+                        function.split(line_Data, line_clean, split_Char);
+
+                        int base_Current = -1;
+                        if (line_Data[0] == "A" || line_Data[0] == "a")
+                        {
+                            base_Current = 0;
+                        }
+                        else if (line_Data[0] == "T" || line_Data[0] == "t")
+                        {
+                            base_Current = 1;
+                        }
+                        else if (line_Data[0] == "G" || line_Data[0] == "g")
+                        {
+                            base_Current = 2;
+                        }
+                        else if (line_Data[0] == "C" || line_Data[0] == "c")
+                        {
+                            base_Current = 3;
+                        }
+                        else
+                        {
+                            cout << "ERROR IN RECOMBINATION PARAMETER FILE, BASES SHOULD BE A, T. G OR C. NOT \"" << line_Data[0] << "\": " << path_to_file << endl;
+                            exit(-1);
+                        }
+
+                        for (int position = 0; position < positions.size(); position++)
+                        {
+                            recom_matrix[position].second[base_Current] = stof(line_Data[position + 1]);
+                        }
                     }
                 }
                 else

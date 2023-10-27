@@ -216,6 +216,8 @@ void simulator_Master::ingress()
 
     cout << "STEP 3: Configuring sequence profiles\n\n";
     sequence_Master_Manager(functions);
+
+    cout << "STEP 4: Assigning profiles to network nodes\n\n";
 }
 
 void simulator_Master::sequence_Master_Manager(functions_library &functions)
@@ -525,10 +527,10 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                 vector<vector<pair<int, vector<float>>>> recom_probability_Changes;
                 vector<vector<pair<int, vector<float>>>> recom_survivability_Changes;
 
-                int *max_prob_selectivity = (int *)malloc(sizeof(int) * 2);
+                tot_prob_selectivity = (int *)malloc(sizeof(int) * 2);
                 for (int fill = 0; fill < 2; fill++)
                 {
-                    max_prob_selectivity[fill] = 0;
+                    tot_prob_selectivity[fill] = 0;
                 }
 
                 for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
@@ -553,10 +555,122 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                     cout << "Reference selectivity: " << recombination_hotspot_parameters[recombination_hotspot][3] << endl;
 
                     cout << endl;
-                    recom_probability_Changes.push_back(Parameters.get_recombination_Hotspot_Parameters("probability", to_string(recombination_hotspot + 1), recombination_Hotspots_profiles_folder + "/hotspot_" + to_string(recombination_hotspot + 1) + ".csv", functions, max_prob_selectivity[0]));
+                    if (recombination_Hotspots_profiles_folder != "NA")
+                    {
+                        recom_probability_Changes.push_back(Parameters.get_recombination_Hotspot_Parameters("probability", to_string(recombination_hotspot + 1), recombination_Hotspots_profiles_folder + "/hotspot_" + to_string(recombination_hotspot + 1) + ".csv", functions, tot_prob_selectivity[0]));
+                        recom_survivability_Changes.push_back(Parameters.get_recombination_Hotspot_Parameters("selectivity", to_string(recombination_hotspot + 1), recombination_Hotspots_profiles_folder + "/hotspot_" + to_string(recombination_hotspot + 1) + ".csv", functions, tot_prob_selectivity[1]));
+                    }
+                    else
+                    {
+                        cout << "No recombination hotspot mutations present to configure.\n";
+                    }
+
+                    // if (recombination_hotspot == 1)
+                    // {
+                    //     vector<pair<int, vector<float>>> recom_matrix;
+                    //     recom_matrix = recom_survivability_Changes[recombination_hotspot];
+
+                    //     for (int check = 0; check < recom_matrix.size(); check++)
+                    //     {
+                    //         cout << recom_matrix[check].first << "\t";
+                    //         for (size_t i = 0; i < recom_matrix[check].second.size(); i++)
+                    //         {
+                    //             cout << recom_matrix[check].second[i] << " | ";
+                    //         }
+                    //         cout << endl;
+                    //     }
+                    // }
 
                     // REMOVE
-                    exit(-1);
+                    // exit(-1);
+                }
+
+                // cout << tot_prob_selectivity[0] << endl
+                //      << tot_prob_selectivity[1] << endl;
+
+                cout << endl;
+
+                cout << "Configuring recombination hotspot mutations\n";
+
+                recombination_Prob_matrix = functions.create_FLOAT_2D_arrays(tot_prob_selectivity[0], 5);
+                recombination_Select_matrix = functions.create_FLOAT_2D_arrays(tot_prob_selectivity[1], 5);
+
+                recombination_prob_Stride = (int *)malloc(sizeof(int) * recombination_Hotspots + 1);
+                recombination_select_Stride = (int *)malloc(sizeof(int) * recombination_Hotspots + 1);
+
+                int pos_curent_prob = 0;
+                int pos_curent_select = 0;
+
+                for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
+                {
+                    recombination_prob_Stride[recombination_hotspot] = pos_curent_prob;
+
+                    vector<pair<int, vector<float>>> recom_matrix;
+                    recom_matrix = recom_probability_Changes[recombination_hotspot];
+
+                    sort(recom_matrix.begin(), recom_matrix.end());
+
+                    for (int position = 0; position < recom_matrix.size(); position++)
+                    {
+                        recombination_Prob_matrix[pos_curent_prob][0] = recom_matrix[position].first;
+
+                        for (int base = 0; base < 4; base++)
+                        {
+                            recombination_Prob_matrix[pos_curent_prob][base + 1] = recom_matrix[position].second[base];
+                        }
+                        pos_curent_prob++;
+                    }
+
+                    recombination_select_Stride[recombination_hotspot] = pos_curent_select;
+                    recom_matrix = recom_survivability_Changes[recombination_hotspot];
+
+                    sort(recom_matrix.begin(), recom_matrix.end());
+                    for (int position = 0; position < recom_matrix.size(); position++)
+                    {
+                        recombination_Select_matrix[pos_curent_select][0] = recom_matrix[position].first;
+
+                        for (int base = 0; base < 4; base++)
+                        {
+                            recombination_Select_matrix[pos_curent_select][base + 1] = recom_matrix[position].second[base];
+                        }
+                        pos_curent_select++;
+                    }
+                }
+
+                recombination_prob_Stride[recombination_Hotspots] = pos_curent_prob;
+                recombination_select_Stride[recombination_Hotspots] = pos_curent_select;
+
+                if (tot_prob_selectivity[0] > 0)
+                {
+                    cout << "\nPrinting recombination mutations probability matrix:\n";
+                    for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
+                    {
+                        cout << "\nHotspot " << recombination_hotspot + 1 << endl;
+                        for (int stride = recombination_prob_Stride[recombination_hotspot]; stride < recombination_prob_Stride[recombination_hotspot + 1]; stride++)
+                        {
+                            for (int column = 0; column < 5; column++)
+                            {
+                                cout << recombination_Prob_matrix[stride][column] << "\t";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
+                if (tot_prob_selectivity[1] > 0)
+                {
+                    cout << "\nPrinting recombination mutations selectivity matrix:\n";
+                    for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
+                    {
+                        cout << "\nHotspot " << recombination_hotspot + 1 << endl;
+                        for (int stride = recombination_select_Stride[recombination_hotspot]; stride < recombination_select_Stride[recombination_hotspot + 1]; stride++)
+                        {
+                            for (int column = 0; column < 5; column++)
+                            {
+                                cout << recombination_Select_matrix[stride][column] << "\t";
+                            }
+                            cout << endl;
+                        }
+                    }
                 }
             }
             else
@@ -565,6 +679,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
             }
         }
     }
+    cout << endl;
 }
 
 void simulator_Master::node_Master_Manager(functions_library &functions)

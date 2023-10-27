@@ -45,6 +45,6 @@ public:
     vector<string> clean_Line(string line, functions_library &function);
 
     float **get_Profile_Array(string profile_File_location, int &num_Sites, functions_library &function);
-    vector<pair<int, vector<float>>> get_recombination_Hotspot_Parameters(string parameter, string hotspot, string path_to_file, functions_library &function, int &max);
+    vector<pair<int, vector<float>>> get_recombination_Hotspot_Parameters(string parameter, string hotspot, string path_to_file, functions_library &function, int &total);
 
 };

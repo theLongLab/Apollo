@@ -168,6 +168,14 @@ private:
     float **mutation_hotspot_parameters;
     float **recombination_hotspot_parameters;
 
+    int *tot_prob_selectivity;
+
+    int *recombination_prob_Stride;
+    int *recombination_select_Stride;
+
+    float **recombination_Prob_matrix;
+    float **recombination_Select_matrix;
+
     string output_Network_location = "";
     string network_File_location = "";
 
