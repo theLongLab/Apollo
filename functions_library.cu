@@ -5534,3 +5534,18 @@ void functions_library::read_Profiles_multi_Thread(int start, int stop, int cell
         }
     }
 }
+
+string functions_library::clean_Line(string &line)
+{
+    string output_Line = "";
+
+    for (int i = 0; i < line.size(); i++)
+    {
+        if (isascii(line[i]))
+        {
+            output_Line = output_Line + line[i];
+        }
+    }
+
+    return output_Line;
+}

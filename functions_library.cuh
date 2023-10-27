@@ -233,4 +233,6 @@ public:
     int get_base_Index(string base);
 
     int binary_Search(vector<int> &values, int value);
+    
+    string clean_Line(string &line);
 };

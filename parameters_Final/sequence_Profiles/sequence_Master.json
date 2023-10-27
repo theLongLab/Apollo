@@ -12,7 +12,6 @@
   "Proof reading profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/profiles/sequence_Proof_Reading_Profile.csv",
 
   "Recombination availability":"Yes",
-  "Recombination profiles folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/recombination_profiles",
 
   "Reference Fitness":"1",
   "Reference Survivability":"0.5",
@@ -90,6 +89,7 @@
   "Recombination":{
 
     "Number of hotspots":3,
+    "Recombination profiles folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/recombination_profiles",
 
     "Hotspot 1":{
       "Region":"100_200"

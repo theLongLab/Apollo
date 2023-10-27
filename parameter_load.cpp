@@ -261,6 +261,108 @@ float **parameter_load::get_Profile_Array(string profile_File_location, int &num
     return profile_Array;
 }
 
+vector<pair<int, vector<float>>> parameter_load::get_recombination_Hotspot_Parameters(string parameter, string hotspot, string path_to_file, functions_library &function, int &max)
+{
+    vector<pair<int, vector<float>>> recom_matrix;
+
+    fstream parameter_File;
+    parameter_File.open(path_to_file, ios::in);
+
+    char split_Char = ',';
+
+    if (parameter_File.is_open())
+    {
+        string line;
+        getline(parameter_File, line);
+
+        string line_clean = function.clean_Line(line);
+
+        if (line_clean.at(0) == '#')
+        {
+            vector<string> line_Data;
+            function.split(line_Data, line_clean, split_Char);
+
+            vector<string> get_Hotspot_ID;
+
+            if (line_Data.size() > 0)
+            {
+                function.split(get_Hotspot_ID, line_Data[0], ':');
+            }
+            else
+            {
+                split_Char = '\t';
+                function.split(line_Data, line_clean, split_Char);
+                if (line_Data.size() > 0)
+                {
+                    function.split(get_Hotspot_ID, line_Data[0], ':');
+                }
+                else
+                {
+                    cout << "ERROR IN RECOMBINATION PARAMETER FILE'S, HAS TO BE TAB OR COMMA DELIMITED: " << path_to_file << endl;
+                    exit(-1);
+                }
+            }
+
+            if (get_Hotspot_ID[1] == hotspot)
+            {
+                transform(parameter.begin(), parameter.end(), parameter.begin(), ::toupper);
+                cout << "Extracting " << parameter << " mutation data from: " << path_to_file << endl;
+
+                int catch_Parameter = 0;
+
+                while (getline(parameter_File, line))
+                {
+                    line_clean = function.clean_Line(line);
+                    function.split(line_Data, line_clean, split_Char);
+                    transform(line_Data[0].begin(), line_Data[0].end(), line_Data[0].begin(), ::toupper);
+                    if (line_Data[0] == parameter)
+                    {
+                        catch_Parameter = 1;
+                        break;
+                    }
+                }
+
+                if (catch_Parameter == 1)
+                {
+                    cout << line_Data.size() - 1 << " mutation effect sites found" << endl;
+                    if (line_Data.size() - 1 > max)
+                    {
+                        max = line_Data.size() - 1;
+                    }
+                    for (int site = 1; site < line_Data.size(); site++)
+                    {
+                        vector<float> bases;
+                        for (int base = 0; base < 4; base++)
+                        {
+                            bases.push_back(0);
+                        }
+
+                        recom_matrix.push_back(make_pair(stoi(line_Data[site]), bases));
+                    }
+                }
+                else
+                {
+                    cout << "ERROR IN RECOMBINATION PARAMETER FILE, " << parameter << " NOT FOUND : " << path_to_file << endl;
+                    exit(-1);
+                }
+            }
+        }
+        else
+        {
+            cout << "ERROR IN RECOMBINATION PARAMETER FILE, LINE ONE HAS TO START WITH A # AND STATE THE REOCMBINATION HOTSPOT NUMBER: " << path_to_file << endl;
+            exit(-1);
+        }
+        parameter_File.close();
+    }
+    else
+    {
+        cout << "ERROR IN RECOMBINATION PARAMETER FILE, CHECK IF FILE EXISTS: " << path_to_file << endl;
+        exit(-1);
+    }
+
+    return recom_matrix;
+}
+
 vector<pair<string, string>> parameter_load::get_block_from_File(string &file_parameter_Location, string block_Header)
 {
     vector<pair<string, string>> block_Data;

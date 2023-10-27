@@ -519,6 +519,18 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                 cout << "\nProcessing " << this->recombination_Hotspots << " recombination hotspots: \n";
                 recombination_hotspot_parameters = functions.create_Fill_2D_array_FLOAT(recombination_Hotspots, 4, -1);
 
+                string recombination_Hotspots_profiles_folder = Parameters.get_STRING(recombinations_Block, "Recombination profiles folder");
+                cout << "Recombination profiles folder: " << recombination_Hotspots_profiles_folder << endl;
+
+                vector<vector<pair<int, vector<float>>>> recom_probability_Changes;
+                vector<vector<pair<int, vector<float>>>> recom_survivability_Changes;
+
+                int *max_prob_selectivity = (int *)malloc(sizeof(int) * 2);
+                for (int fill = 0; fill < 2; fill++)
+                {
+                    max_prob_selectivity[fill] = 0;
+                }
+
                 for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
                 {
                     string hotspot_ID = "Hotspot " + to_string(recombination_hotspot + 1);
@@ -539,6 +551,12 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
 
                     cout << "Reference probability of recombination: " << recombination_hotspot_parameters[recombination_hotspot][2] << endl;
                     cout << "Reference selectivity: " << recombination_hotspot_parameters[recombination_hotspot][3] << endl;
+
+                    cout << endl;
+                    recom_probability_Changes.push_back(Parameters.get_recombination_Hotspot_Parameters("probability", to_string(recombination_hotspot + 1), recombination_Hotspots_profiles_folder + "/hotspot_" + to_string(recombination_hotspot + 1) + ".csv", functions, max_prob_selectivity[0]));
+
+                    // REMOVE
+                    exit(-1);
                 }
             }
             else
