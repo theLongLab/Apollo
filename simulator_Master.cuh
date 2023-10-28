@@ -62,7 +62,6 @@ private:
 
     vector<vector<pair<int, int>>> each_Nodes_Connection;
     vector<pair<int, int>> all_node_IDs;
-    vector<int> node_Profiles;
 
     string connection_Model = "FIXED";
 
@@ -111,6 +110,8 @@ private:
     string node_Profile_folder_Location = "";
     float *node_profile_Distributions;
     vector<string> profile_names;
+
+    int *each_Node_Profile;
 
     // 0 = No Change
     // 1 = Removed
@@ -201,5 +202,6 @@ public:
 
     void sequence_Master_Manager(functions_library &functions);
 
-    void node_Profile_assignment(functions_library &functions);
+    void node_Profile_assignment_Manager(functions_library &functions);
+    void node_Profile_assignment_thread(int start_Node, int stop_Node);
 };

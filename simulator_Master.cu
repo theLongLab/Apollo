@@ -218,12 +218,85 @@ void simulator_Master::ingress()
     sequence_Master_Manager(functions);
 
     cout << "STEP 4: Assigning profiles to network nodes\n\n";
-    node_Profile_assignment(functions);
+    node_Profile_assignment_Manager(functions);
 }
 
-void simulator_Master::node_Profile_assignment(functions_library &functions)
+void simulator_Master::node_Profile_assignment_Manager(functions_library &functions)
 {
-    cout << "Configuring Node Profile arrays\n"; 
+    cout << "Configuring Node Profile arrays\n";
+
+    each_Node_Profile = (int *)malloc(sizeof(int) * Total_number_of_Nodes);
+
+    // cout << "Configuring Node Profile arrays\n";
+
+    int num_per_Core = Total_number_of_Nodes / this->CPU_cores;
+    int remainder = Total_number_of_Nodes % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Node = core_ID * num_per_Core;
+        int stop_Node = start_Node + num_per_Core;
+
+        threads_vec.push_back(thread{&simulator_Master::node_Profile_assignment_thread, this, start_Node, stop_Node});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Node = Total_number_of_Nodes - remainder;
+        int stop_Node = Total_number_of_Nodes;
+
+        threads_vec.push_back(thread{&simulator_Master::node_Profile_assignment_thread, this, start_Node, stop_Node});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    cout << "Node Profiles arrays configured: " << Total_number_of_Nodes << "\n";
+
+    for (size_t i = 0; i < Total_number_of_Nodes; i++)
+    {
+        cout << profile_names[each_Node_Profile[i]] << endl;
+    }
+}
+
+void simulator_Master::node_Profile_assignment_thread(int start_Node, int stop_Node)
+{
+    vector<int> profile_Assignments;
+
+    for (int node = start_Node; node < stop_Node; node++)
+    {
+        // cout << "Configuring node: " << node + 1 << endl;
+        float randomValue = (float)rand() / RAND_MAX;
+
+        float cum_Prob = 0;
+
+        for (int profile = 0; profile < number_of_node_Profiles; profile++)
+        {
+            cum_Prob += node_profile_Distributions[profile];
+            if (randomValue <= cum_Prob)
+            {
+                profile_Assignments.push_back(profile);
+                break;
+            }
+        }
+    }
+
+    int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int node = start_Node; node < stop_Node; node++)
+    {
+        each_Node_Profile[node] = profile_Assignments[index];
+        index++;
+    }
 }
 
 void simulator_Master::sequence_Master_Manager(functions_library &functions)
