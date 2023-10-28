@@ -60,6 +60,10 @@ private:
     string network_Model = "NA";
     int Total_number_of_Nodes = 0;
 
+    vector<vector<pair<int, int>>> each_Nodes_Connection;
+    vector<pair<int, int>> all_node_IDs;
+    vector<int> node_Profiles;
+
     string connection_Model = "FIXED";
 
     int BA_FIXED = 1;
@@ -186,14 +190,16 @@ public:
 
     void ingress();
 
-    void network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+    void network_Manager(functions_library &functions);
 
-    void BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
-    void SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
-    void DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
-    void RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions);
+    void BA_Model_Engine(functions_library &functions);
+    void SCM_Model_Engine(functions_library &functions);
+    void DCM_Model_Engine(functions_library &functions);
+    void RANDOM_Model_Engine(functions_library &functions);
 
     void node_Master_Manager(functions_library &functions);
 
     void sequence_Master_Manager(functions_library &functions);
+
+    void node_Profile_assignment(functions_library &functions);
 };

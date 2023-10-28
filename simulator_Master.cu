@@ -206,10 +206,10 @@ void simulator_Master::ingress()
 
     // ! Compatible for both BA and Caveman
     // INT, INT = Cave_ID and Node, for BA CaveID is 0 for all.
-    vector<vector<pair<int, int>>> each_Nodes_Connection;
+    // vector<vector<pair<int, int>>> each_Nodes_Connection;
     // ! Only for CAVEMAN models, to keep track of each nodes Caves
 
-    network_Manager(each_Nodes_Connection, functions);
+    network_Manager(functions);
 
     cout << "STEP 2: Configuring node profiles and within host mechanics\n\n";
     node_Master_Manager(functions);
@@ -218,6 +218,12 @@ void simulator_Master::ingress()
     sequence_Master_Manager(functions);
 
     cout << "STEP 4: Assigning profiles to network nodes\n\n";
+    node_Profile_assignment(functions);
+}
+
+void simulator_Master::node_Profile_assignment(functions_library &functions)
+{
+    cout << "Configuring Node Profile arrays\n"; 
 }
 
 void simulator_Master::sequence_Master_Manager(functions_library &functions)
@@ -1255,7 +1261,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
     cout << endl;
 }
 
-void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+void simulator_Master::network_Manager(functions_library &functions)
 {
     for (int initialize = 0; initialize < Total_number_of_Nodes; initialize++)
     {
@@ -1265,7 +1271,7 @@ void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Node
 
     if (network_Model == "BA")
     {
-        BA_Model_Engine(each_Nodes_Connection, functions);
+        BA_Model_Engine(functions);
 
         // TEST node connections = DONE
         // for (int test = 0; test < each_Nodes_Connection.size(); test++)
@@ -1281,24 +1287,28 @@ void simulator_Master::network_Manager(vector<vector<pair<int, int>>> &each_Node
     }
     else if (network_Model == "SCM")
     {
-        SCM_Model_Engine(each_Nodes_Connection, functions);
+        SCM_Model_Engine(functions);
     }
     else if (network_Model == "DCM")
     {
-        DCM_Model_Engine(each_Nodes_Connection, functions);
+        DCM_Model_Engine(functions);
     }
     else if (network_Model == "RANDOM")
     {
-        RANDOM_Model_Engine(each_Nodes_Connection, functions);
+        RANDOM_Model_Engine(functions);
     }
     else
     {
         cout << "ERROR Incorrect network selected. Please check \"Network type\" in the network parameter file.\n";
         exit(-1);
     }
+
+    // cout << Total_number_of_Nodes << endl
+    //      << all_node_IDs.size() << endl;
+    // exit(-1);
 }
 
-void simulator_Master::RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+void simulator_Master::RANDOM_Model_Engine(functions_library &functions)
 {
     cout << "Intializing Random model network engine\n";
 
@@ -1312,8 +1322,11 @@ void simulator_Master::RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_
 
     cout << "Configuring node 1 of " << Total_number_of_Nodes << " node(s)" << endl;
 
+    all_node_IDs.push_back(make_pair(0, 0));
+
     for (int node = 1; node < Total_number_of_Nodes; node++)
     {
+        all_node_IDs.push_back(make_pair(0, node));
         cout << "Configuring node " << (node + 1) << " of " << Total_number_of_Nodes << " node(s)" << endl;
 
         uniform_int_distribution<int> distribution_Neighbour(0, node - 1);
@@ -1337,7 +1350,7 @@ void simulator_Master::RANDOM_Model_Engine(vector<vector<pair<int, int>>> &each_
     cout << endl;
 }
 
-void simulator_Master::DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+void simulator_Master::DCM_Model_Engine(functions_library &functions)
 {
     cout << "Intializing Dynamic Caveman model network engine\n";
 
@@ -1472,6 +1485,7 @@ void simulator_Master::DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nod
 
         for (int node_parent = 0; node_parent < nodes_Total; node_parent++)
         {
+            all_node_IDs.push_back(make_pair(cave_ID, node_parent));
 
             int node_Count = per_cave_Stride[cave_ID] + node_parent;
             // cout << node_Count << endl;
@@ -1586,7 +1600,7 @@ void simulator_Master::DCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nod
     cout << endl;
 }
 
-void simulator_Master::SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+void simulator_Master::SCM_Model_Engine(functions_library &functions)
 {
     cout << "Intializing Standard Caveman model network engine\n";
 
@@ -1613,6 +1627,8 @@ void simulator_Master::SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nod
 
         for (int node_Index_Parent = 0; node_Index_Parent < SCM_number_of_nodes_per_cave; node_Index_Parent++)
         {
+            all_node_IDs.push_back(make_pair(cave_ID, node_Index_Parent));
+
             for (int node_Index_child = node_Index_Parent + 1; node_Index_child < SCM_number_of_nodes_per_cave; node_Index_child++)
             {
                 each_Nodes_Connection[node_start_Index + node_Index_Parent].push_back(make_pair(cave_ID, node_Index_child));
@@ -1712,7 +1728,7 @@ void simulator_Master::SCM_Model_Engine(vector<vector<pair<int, int>>> &each_Nod
     cout << endl;
 }
 
-void simulator_Master::BA_Model_Engine(vector<vector<pair<int, int>>> &each_Nodes_Connection, functions_library &functions)
+void simulator_Master::BA_Model_Engine(functions_library &functions)
 {
     cout << "Intializing Barbasi Albert model network engine\n";
 
@@ -1731,6 +1747,7 @@ void simulator_Master::BA_Model_Engine(vector<vector<pair<int, int>>> &each_Node
 
     vector<int> connections_per_Node;
     connections_per_Node.push_back(1);
+    all_node_IDs.push_back(make_pair(0, 0));
     cout << "Configuring node 1 of " << Total_number_of_Nodes << " node(s)" << endl;
 
     int tot_connections = 2;
@@ -1747,6 +1764,8 @@ void simulator_Master::BA_Model_Engine(vector<vector<pair<int, int>>> &each_Node
     {
         cout << "Configuring node " << (node + 1) << " of " << Total_number_of_Nodes << " node(s)" << endl;
         connections_per_Node.push_back(0);
+
+        all_node_IDs.push_back(make_pair(0, node));
 
         int iterative_Attach;
         if (connection_Model == "FIXED")
