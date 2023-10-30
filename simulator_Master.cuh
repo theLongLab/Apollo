@@ -111,11 +111,11 @@ private:
     float *node_profile_Distributions;
     vector<string> profile_names;
 
-    int *each_Node_Profile;
+    float **each_Node_Profile_Configuration;
 
     // 0 = No Change
     // 1 = Removed
-    //-1 = Less infectious
+    //-1 = Less infectious col 1 = alpha, col 2 = beta
     float **node_sampling_effect;
 
     int num_tissues_per_Node = 0;
@@ -130,9 +130,20 @@ private:
     int terminal_tissues = 0;
     int *terminal_array;
 
+    // rows = profiles
+    // columns
+    // 0 = distribution_type; 0=Binomial, -1 = Fixed
+    // 1 = trials/ fixed value
+    // 2 = prob
+    float **infectious_load_Profiles_param;
+    float **terminal_load_Profiles_param;
+
     string viral_Migration = "No";
     float **viral_Migration_Values;
 
+    //column 0 = Yes = 1, NO =0;
+    //column 1 = trials
+    //column 2 = prob
     float **profile_tissue_Limits;
 
     int *num_replication_phases;

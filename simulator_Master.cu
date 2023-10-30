@@ -225,7 +225,8 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
 {
     cout << "Configuring Node Profile arrays\n";
 
-    each_Node_Profile = (int *)malloc(sizeof(int) * Total_number_of_Nodes);
+    // each_Node_Profile = (int *)malloc(sizeof(int) * Total_number_of_Nodes);
+    each_Node_Profile_Configuration = functions.create_FLOAT_2D_arrays(Total_number_of_Nodes, 5 + num_tissues_per_Node);
 
     // cout << "Configuring Node Profile arrays\n";
 
@@ -262,21 +263,38 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
 
     cout << "Node Profiles arrays configured: " << Total_number_of_Nodes << "\n";
 
-    for (size_t i = 0; i < Total_number_of_Nodes; i++)
-    {
-        cout << profile_names[each_Node_Profile[i]] << endl;
-    }
+    // for (size_t i = 0; i < Total_number_of_Nodes; i++)
+    // {
+    //     for (size_t c = 0; c < 2; c++)
+    //     {
+    //         cout << each_Node_Profile_Configuration[i][c] << "\t";
+    //     }
+    //     cout << endl;
+    // }
 }
 
 void simulator_Master::node_Profile_assignment_thread(int start_Node, int stop_Node)
 {
     vector<int> profile_Assignments;
+    vector<int> number_of_generations_per_node;
+    vector<pair<int, int>> infectious_terminal_loads;
+    vector<float> sampling_effect;
+    vector<vector<int>> tissue_cell_Limits_per_Node;
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    gamma_distribution<float> days_in_Host(shape_days_in_Host, scale_days_in_Host);
 
     for (int node = start_Node; node < stop_Node; node++)
     {
+        number_of_generations_per_node.push_back((int)(days_in_Host(gen) / generation_Time));
+
+        int infectious_Load = 0;
+        int terminal_Load = 0;
+
         // cout << "Configuring node: " << node + 1 << endl;
         float randomValue = (float)rand() / RAND_MAX;
-
         float cum_Prob = 0;
 
         for (int profile = 0; profile < number_of_node_Profiles; profile++)
@@ -288,13 +306,85 @@ void simulator_Master::node_Profile_assignment_thread(int start_Node, int stop_N
                 break;
             }
         }
+
+        if (infectious_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][0] == -1)
+        {
+            infectious_Load = infectious_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][1];
+        }
+        else
+        {
+            binomial_distribution<int> infectious_Load_distribution(infectious_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][1], infectious_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][2]);
+            infectious_Load = infectious_Load_distribution(gen);
+        }
+
+        if (terminal_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][0] == -1)
+        {
+            terminal_Load = terminal_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][1];
+        }
+        else
+        {
+            binomial_distribution<int> terminal_Load_distribution(terminal_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][1], terminal_load_Profiles_param[profile_Assignments[profile_Assignments.size() - 1]][2]);
+            terminal_Load = terminal_Load_distribution(gen);
+        }
+
+        infectious_terminal_loads.push_back(make_pair(infectious_Load, terminal_Load));
+
+        if (trials_Sampling == 1)
+        {
+            if (node_sampling_effect[profile_Assignments[profile_Assignments.size() - 1]][0] == 0)
+            {
+                sampling_effect.push_back(1);
+            }
+            else if (node_sampling_effect[profile_Assignments[profile_Assignments.size() - 1]][0] == 1)
+            {
+                sampling_effect.push_back(0);
+            }
+            else
+            {
+                functions_library functions = functions_library();
+                sampling_effect.push_back(functions.beta_Distribution(node_sampling_effect[profile_Assignments[profile_Assignments.size() - 1]][1], node_sampling_effect[profile_Assignments[profile_Assignments.size() - 1]][2], gen));
+            }
+        }
+        else
+        {
+            sampling_effect.push_back(-1);
+        }
+
+        vector<int> tissue_Limits;
+
+        // profile * num_tissues_per_Node
+
+        for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+        {
+            if (profile_tissue_Limits[(profile_Assignments[profile_Assignments.size() - 1] * num_tissues_per_Node) + tissue][0] == 0)
+            {
+                tissue_Limits.push_back(-1);
+            }
+            else
+            {
+                binomial_distribution<int> tissue_limit_distribution(profile_tissue_Limits[(profile_Assignments[profile_Assignments.size() - 1] * num_tissues_per_Node) + tissue][1], profile_tissue_Limits[(profile_Assignments[profile_Assignments.size() - 1] * num_tissues_per_Node) + tissue][2]);
+                tissue_Limits.push_back(tissue_limit_distribution(gen));
+            }
+        }
+
+        tissue_cell_Limits_per_Node.push_back(tissue_Limits);
     }
 
     int index = 0;
     unique_lock<shared_mutex> ul(g_mutex);
     for (int node = start_Node; node < stop_Node; node++)
     {
-        each_Node_Profile[node] = profile_Assignments[index];
+        each_Node_Profile_Configuration[node][0] = profile_Assignments[index];
+        each_Node_Profile_Configuration[node][1] = number_of_generations_per_node[index];
+        each_Node_Profile_Configuration[node][2] = infectious_terminal_loads[index].first;
+        each_Node_Profile_Configuration[node][3] = infectious_terminal_loads[index].second;
+        each_Node_Profile_Configuration[node][4] = sampling_effect[index];
+
+        for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+        {
+            each_Node_Profile_Configuration[node][5 + tissue] = tissue_cell_Limits_per_Node[index][tissue];
+        }
+
         index++;
     }
 }
@@ -808,6 +898,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
             // cout << "Effect of sampling: " << sampling_effect << endl;
 
+            trials_Sampling = 1;
             sampling_trials = Parameters.get_INT(sampling_Parameters[0]);
             sampling_probability = Parameters.get_FLOAT(sampling_Parameters[1]);
 
@@ -1043,17 +1134,27 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             tissue_param_profile_Stride = (int *)malloc(sizeof(int) * (number_of_node_Profiles + 1));
             tissue_param_profile_Stride[0] = 0;
 
+            if (infectious_tissues > 0)
+            {
+                infectious_load_Profiles_param = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, -1);
+            }
+
+            if (terminal_tissues > 0)
+            {
+                terminal_load_Profiles_param = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, -1);
+            }
+
             node_Profile_folder_Location = Parameters.get_STRING(found_Parameters[7]);
             cout << "Extracting profiles from: " << node_Profile_folder_Location << endl
                  << endl;
 
-            parameters_List = {"\"Profile name\"",
-                               "\"Probability of occurence\"",
-                               "\"Sampling effect\""};
-
             for (int profile = 0; profile < number_of_node_Profiles; profile++)
             {
+                parameters_List = {"\"Profile name\"",
+                                   "\"Probability of occurence\""};
+
                 string profile_check = node_Profile_folder_Location + "/profile_" + to_string(profile + 1) + ".json";
+
                 if (filesystem::exists(profile_check))
                 {
                     cout << profile + 1 << " Profile found: " << profile_check << endl;
@@ -1067,38 +1168,124 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                     cout << "Probability of occurence: " << node_profile_Distributions[profile] << endl;
 
                     // Configure tisses and their phases
-                    string sampling_effect = Parameters.get_STRING(profile_Parameters[2]);
-                    transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
+                    if (trials_Sampling != -1)
+                    {
+                        parameters_List = {"\"Sampling effect\""};
+                        vector<string> sampling_Parameters = Parameters.get_parameters(profile_check, parameters_List);
 
-                    if (sampling_effect == "NO CHANGE" || sampling_effect == "REMOVED" || sampling_effect == "LESS INFECTIOUS")
-                    {
-                        if (sampling_effect == "REMOVED")
+                        string sampling_effect = Parameters.get_STRING(sampling_Parameters[0]);
+                        transform(sampling_effect.begin(), sampling_effect.end(), sampling_effect.begin(), ::toupper);
+
+                        if (sampling_effect == "NO CHANGE" || sampling_effect == "REMOVED" || sampling_effect == "LESS INFECTIOUS")
                         {
-                            node_sampling_effect[profile][0] = 1;
+                            if (sampling_effect == "REMOVED")
+                            {
+                                node_sampling_effect[profile][0] = 1;
+                            }
+                            else if (sampling_effect == "LESS INFECTIOUS")
+                            {
+                                node_sampling_effect[profile][0] = -1;
+                                parameters_List = {"\"Sampling less infectious effect Alpha\"",
+                                                   "\"Sampling less infectious effect Beta\""};
+                                vector<string> profile_sampling_Less = Parameters.get_parameters(profile_check, parameters_List);
+                                node_sampling_effect[profile][1] = Parameters.get_FLOAT(profile_sampling_Less[0]);
+                                node_sampling_effect[profile][2] = Parameters.get_FLOAT(profile_sampling_Less[1]);
+                            }
                         }
-                        else if (sampling_effect == "LESS INFECTIOUS")
+                        else
                         {
-                            node_sampling_effect[profile][0] = -1;
-                            parameters_List = {"\"Sampling less infectious effect Alpha\"",
-                                               "\"Sampling less infectious effect Beta\""};
-                            vector<string> profile_sampling_Less = Parameters.get_parameters(profile_check, parameters_List);
-                            node_sampling_effect[profile][1] = Parameters.get_FLOAT(profile_sampling_Less[0]);
-                            node_sampling_effect[profile][2] = Parameters.get_FLOAT(profile_sampling_Less[1]);
+                            cout << "ERROR: PROFILE " << profile + 1 << " SAMPLING EFFECT: " << sampling_effect << " IS NOT A VALID ENTRY." << endl;
+                            cout << "IT HAS TO BE ONE OF THE FOLLOWING: NO CHANGE, REMOVED OR LESS INFECTIOUS.\n";
+                            exit(-1);
                         }
-                    }
-                    else
-                    {
-                        cout << "ERROR: " << profile + 1 << " SAMPLING EFFECT: " << sampling_effect << "IS NOT A VALID ENTRY." << endl;
-                        cout << "IT HAS TO BE ONE OF THE FOLLOWING: NO CHANGE, REMOVED OR LESS INFECTIOUS.\n";
-                        exit(-1);
+
+                        cout << "Sampling effect: " << sampling_effect << endl;
+                        if (node_sampling_effect[profile][0] == -1)
+                        {
+                            cout << "Beta distribution alpha value: " << node_sampling_effect[profile][1] << endl;
+                            cout << "Beta distribution beta value: " << node_sampling_effect[profile][2] << endl;
+                        }
                     }
 
-                    cout << "Sampling effect: " << sampling_effect << endl;
-                    if (node_sampling_effect[profile][0] == -1)
+                    if (infectious_tissues > 0)
                     {
-                        cout << "Beta distribution alpha value: " << node_sampling_effect[profile][1] << endl;
-                        cout << "Beta distribution beta value: " << node_sampling_effect[profile][2] << endl;
+                        parameters_List = {"\"Infectious load distribution type\""};
+
+                        vector<string> infectious_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+                        transform(infectious_Tissue_distribution[0].begin(), infectious_Tissue_distribution[0].end(), infectious_Tissue_distribution[0].begin(), ::toupper);
+
+                        cout << "\nInfectious viral load distribution: " << infectious_Tissue_distribution[0] << endl;
+
+                        if (infectious_Tissue_distribution[0] == "\"BINOMIAL\"")
+                        {
+                            parameters_List = {"\"Infectious load Binomial trials\"",
+                                               "\"Infectious load Binomial probability\""};
+                            infectious_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+
+                            infectious_load_Profiles_param[profile][0] = 0;
+                            infectious_load_Profiles_param[profile][1] = Parameters.get_INT(infectious_Tissue_distribution[0]);
+                            infectious_load_Profiles_param[profile][2] = Parameters.get_FLOAT(infectious_Tissue_distribution[1]);
+
+                            cout << "Infectious load Binomial trials: " << infectious_load_Profiles_param[profile][1] << endl;
+                            cout << "Infectious load Binomial probability: " << infectious_load_Profiles_param[profile][2] << endl;
+                        }
+                        else if (infectious_Tissue_distribution[0] == "\"FIXED\"")
+                        {
+                            parameters_List = {"\"Infectious load Fixed\""};
+                            infectious_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+
+                            infectious_load_Profiles_param[profile][0] = -1;
+                            infectious_load_Profiles_param[profile][1] = Parameters.get_INT(infectious_Tissue_distribution[0]);
+
+                            cout << "Infectious load Fixed: " << infectious_load_Profiles_param[profile][1] << endl;
+                        }
+                        else
+                        {
+                            cout << "PROFILE " << profile + 1 << " ERROR INFECTIOUS TISSUE DISTRIBUTION SHOULD BE FIXED OR BINOMIAL.\n";
+                            exit(-1);
+                        }
                     }
+
+                    if (terminal_tissues > 0)
+                    {
+                        parameters_List = {"\"Terminal load distribution type\""};
+
+                        vector<string> terminal_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+                        transform(terminal_Tissue_distribution[0].begin(), terminal_Tissue_distribution[0].end(), terminal_Tissue_distribution[0].begin(), ::toupper);
+
+                        cout << "\nTerminal viral load distribution: " << terminal_Tissue_distribution[0] << endl;
+
+                        if (terminal_Tissue_distribution[0] == "\"BINOMIAL\"")
+                        {
+                            parameters_List = {"\"Terminal load Binomial trials\"",
+                                               "\"Terminal load Binomial probability\""};
+                            terminal_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+
+                            terminal_load_Profiles_param[profile][0] = 0;
+                            terminal_load_Profiles_param[profile][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
+                            terminal_load_Profiles_param[profile][2] = Parameters.get_FLOAT(terminal_Tissue_distribution[1]);
+
+                            cout << "Terminal load Binomial trials: " << terminal_load_Profiles_param[profile][1] << endl;
+                            cout << "Terminal load Binomial probability: " << terminal_load_Profiles_param[profile][2] << endl;
+                        }
+                        else if (terminal_Tissue_distribution[0] == "\"FIXED\"")
+                        {
+                            parameters_List = {"\"Terminal load Fixed\""};
+                            terminal_Tissue_distribution = Parameters.get_parameters(profile_check, parameters_List);
+
+                            terminal_load_Profiles_param[profile][0] = -1;
+                            terminal_load_Profiles_param[profile][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
+
+                            cout << "Terminal load Fixed: " << terminal_load_Profiles_param[profile][1] << endl;
+                        }
+                        else
+                        {
+                            cout << "PROFILE " << profile + 1 << " ERROR TERMINAL TISSUE DISTRIBUTION SHOULD BE FIXED OR BINOMIAL.\n";
+                            exit(-1);
+                        }
+                    }
+
+                    // exit(-1);
 
                     cout << "\nCollecting tissue data\n";
                     vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(profile_check, "Tissue profiles");
@@ -1126,10 +1313,10 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                         {
                             cout << "YES\n";
                             profile_tissue_Limits[tissue_Limit_Start + tissue][0] = 1;
-                            profile_tissue_Limits[tissue_Limit_Start + tissue][1] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial sucesses");
+                            profile_tissue_Limits[tissue_Limit_Start + tissue][1] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial trials");
                             profile_tissue_Limits[tissue_Limit_Start + tissue][2] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial probability");
 
-                            cout << "Cell limit Binomial sucesses: " << profile_tissue_Limits[tissue_Limit_Start + tissue][1] << endl
+                            cout << "Cell limit Binomial trials: " << profile_tissue_Limits[tissue_Limit_Start + tissue][1] << endl
                                  << "Cell limit Binomial probability: " << profile_tissue_Limits[tissue_Limit_Start + tissue][2] << endl;
                         }
                         else

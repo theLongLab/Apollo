@@ -7,11 +7,23 @@
   "Sampling less infectious effect Alpha":"5",
   "Sampling less infectious effect Beta":"10",
 
+  # TERMINAL AND INFECTIOUS AMOUNTS
+
+  "Infectious load distribution type":"Binomial",
+  "Infectious load Binomial trials":1000,
+  "Infectious load Binomial probability":"0.75",
+  "Infectious load Fixed":1,
+
+  "Terminal load distribution type":"Binomial",
+  "Terminal load Binomial trials":100000,
+  "Terminal load Binomial probability":"0.75",
+  "Terminal load Fixed":1,
+
   "Tissue profiles":{
 
     "Tissue 1":{
       "Cell limit":"YES",
-      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.50",
 
       "Replication phases":{
@@ -28,7 +40,7 @@
 
     "Tissue 2":{
       "Cell limit":"No",
-      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.10",
 
       "Replication phases":{
@@ -46,7 +58,7 @@
 
     "Tissue 3":{
       "Cell limit":"NO",
-      "Cell limit Binomial sucesses":100000,
+      "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.10",
 
       "Replication phases":{
