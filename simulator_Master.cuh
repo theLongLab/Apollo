@@ -141,9 +141,9 @@ private:
     string viral_Migration = "No";
     float **viral_Migration_Values;
 
-    //column 0 = Yes = 1, NO =0;
-    //column 1 = trials
-    //column 2 = prob
+    // column 0 = Yes = 1, NO =0;
+    // column 1 = trials
+    // column 2 = prob
     float **profile_tissue_Limits;
 
     int *num_replication_phases;
@@ -215,4 +215,8 @@ public:
 
     void node_Profile_assignment_Manager(functions_library &functions);
     void node_Profile_assignment_thread(int start_Node, int stop_Node);
+
+    void apollo(functions_library &functions);
+    int get_first_Infected(vector<int> &susceptible_Population,
+                     vector<int> &infected_Population);
 };

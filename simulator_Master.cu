@@ -219,6 +219,75 @@ void simulator_Master::ingress()
 
     cout << "STEP 4: Assigning profiles to network nodes\n\n";
     node_Profile_assignment_Manager(functions);
+
+    cout << "STEP 5: Infection begins\n\n";
+    apollo(functions);
+}
+
+void simulator_Master::apollo(functions_library &functions)
+{
+    cout << "Configuring susceptible population\n\n";
+    vector<int> susceptible_Population;
+
+    for (size_t i = 0; i < Total_number_of_Nodes; i++)
+    {
+        susceptible_Population.push_back(i);
+    }
+
+    cout << "Starting infection\n\n";
+
+    vector<int> infected_Population;
+    vector<int> infectious_Population;
+
+    vector<int> removed_Population;
+
+    int first_Infected = get_first_Infected(susceptible_Population, infected_Population);
+    // cout << Total_number_of_Nodes << endl;
+    // cout << susceptible_Population.size() << endl;
+    // cout << infected_Population.size() << endl;
+    // cout << to_string(susceptible_Population.size() + infected_Population.size()) << endl;
+
+    int stop = 0;
+
+    do
+    {
+        stop = 1;
+    } while (stop == 0);
+
+    // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
+}
+
+int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
+                                         vector<int> &infected_Population)
+{
+    int node_infected = -1;
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    uniform_int_distribution<int> distribution(0, susceptible_Population.size() - 1);
+
+    int susceptible_Index = distribution(gen);
+    node_infected = susceptible_Population[susceptible_Index];
+
+    cout << "Node " << all_node_IDs[node_infected].first << "_" << all_node_IDs[node_infected].second << " infected first\n";
+
+    infected_Population.push_back(node_infected);
+    sort(infected_Population.begin(), infected_Population.end());
+
+    vector<int> susceptible_Population_Temp;
+
+    for (int fill_Temp = 0; fill_Temp < susceptible_Population.size(); fill_Temp++)
+    {
+        if (fill_Temp != susceptible_Index)
+        {
+            susceptible_Population_Temp.push_back(susceptible_Population[fill_Temp]);
+        }
+    }
+
+    susceptible_Population = susceptible_Population_Temp;
+
+    return node_infected;
 }
 
 void simulator_Master::node_Profile_assignment_Manager(functions_library &functions)
@@ -261,11 +330,84 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
 
     threads_vec.clear();
 
-    cout << "Node Profiles arrays configured: " << Total_number_of_Nodes << "\n";
+    cout << "Node Profiles arrays configured: " << Total_number_of_Nodes << "\n\n";
 
+    string standard_Node_File_location = output_Network_location + "/nodes_Configuration.csv";
+    string header = "ID\tCave_Index\tProfile_name\tGenerations_projected\tInfectious_load\tTerminal_load\tSampling_effect";
+
+    for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+    {
+        header = header + "\tTissue_" + to_string(tissue + 1) + "_limit";
+    }
+
+    functions.create_File(standard_Node_File_location, header);
+
+    fstream node_Configuration;
+    node_Configuration.open(standard_Node_File_location, ios::app);
+
+    if (node_Configuration.is_open())
+    {
+        cout << "Writing node(s) configurations: " << standard_Node_File_location << endl;
+        for (int node = 0; node < Total_number_of_Nodes; node++)
+        {
+            node_Configuration << all_node_IDs[node].first << "_" << all_node_IDs[node].second
+                               << "\t" << all_node_IDs[node].first
+                               << "\t" << profile_names[each_Node_Profile_Configuration[node][0]];
+
+            for (int col = 1; col < 5; col++)
+            {
+                node_Configuration << "\t" << each_Node_Profile_Configuration[node][col];
+            }
+            for (int col = 5; col < (5 + num_tissues_per_Node); col++)
+            {
+                if (each_Node_Profile_Configuration[node][col] == -1)
+                {
+                    node_Configuration << "\tUnlimited";
+                }
+                else
+                {
+                    node_Configuration << "\t" << each_Node_Profile_Configuration[node][col];
+                }
+            }
+            node_Configuration << "\n";
+        }
+        node_Configuration.close();
+    }
+    else
+    {
+        cout << "ERROR CANNOT FIND NODE CONFIGURATION FILE LOCATION: " << standard_Node_File_location << endl;
+        exit(-1);
+    }
+
+    cout << "\nPurging network memory\n";
+
+    free(per_cave_Stride);
+    free(node_profile_Distributions);
+
+    functions.clear_Array_float_CPU(node_sampling_effect, number_of_node_Profiles);
+    functions.clear_Array_float_CPU(infectious_load_Profiles_param, number_of_node_Profiles);
+    functions.clear_Array_float_CPU(terminal_load_Profiles_param, number_of_node_Profiles);
+    functions.clear_Array_float_CPU(profile_tissue_Limits, num_tissues_per_Node * number_of_node_Profiles);
+
+    // for (int i = 0; i < number_of_node_Profiles; i++)
+    // {
+    //     for (size_t t = 0; t < num_tissues_per_Node; t++)
+    //     {
+    //         for (size_t c = 0; c < 3; c++)
+    //         {
+    //             cout << profile_tissue_Limits[(i * num_tissues_per_Node) + t][c] << "\t";
+    //         }
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    // }
+
+    // // profile_tissue_Limits[(profile_Assignments[profile_Assignments.size() - 1] * num_tissues_per_Node) + tissue][0]
+
+    // cout << "\n*****************************\n";
     // for (size_t i = 0; i < Total_number_of_Nodes; i++)
     // {
-    //     for (size_t c = 0; c < 2; c++)
+    //     for (size_t c = 0; c < (5 + num_tissues_per_Node); c++)
     //     {
     //         cout << each_Node_Profile_Configuration[i][c] << "\t";
     //     }
@@ -1313,7 +1455,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                         {
                             cout << "YES\n";
                             profile_tissue_Limits[tissue_Limit_Start + tissue][0] = 1;
-                            profile_tissue_Limits[tissue_Limit_Start + tissue][1] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial trials");
+                            profile_tissue_Limits[tissue_Limit_Start + tissue][1] = Parameters.get_INT(current_tissue_Profile_block_Data, "Cell limit Binomial trials");
                             profile_tissue_Limits[tissue_Limit_Start + tissue][2] = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial probability");
 
                             cout << "Cell limit Binomial trials: " << profile_tissue_Limits[tissue_Limit_Start + tissue][1] << endl

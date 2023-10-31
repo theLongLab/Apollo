@@ -39,7 +39,7 @@
     },
 
     "Tissue 2":{
-      "Cell limit":"No",
+      "Cell limit":"Yes",
       "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.10",
 
