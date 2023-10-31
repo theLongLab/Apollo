@@ -3,6 +3,7 @@
 
 #include "functions_library.cuh"
 #include "parameter_load.h"
+#include "node_within_host.cuh"
 #include <cstdlib>
 
 #include <curand.h>
@@ -93,8 +94,16 @@ private:
     float scale_days_in_Host = 0;
 
     int trials_Sampling = -1;
+    int resampling = -1;
     float sampling_trials = 0;
     float sampling_probability = 0;
+
+    // col 0 = 0= FIXED, 1 = Binomial
+    // co 1 = fixed/ trials
+    // col 2 = prob
+    float *per_Node_sampling;
+
+    int limit_Sampled = -1;
 
     string progeny_distribution_Model = "NA";
 
@@ -213,10 +222,10 @@ public:
 
     void sequence_Master_Manager(functions_library &functions);
 
-    void node_Profile_assignment_Manager(functions_library &functions);
+    vector<node_within_host> node_Profile_assignment_Manager(functions_library &functions);
     void node_Profile_assignment_thread(int start_Node, int stop_Node);
 
     void apollo(functions_library &functions);
     int get_first_Infected(vector<int> &susceptible_Population,
-                     vector<int> &infected_Population);
+                           vector<int> &infected_Population);
 };

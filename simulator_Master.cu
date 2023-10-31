@@ -218,7 +218,7 @@ void simulator_Master::ingress()
     sequence_Master_Manager(functions);
 
     cout << "STEP 4: Assigning profiles to network nodes\n\n";
-    node_Profile_assignment_Manager(functions);
+    vector<node_within_host> Hosts = node_Profile_assignment_Manager(functions);
 
     cout << "STEP 5: Infection begins\n\n";
     apollo(functions);
@@ -290,8 +290,9 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
     return node_infected;
 }
 
-void simulator_Master::node_Profile_assignment_Manager(functions_library &functions)
+vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(functions_library &functions)
 {
+    vector<node_within_host> Hosts;
     cout << "Configuring Node Profile arrays\n";
 
     // each_Node_Profile = (int *)malloc(sizeof(int) * Total_number_of_Nodes);
@@ -350,14 +351,39 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
         cout << "Writing node(s) configurations: " << standard_Node_File_location << endl;
         for (int node = 0; node < Total_number_of_Nodes; node++)
         {
+            Hosts.push_back(node_within_host());
+
             node_Configuration << all_node_IDs[node].first << "_" << all_node_IDs[node].second
                                << "\t" << all_node_IDs[node].first
                                << "\t" << profile_names[each_Node_Profile_Configuration[node][0]];
 
-            for (int col = 1; col < 5; col++)
+            Hosts[Hosts.size() - 1].setHost(node, all_node_IDs[node].first, all_node_IDs[node].second, (int)each_Node_Profile_Configuration[node][0]);
+
+            for (int col = 1; col < 4; col++)
             {
                 node_Configuration << "\t" << each_Node_Profile_Configuration[node][col];
             }
+
+            Hosts[Hosts.size() - 1].setNum_Generation((int)each_Node_Profile_Configuration[node][1]);
+            Hosts[Hosts.size() - 1].setInfectious_Load((int)each_Node_Profile_Configuration[node][2]);
+            Hosts[Hosts.size() - 1].setTerminal_Load((int)each_Node_Profile_Configuration[node][3]);
+
+            if (each_Node_Profile_Configuration[node][4] == 1)
+            {
+                node_Configuration << "\tNo Change";
+            }
+            else if (each_Node_Profile_Configuration[node][4] == 0)
+            {
+                node_Configuration << "\tRemoved";
+            }
+            else
+            {
+                node_Configuration << "\t" << each_Node_Profile_Configuration[node][4];
+            }
+
+            Hosts[Hosts.size() - 1].setSampling_Effect(each_Node_Profile_Configuration[node][4]);
+
+            vector<int> tissue_Limits;
             for (int col = 5; col < (5 + num_tissues_per_Node); col++)
             {
                 if (each_Node_Profile_Configuration[node][col] == -1)
@@ -368,7 +394,9 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
                 {
                     node_Configuration << "\t" << each_Node_Profile_Configuration[node][col];
                 }
+                tissue_Limits.push_back((int)each_Node_Profile_Configuration[node][col]);
             }
+            Hosts[Hosts.size() - 1].setCell_Limit(tissue_Limits);
             node_Configuration << "\n";
         }
         node_Configuration.close();
@@ -388,6 +416,8 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
     functions.clear_Array_float_CPU(infectious_load_Profiles_param, number_of_node_Profiles);
     functions.clear_Array_float_CPU(terminal_load_Profiles_param, number_of_node_Profiles);
     functions.clear_Array_float_CPU(profile_tissue_Limits, num_tissues_per_Node * number_of_node_Profiles);
+
+    cout << endl;
 
     // for (int i = 0; i < number_of_node_Profiles; i++)
     // {
@@ -413,6 +443,8 @@ void simulator_Master::node_Profile_assignment_Manager(functions_library &functi
     //     }
     //     cout << endl;
     // }
+    functions.clear_Array_float_CPU(each_Node_Profile_Configuration, Total_number_of_Nodes);
+    return Hosts;
 }
 
 void simulator_Master::node_Profile_assignment_thread(int start_Node, int stop_Node)
@@ -1031,7 +1063,10 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         {
             cout << "Active\n";
             parameters_List = {"\"Sampling rate Binomial trials\"",
-                               "\"Sampling rate Binomial probability\""};
+                               "\"Sampling rate Binomial probability\"",
+                               "\"Resampling of nodes\"",
+                               "\"Distribution per node sequences sampled\"",
+                               "\"Limit samples otained\""};
 
             vector<string> sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
 
@@ -1046,11 +1081,71 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
             cout << "Sampling rate distribution trials: " << sampling_trials << endl;
             cout << "Sampling rate distribution probability: " << sampling_probability << endl;
+
+            // string resampling_Status = Parameters.get_STRING(sampling_Parameters[2]);
+            // transform(resampling_Status.begin(), resampling_Status.end(), resampling_Status.begin(), ::toupper);
+
+            cout << "Resampling of the same nodes: ";
+            if (functions.to_Upper_Case(Parameters.get_STRING(sampling_Parameters[2])) == "YES")
+            {
+                cout << "Active\n";
+                resampling = 1;
+            }
+            else
+            {
+                cout << "Inactive\n";
+            }
+
+            per_Node_sampling = (float *)malloc(sizeof(float) * 3);
+
+            cout << "Sequences sampled per node\nDistribution type: ";
+            vector<string> sequence_sampling_Parameters;
+
+            if (functions.to_Upper_Case(Parameters.get_STRING(sampling_Parameters[3])) == "FIXED")
+            {
+                cout << "Fixed number of sequences sampled\n";
+                per_Node_sampling[0] = 0;
+                parameters_List = {"\"Per node sampling rate Fixed\""};
+                sequence_sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+                per_Node_sampling[1] = Parameters.get_INT(sequence_sampling_Parameters[0]);
+                cout << "Sequences sampled per node: " << per_Node_sampling[1] << endl;
+            }
+            else if (functions.to_Upper_Case(Parameters.get_STRING(sampling_Parameters[3])) == "BINOMIAL")
+            {
+                cout << "Binomial distribution\n";
+                per_Node_sampling[0] = 1;
+                parameters_List = {"\"Per node sampling rate Binomial trials\"",
+                                   "\"Per node sampling rate Binomial probability\""};
+                sequence_sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+                per_Node_sampling[1] = Parameters.get_INT(sequence_sampling_Parameters[0]);
+                per_Node_sampling[2] = Parameters.get_FLOAT(sequence_sampling_Parameters[1]);
+
+                cout << "Per node sampling rate Binomial trials: " << per_Node_sampling[1] << endl;
+                cout << "Per node sampling rate Binomial probability: " << per_Node_sampling[2] << endl;
+            }
+
+            cout << "Limited number of sequences to be sampled: ";
+            if (functions.to_Upper_Case(Parameters.get_STRING(sampling_Parameters[4])) == "YES")
+            {
+                cout << "YES\n";
+                cout << "Sequenced limit: ";
+                parameters_List = {"\"Max samples to obtain\""};
+                vector<string> sequence_sampling_limit = Parameters.get_parameters(node_Master_location, parameters_List);
+
+                limit_Sampled = Parameters.get_INT(sequence_sampling_limit[0]);
+                cout << limit_Sampled << endl;
+            }
+            else
+            {
+                cout << "Unlimited sampling\n";
+            }
         }
         else
         {
             cout << "Inactive\n";
         }
+
+        // exit(-1);
 
         progeny_distribution_Model = Parameters.get_STRING(found_Parameters[5]);
         transform(progeny_distribution_Model.begin(), progeny_distribution_Model.end(), progeny_distribution_Model.begin(), ::toupper);

@@ -8,13 +8,17 @@
   "Scale days in host":"0.27",
 
   "Sampling present":"Yes",
-  "Sampling rate Binomial trials":2,
-  "Sampling rate Binomial probability":"0.5",
 
   # If Resampling is YES, then the same node can be sampled multiple times as long as it is not removed.
   "Resampling of nodes":"Yes",
 
-  "Distribution sequences sampled":"FIXED",
+  "Sampling rate Binomial trials":2,
+  "Sampling rate Binomial probability":"0.5",
+
+  "Distribution per node sequences sampled":"FIXED",
+  "Per node sampling rate Binomial trials":2,
+  "Per node sampling rate Binomial probability":"0.5",
+  "Per node sampling rate Fixed":1,
 
   # Control if the simulation ends via the max sampled sequences or not
   "Limit samples otained":"Yes",

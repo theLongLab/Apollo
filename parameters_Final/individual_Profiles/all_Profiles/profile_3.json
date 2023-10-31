@@ -1,5 +1,5 @@
 {
-  "Profile name":"Adults normal",
+  "Profile name":"Adults Normal",
 
   "Probability of occurence":"0.10",
   # Sampled individuals can be REMOVED from the infectious population or become LESS INFECTIOUS or NO CHANGE to infectivity
