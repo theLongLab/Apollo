@@ -45,6 +45,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
          << endl;
 
     this->multi_Read = Parameters.get_STRING(found_Parameters[5]);
+    transform(multi_Read.begin(), multi_Read.end(), multi_Read.begin(), ::toupper);
     cout << "Multiple read and write: " << this->multi_Read << endl
          << endl;
 
@@ -220,11 +221,18 @@ void simulator_Master::ingress()
     cout << "STEP 4: Assigning profiles to network nodes\n\n";
     vector<node_within_host> Hosts = node_Profile_assignment_Manager(functions);
 
+    // for (int host = 0; host < Total_number_of_Nodes; host++)
+    // {
+    //     Hosts[host].print_All();
+    // }
+
+    // exit(-1);
+
     cout << "STEP 5: Infection begins\n\n";
-    apollo(functions);
+    apollo(functions, Hosts);
 }
 
-void simulator_Master::apollo(functions_library &functions)
+void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
     cout << "Configuring susceptible population\n\n";
     vector<int> susceptible_Population;
@@ -234,7 +242,7 @@ void simulator_Master::apollo(functions_library &functions)
         susceptible_Population.push_back(i);
     }
 
-    cout << "Starting infection\n\n";
+    cout << "Starting infection\n";
 
     vector<int> infected_Population;
     vector<int> infectious_Population;
@@ -270,7 +278,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
     int susceptible_Index = distribution(gen);
     node_infected = susceptible_Population[susceptible_Index];
 
-    cout << "Node " << all_node_IDs[node_infected].first << "_" << all_node_IDs[node_infected].second << " infected first\n";
+    cout << "Node " << all_node_IDs[node_infected].first << "_" << all_node_IDs[node_infected].second << " infected first\n\n";
 
     infected_Population.push_back(node_infected);
     sort(infected_Population.begin(), infected_Population.end());
@@ -287,7 +295,127 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
 
     susceptible_Population = susceptible_Population_Temp;
 
+    cout << "Infecting node with reference genomes\n";
+
+    read_Reference_Sequences(node_infected);
+
     return node_infected;
+}
+
+void simulator_Master::read_Reference_Sequences(int index_first_Infected)
+{
+    // parent_Sequence_Folder
+
+    vector<string> sequences_Paths;
+    cout << "Reading parent sequence folder: " << parent_Sequence_Folder << endl;
+
+    if (filesystem::exists(parent_Sequence_Folder) && filesystem::is_directory(parent_Sequence_Folder))
+    {
+        for (const auto &entry : filesystem::directory_iterator(parent_Sequence_Folder))
+        {
+            if (filesystem::is_regular_file(entry))
+            {
+                string check_Extenstion = entry.path().extension();
+                if (check_Extenstion == ".fasta" || check_Extenstion == ".fa" || check_Extenstion == ".nfa" || check_Extenstion == ".nfasta")
+                {
+                    // cout << "Found sequence: " << entry.path() << endl;
+                    sequences_Paths.push_back(entry.path().string());
+                    // cout << "Found sequence: " << sequences_Paths[sequences_Paths.size() - 1] << endl;
+                }
+            }
+        }
+
+        if (sequences_Paths.size() > 0)
+        {
+
+            cout << "Indentified " << sequences_Paths.size() << " parent sequence file(s)\n\n";
+
+            vector<string> collect_Sequences = read_Reference_Sequence_Files(sequences_Paths);
+            if (collect_Sequences.size() > 0)
+            {
+                cout << "\nIdentified " << collect_Sequences.size() << " parent sequences\n";
+
+                cout << "Validating collected parent sequences\n";
+                genome_Length = collect_Sequences[0].size();
+
+                for (int genome = 1; genome < collect_Sequences.size(); genome++)
+                {
+                    if (collect_Sequences[genome].size() != genome_Length)
+                    {
+                        cout << "ERROR ALL GENOMES MUST BE OF EQUAL LENGTH\n";
+                        exit(-1);
+                    }
+                }
+                cout << "All sequences are of valid lenth: " << genome_Length << endl;
+            }
+            else
+            {
+                cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCES.\n";
+                exit(-1);
+            }
+        }
+        else
+        {
+            cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCE FILES.\n";
+            exit(-1);
+        }
+    }
+    else
+    {
+        cout << "ERROR: PARENT SEQUENCE FOLDER DOES NOT EXIST AT THE GIVEN PATH: " << parent_Sequence_Folder << endl;
+        exit(-1);
+    }
+}
+
+vector<string> simulator_Master::read_Reference_Sequence_Files(vector<string> &reference_Files)
+{
+    vector<string> collect_Sequences;
+    // cout << "Reading FASTA file: \n";
+
+    for (int file_Index = 0; file_Index < reference_Files.size(); file_Index++)
+    {
+        // cout << "Loop\n";
+        // cout << "Reading FASTA file: " << reference_Files[file_Index];
+        fstream fasta_Read;
+        fasta_Read.open(reference_Files[file_Index], ios::in);
+        if (fasta_Read.is_open())
+        {
+            cout << "Reading FASTA file: " << reference_Files[file_Index] << "\n";
+
+            string line;
+            string sequence = "";
+
+            while (getline(fasta_Read, line))
+            {
+                if (line.at(0) == '>')
+                {
+                    if (sequence != "")
+                    {
+                        collect_Sequences.push_back(sequence);
+                        sequence = "";
+                    }
+                }
+                else
+                {
+                    sequence.append(line);
+                }
+            }
+
+            if (sequence != "")
+            {
+                collect_Sequences.push_back(sequence);
+            }
+
+            fasta_Read.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN FASTA FILE: " << reference_Files[file_Index] << endl;
+            exit(-1);
+        }
+    }
+
+    return collect_Sequences;
 }
 
 vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(functions_library &functions)
@@ -416,6 +544,7 @@ vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(funct
     functions.clear_Array_float_CPU(infectious_load_Profiles_param, number_of_node_Profiles);
     functions.clear_Array_float_CPU(terminal_load_Profiles_param, number_of_node_Profiles);
     functions.clear_Array_float_CPU(profile_tissue_Limits, num_tissues_per_Node * number_of_node_Profiles);
+    functions.clear_Array_float_CPU(each_Node_Profile_Configuration, Total_number_of_Nodes);
 
     cout << endl;
 
@@ -443,7 +572,6 @@ vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(funct
     //     }
     //     cout << endl;
     // }
-    functions.clear_Array_float_CPU(each_Node_Profile_Configuration, Total_number_of_Nodes);
     return Hosts;
 }
 

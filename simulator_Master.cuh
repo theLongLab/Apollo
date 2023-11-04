@@ -204,6 +204,9 @@ private:
     string output_Network_location = "";
     string network_File_location = "";
 
+    //vector<string> raw_parent_Sequences;
+    int genome_Length = 0;
+
 public:
     simulator_Master(string parameter_Master_Location);
 
@@ -225,7 +228,11 @@ public:
     vector<node_within_host> node_Profile_assignment_Manager(functions_library &functions);
     void node_Profile_assignment_thread(int start_Node, int stop_Node);
 
-    void apollo(functions_library &functions);
+    void apollo(functions_library &functions, vector<node_within_host> &Hosts);
+
     int get_first_Infected(vector<int> &susceptible_Population,
                            vector<int> &infected_Population);
+
+    void read_Reference_Sequences(int index_first_Infected);
+    vector<string> read_Reference_Sequence_Files(vector<string> &reference_Files);
 };

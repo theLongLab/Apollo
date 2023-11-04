@@ -42,22 +42,24 @@ private:
     int terminal_Load;
     float sampling_Effect;
 
+    int num_Tissues;
     int *cell_Limit;
 
     string status = "Susceptible";
+    int current_Generation = 0;
 
 public:
     node_within_host();
 
-    void setHost(int host_Index, int cave_ID, int host_ID,int profile_ID);
-
+    void setHost(int host_Index, int cave_ID, int host_ID, int profile_ID);
     void setNum_Generation(int num_Generation);
-
     void setInfectious_Load(int infectious_Load);
-
     void setTerminal_Load(int terminal_Load);
-
     void setSampling_Effect(float sampling_Effect);
-
     void setCell_Limit(vector<int> cell_Limit_vec);
+
+    void print_All();
+
+    void begin_Infection();
+    void run_Generation();
 };

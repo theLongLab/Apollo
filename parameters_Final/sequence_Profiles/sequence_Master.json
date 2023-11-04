@@ -1,8 +1,14 @@
 {
   # Contains all intial sequences
-  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/reference_Genomes",
+  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/reference_Genomes",
 
   "Mutation availability":"Yes",
+
+  # Control the viral transmission bottleneck from one host to another 
+  "Transmitted sequence distribution":"Fixed",
+  "Transmitted sequence Binomial trials":2,
+  "Transmitted sequence Binomial probability":"0.5",
+  "Transmitted sequence Fixed":1,
 
   # IF LOCATIONS EQUAL NA THEN NO PROFILES WILL BE CREATED
   "Fitness profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/profiles/sequence_Fitness_Profile.csv",

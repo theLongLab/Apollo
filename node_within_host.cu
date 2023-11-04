@@ -36,10 +36,28 @@ void node_within_host::setSampling_Effect(float sampling_Effect)
 
 void node_within_host::setCell_Limit(vector<int> cell_Limit_vec)
 {
-    this->cell_Limit = (int *)malloc(sizeof(int) * cell_Limit_vec.size());
+    num_Tissues = cell_Limit_vec.size();
+    this->cell_Limit = (int *)malloc(sizeof(int) * num_Tissues);
 
-    for (size_t i = 0; i < cell_Limit_vec.size(); i++)
+    for (size_t i = 0; i < num_Tissues; i++)
     {
         cell_Limit[i] = cell_Limit_vec[i];
     }
+}
+
+void node_within_host::print_All()
+{
+    cout << host_Index << "\t"
+         << cave_ID << "_" << host_ID << "\t"
+         << profile_ID << "\t"
+         << num_Generation << "\t"
+         << infectious_Load << "\t"
+         << terminal_Load << "\t"
+         << sampling_Effect;
+
+    for (size_t i = 0; i < num_Tissues; i++)
+    {
+        cout << "\t" << cell_Limit[i];
+    }
+    cout << endl;
 }

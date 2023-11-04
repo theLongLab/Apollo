@@ -7,7 +7,6 @@
 
 #include <unistd.h>
 #include <bits/stdc++.h>
-#include <bits/stdc++.h>
 #include <cuda.h>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
