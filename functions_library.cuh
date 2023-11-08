@@ -37,6 +37,11 @@ private:
     int tot_Blocks;
     int tot_ThreadsperBlock;
 
+    int *CUDA_device_IDs;
+    int num_Cuda_devices;
+    int *tot_Blocks_array;
+    int *tot_ThreadsperBlock_array;
+
     int gpu_Limit;
     int CPU_cores;
 
@@ -97,8 +102,10 @@ public:
 
     functions_library();
     functions_library(int tot_Blocks, int tot_ThreadsperBlock, int gpu_Limit, int CPU_cores);
+    functions_library(int *tot_Blocks_array, int *tot_ThreadsperBlock_array, int *CUDA_device_IDs, int num_Cuda_devices, int gpu_Limit, int CPU_cores);
 
     void print_Cuda_device(int cuda_ID, int &tot_Blocks, int &tot_ThreadsperBlock);
+    void print_Cuda_devices(vector<string> cuda_IDs, int *CUDA_device_IDs, int num_Cuda_devices, int *tot_Blocks, int *tot_ThreadsperBlock);
 
     void config_Folder(string location, string type_Folder);
     void create_File(string location, string headers);
@@ -233,6 +240,8 @@ public:
     int get_base_Index(string base);
 
     int binary_Search(vector<int> &values, int value);
-    
+
     string clean_Line(string &line);
+
+    void process_Reference_Sequences(vector<string> collect_Sequences);
 };

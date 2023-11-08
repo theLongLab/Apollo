@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
           vector<string> found_Parameters = Parameters.get_parameters(parameter_MASTER_file, parameters_List);
 
           network net = network(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]), Parameters.get_STRING(found_Parameters[3]), 1);
-          net.ncbi_gene_Count();
+          net.align_One();
           exit(-1);
      }
 

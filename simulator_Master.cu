@@ -8,7 +8,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     functions_library function = functions_library();
 
     vector<string> parameters_List = {
-        "\"CUDA Device ID\"",
+        "\"CUDA Device IDs\"",
         "\"CPU cores\"",
         "\"GPU max units\"",
         "\"Intermediate folders\"",
@@ -49,8 +49,24 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     cout << "Multiple read and write: " << this->multi_Read << endl
          << endl;
 
-    this->CUDA_device_number = Parameters.get_INT(found_Parameters[0]);
-    function.print_Cuda_device(this->CUDA_device_number, this->tot_Blocks, this->tot_ThreadsperBlock);
+    // this->CUDA_device_number = Parameters.get_INT(found_Parameters[0]);
+    string cuda_IDs_String = Parameters.get_STRING(found_Parameters[0]);
+    vector<string> cuda_IDs;
+    function.split(cuda_IDs, cuda_IDs_String, ',');
+    if (cuda_IDs.size() > 0)
+    {
+        this->num_Cuda_devices = cuda_IDs.size();
+        CUDA_device_IDs = (int *)malloc(sizeof(int) * num_Cuda_devices);
+        tot_Blocks = (int *)malloc(sizeof(int) * num_Cuda_devices);
+        tot_ThreadsperBlock = (int *)malloc(sizeof(int) * num_Cuda_devices);
+        function.print_Cuda_devices(cuda_IDs, this->CUDA_device_IDs, num_Cuda_devices, this->tot_Blocks, this->tot_ThreadsperBlock);
+    }
+    else
+    {
+        cout << "ERROR: THERE HAS TO BE AT LEAST ONE CUDA DEVICE SELECTED\n";
+        exit(-1);
+    }
+    // function.print_Cuda_device(this->CUDA_device_number, this->tot_Blocks, this->tot_ThreadsperBlock);
 
     this->gpu_Limit = Parameters.get_INT(found_Parameters[2]);
 
@@ -59,6 +75,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
 
     configure_Network_Profile(Parameters.get_STRING(found_Parameters[6]), Parameters);
     cout << "\n";
+
+    // exit(-1);
 }
 
 void simulator_Master::configure_Network_Profile(string network_Profile_File, parameter_load &Parameters)
@@ -201,9 +219,10 @@ void simulator_Master::configure_Network_Profile(string network_Profile_File, pa
 
 void simulator_Master::ingress()
 {
-    functions_library functions = functions_library(tot_Blocks, tot_ThreadsperBlock, gpu_Limit, CPU_cores);
+    functions_library functions = functions_library(tot_Blocks, tot_ThreadsperBlock, CUDA_device_IDs, num_Cuda_devices, gpu_Limit, CPU_cores);
 
-    cout << "STEP 1: Configuring population network\n\n";
+    cout
+        << "STEP 1: Configuring population network\n\n";
 
     // ! Compatible for both BA and Caveman
     // INT, INT = Cave_ID and Node, for BA CaveID is 0 for all.
@@ -249,7 +268,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
     vector<int> removed_Population;
 
-    int first_Infected = get_first_Infected(susceptible_Population, infected_Population);
+    int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
     // cout << Total_number_of_Nodes << endl;
     // cout << susceptible_Population.size() << endl;
     // cout << infected_Population.size() << endl;
@@ -266,7 +285,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 }
 
 int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
-                                         vector<int> &infected_Population)
+                                         vector<int> &infected_Population, functions_library &functions)
 {
     int node_infected = -1;
 
@@ -297,12 +316,12 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
 
     cout << "Infecting node with reference genomes\n";
 
-    read_Reference_Sequences(node_infected);
+    functions.process_Reference_Sequences(read_Reference_Sequences(node_infected));
 
     return node_infected;
 }
 
-void simulator_Master::read_Reference_Sequences(int index_first_Infected)
+vector<string> simulator_Master::read_Reference_Sequences(int index_first_Infected)
 {
     // parent_Sequence_Folder
 
@@ -347,6 +366,7 @@ void simulator_Master::read_Reference_Sequences(int index_first_Infected)
                     }
                 }
                 cout << "All sequences are of valid lenth: " << genome_Length << endl;
+                return collect_Sequences;
             }
             else
             {
@@ -701,12 +721,44 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         "\"Mutation availability\"",
         "\"Recombination availability\"",
         "\"Reference Fitness\"",
-        "\"Reference Survivability\""};
+        "\"Reference Survivability\"",
+        "\"Transmitted sequence distribution\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
 
     parent_Sequence_Folder = Parameters.get_STRING(found_Parameters[0]);
     cout << "\nParent sequences folder: " << parent_Sequence_Folder << endl;
+
+    cout << "\nConfiguration of Viral Tranmssion bottleneck\n";
+    transmission_parameters = (float *)malloc(sizeof(float) * 3);
+    vector<string> transmitted_Parameters;
+    cout << "Transmission distribution: ";
+    if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[5])) == "FIXED")
+    {
+        transmission_parameters[0] = 0;
+        cout << "FIXED\n";
+        parameters_List = {"\"Transmitted sequence Fixed\""};
+        transmitted_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+        transmission_parameters[1] = Parameters.get_INT(transmitted_Parameters[0]);
+        cout << "Transmitted sequence Fixed: " << transmission_parameters[1] << endl;
+    }
+    else if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[5])) == "BINOMIAL")
+    {
+        transmission_parameters[0] = 1;
+        cout << "BINOMIAL\n";
+        parameters_List = {"\"Transmitted sequence Binomial trials\"",
+                           "\"Transmitted sequence Binomial probability\""};
+        transmitted_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+        transmission_parameters[1] = Parameters.get_INT(transmitted_Parameters[0]);
+        transmission_parameters[2] = Parameters.get_FLOAT(transmitted_Parameters[1]);
+        cout << "Transmitted sequence Binomial trials: " << transmission_parameters[1] << endl;
+        cout << "Transmitted sequence Binomial probability: " << transmission_parameters[2] << endl;
+    }
+    else
+    {
+        cout << "ERROR Transmitted sequence distribution HAS TO BE EITHER \"FIXED\" OR \"NEGATIVE BINOMIAL\"";
+        exit(1);
+    }
 
     cout << "\nConfiguring reference genome parameters:\n";
     Reference_fitness_survivability_proof_reading = (float *)malloc(sizeof(float) * 3);
@@ -1151,6 +1203,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         }
     }
     cout << endl;
+   // exit(-1);
 }
 
 void simulator_Master::node_Master_Manager(functions_library &functions)

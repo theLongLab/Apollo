@@ -43,9 +43,12 @@ private:
     string intermediate_Folder_location;
 
     int CUDA_device_number;
+
+    int *CUDA_device_IDs;
+    int num_Cuda_devices;
     int gpu_Limit;
-    int tot_Blocks;
-    int tot_ThreadsperBlock;
+    int *tot_Blocks;
+    int *tot_ThreadsperBlock;
 
     int CPU_cores;
     string output_Folder;
@@ -165,6 +168,11 @@ private:
     // 0 = inactive 1 = activated
     int *mutation_recombination_proof_Reading_availability;
 
+    // 0 = Fixed (0) or Binomial (1)
+    // 1 = Fixed value / Trials bim,
+    // 2 = Probability binom
+    float *transmission_parameters;
+
     float *Reference_fitness_survivability_proof_reading;
 
     // columns
@@ -204,7 +212,7 @@ private:
     string output_Network_location = "";
     string network_File_location = "";
 
-    //vector<string> raw_parent_Sequences;
+    // vector<string> raw_parent_Sequences;
     int genome_Length = 0;
 
 public:
@@ -231,8 +239,8 @@ public:
     void apollo(functions_library &functions, vector<node_within_host> &Hosts);
 
     int get_first_Infected(vector<int> &susceptible_Population,
-                           vector<int> &infected_Population);
+                           vector<int> &infected_Population, functions_library &functions);
 
-    void read_Reference_Sequences(int index_first_Infected);
+    vector<string> read_Reference_Sequences(int index_first_Infected);
     vector<string> read_Reference_Sequence_Files(vector<string> &reference_Files);
 };

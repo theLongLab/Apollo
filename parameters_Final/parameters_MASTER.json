@@ -1,6 +1,6 @@
 {
   # Cuda device
-  "CUDA Device ID":0,
+  "CUDA Device IDs":"0",
 
   "CPU cores":5,
   "GPU max units":1000,

@@ -1317,6 +1317,395 @@ void network::ncbi_find_conserved()
     align_Write.close();
 }
 
+void network::align_One()
+{
+    functions_library function = functions_library();
+
+    cout << "NCBI count\n\n";
+
+    string primary_Location = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Dr_Koul/New test";
+    string count_Location = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Dr_Koul/one_Only.csv";
+
+    vector<string> gene_Names_to_get;
+    vector<string> gene_headers;
+    vector<string> gene_Missing_Headers;
+
+    fstream count_File;
+    count_File.open(count_Location, ios::in);
+
+    if (count_File.is_open())
+    {
+        cout << "Processing count file\n";
+
+        string line;
+        vector<string> line_Data;
+
+        getline(count_File, line);
+        string clean_Line = function.clean_Line(line);
+
+        function.split(line_Data, clean_Line, ',');
+
+        for (size_t i = 1; i < line_Data.size() - 1; i++)
+        {
+            gene_headers.push_back(line_Data[i]);
+            cout << gene_headers[gene_headers.size() - 1] << endl;
+        }
+
+        cout << endl;
+
+        while (getline(count_File, line))
+        {
+            clean_Line = function.clean_Line(line);
+            function.split(line_Data, clean_Line, ',');
+
+            cout << "Gene name: " << line_Data[0] << endl;
+            gene_Names_to_get.push_back(line_Data[0]);
+
+            for (size_t i = 1; i < line_Data.size() - 1; i++)
+            {
+                if (stoi(line_Data[i]) == 0)
+                {
+                    cout << "Missing species: " << gene_headers[i - 1] << endl;
+                    gene_Missing_Headers.push_back(gene_headers[i - 1]);
+                }
+            }
+            cout << endl;
+        }
+
+        count_File.close();
+    }
+
+    // cout << endl;
+
+    string output_Folder = "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/results_of_Simulation/align_Folder/";
+    function.config_Folder(output_Folder, "Output folder");
+
+    for (int gene = 0; gene < gene_Names_to_get.size(); gene++)
+    {
+        cout << "\nProcessing gene: " << gene_Names_to_get[gene] << endl;
+        string output_Folder_sub = output_Folder + "/" + gene_Names_to_get[gene];
+        string folder_Name = "";
+        if (gene_Missing_Headers[gene] != gene_headers[0])
+        {
+            folder_Name = gene_headers[0];
+        }
+        else
+        {
+            folder_Name = gene_headers[1];
+        }
+
+        string nest_Location = primary_Location + "/" + folder_Name + "/ncbi_dataset/data";
+        vector<string> sequence_GFF_folders;
+
+        for (const auto &entry : filesystem::directory_iterator(nest_Location))
+        {
+            if (filesystem::is_directory(entry.status()))
+            {
+                string folder_Name = entry.path().filename().string();
+                sequence_GFF_folders.push_back(folder_Name);
+                // cout << folder_Name << endl;
+            }
+        }
+
+        cout << sequence_GFF_folders.size() << " sequence folders found\n\n";
+        vector<pair<string, int>> gene_Count_Folder_ONLY;
+
+        int found = 0;
+        string seq_ID;
+        int start;
+        int stop;
+        string seq_File = "";
+
+        for (int seq_Folder_ID = 0; seq_Folder_ID < sequence_GFF_folders.size(); seq_Folder_ID++)
+        {
+            if (found == 0)
+            {
+                cout << "Processing: " << sequence_GFF_folders[seq_Folder_ID] << endl
+                     << endl;
+
+                string sequence_Folder_location = nest_Location + "/" + sequence_GFF_folders[seq_Folder_ID];
+
+                string fna_File = "";
+                string gff_File = "";
+
+                for (const auto &entry : filesystem::directory_iterator(sequence_Folder_location))
+                {
+                    if (filesystem::is_regular_file(entry.status()))
+                    {
+                        string file_Query = entry.path().filename().string();
+                        // cout << file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) << endl;
+                        if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fna" || file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fasta")
+                        {
+                            fna_File = file_Query;
+                        }
+                        else if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".gff")
+                        {
+                            gff_File = file_Query;
+                        }
+                    }
+                }
+                cout << "GFF file\t: " << gff_File << "\n"
+                     << "Sequence file: " << fna_File << endl
+                     << endl;
+
+                if (gff_File != "" && fna_File != "")
+                {
+                    fstream gff_Read;
+                    gff_Read.open(sequence_Folder_location + "/" + gff_File, ios::in);
+
+                    if (gff_Read.is_open())
+                    {
+                        cout << "Processing GFF file\n";
+
+                        string line;
+
+                        while (getline(gff_Read, line))
+                        {
+                            if (line.at(0) != '#')
+                            {
+                                break;
+                            }
+                        }
+                        do
+                        {
+                            vector<string> line_Split;
+                            function.split(line_Split, line, '\t');
+
+                            if (line_Split[1] == "RefSeq")
+                            {
+                                if (line_Split[2] == "gene")
+                                {
+                                    seq_ID = line_Split[0];
+                                    start = stoi(line_Split[3]) - 1;
+                                    stop = stoi(line_Split[4]);
+                                    seq_File = sequence_Folder_location + "/" + fna_File;
+                                    string gene_Name;
+
+                                    vector<string> description_Split;
+                                    function.split(description_Split, line_Split[line_Split.size() - 1], ';');
+                                    for (string sub_Split : description_Split)
+                                    {
+                                        vector<string> sub_Split_vector;
+                                        function.split(sub_Split_vector, sub_Split, '=');
+                                        if (sub_Split_vector[0] == "Name")
+                                        {
+                                            gene_Name = sub_Split_vector[1];
+                                            break;
+                                        }
+                                    }
+
+                                    if (gene_Name == gene_Names_to_get[gene])
+                                    {
+                                        cout << "Gene found\n";
+                                        found = 1;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            getline(gff_Read, line);
+                        } while (line.at(0) != '#');
+                        gff_Read.close();
+                    }
+                }
+            }
+            if (found == 1)
+            {
+                break;
+            }
+        }
+        if (found == 1)
+        {
+            cout << "Extracting gene\n"
+                 << seq_ID << endl
+                 << start << endl
+                 << stop << endl
+                 << seq_File << endl;
+
+            fstream sequence_Read;
+            sequence_Read.open(seq_File, ios::in);
+
+            vector<pair<string, string>> ID_sequences;
+
+            if (sequence_Read.is_open())
+            {
+                cout << "Processing sequence file\n";
+                string line;
+                int sequence_Catch = 0;
+
+                string sequence_Full = "";
+                string sequence_Name = "";
+
+                while (getline(sequence_Read, line))
+                {
+                    if (line.at(0) == '>')
+                    {
+                        // cout << line << endl;
+
+                        if (sequence_Catch == 1)
+                        {
+                            ID_sequences.push_back(make_pair(sequence_Name, sequence_Full));
+                            sequence_Name = line.substr(1, line.length());
+                            // sequence_Catch = 0;
+                            sequence_Full = "";
+                        }
+                        else
+                        {
+                            sequence_Catch = 1;
+                            sequence_Name = line.substr(1, line.length());
+                        }
+                    }
+                    else
+                    {
+                        sequence_Full.append(line);
+                    }
+                }
+
+                ID_sequences.push_back(make_pair(sequence_Name, sequence_Full));
+                sequence_Read.close();
+
+                cout << ID_sequences.size() << " sequence(s) found\n\n";
+
+                for (int f_Seq = 0; f_Seq < ID_sequences.size(); f_Seq++)
+                {
+                    vector<string> line_Data;
+                    string name = ID_sequences[f_Seq].first;
+                    function.split(line_Data, name, ' ');
+
+                    cout << line_Data[0] << endl;
+
+                    if (line_Data[0] == seq_ID)
+                    {
+                        cout << "Found seq\n";
+                        string sequence = ID_sequences[f_Seq].second.substr(start, (stop - start));
+
+                        function.config_Folder(output_Folder_sub, gene_Names_to_get[gene]);
+                        string file_Write_Location = output_Folder_sub + "/query.fasta";
+
+                        if (!filesystem::exists(file_Write_Location))
+                        {
+                            function.create_File(file_Write_Location);
+                            // gene_Count.push_back(make_pair(gene_Name, 1));
+                        }
+
+                        fstream gene_Write;
+                        gene_Write.open(file_Write_Location, ios::app);
+
+                        gene_Write << ">" << ID_sequences[f_Seq].first << "_" << gene_Names_to_get[gene] << "\n";
+                        gene_Write << sequence << "\n";
+
+                        gene_Write.close();
+
+                        // exit(-1);
+                    }
+                }
+            }
+            cout << "\nLooking for missing gene\n";
+            string missing_Genome = gene_Missing_Headers[gene];
+            cout << missing_Genome << endl;
+            string missing_Location = primary_Location + "/" + missing_Genome + "/ncbi_dataset/data";
+
+            vector<string> missing_Folder_diretory;
+
+            for (const auto &entry : filesystem::directory_iterator(missing_Location))
+            {
+                if (filesystem::is_directory(entry.status()))
+                {
+                    string folder_Name = entry.path().filename().string();
+                    missing_Folder_diretory.push_back(folder_Name);
+                    // cout << folder_Name << endl;
+                }
+            }
+
+            cout << endl;
+            cout << missing_Folder_diretory.size() << " sequence folders found\n\n";
+
+            for (int seq_Folder_ID = 0; seq_Folder_ID < missing_Folder_diretory.size(); seq_Folder_ID++)
+            {
+                string sequence_Folder_location = missing_Location + "/" + missing_Folder_diretory[seq_Folder_ID];
+
+                string fna_File_Check = "";
+                string gff_File_Check = "";
+
+                for (const auto &entry : filesystem::directory_iterator(sequence_Folder_location))
+                {
+                    if (filesystem::is_regular_file(entry.status()))
+                    {
+                        string file_Query = entry.path().filename().string();
+                        // cout << file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) << endl;
+                        if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fna" || file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".fasta")
+                        {
+                            fna_File_Check = file_Query;
+                        }
+                        else if (file_Query.substr(file_Query.find_last_of('.'), file_Query.length()) == ".gff")
+                        {
+                            gff_File_Check = file_Query;
+                        }
+                    }
+                }
+
+                if (gff_File_Check != "" && fna_File_Check != "")
+                {
+                    if (fna_File_Check.substr(0, 3) == "GCF")
+                    {
+                        cout << "GFF file\t: " << gff_File_Check << "\n"
+                             << "Sequence file: " << fna_File_Check << endl
+                             << endl;
+
+                        fstream sequence_Split;
+                        sequence_Split.open(sequence_Folder_location + "/" + fna_File_Check, ios::in);
+
+                        string subject_Folder = output_Folder_sub + "/subject";
+                        function.config_Folder(subject_Folder, "Subject");
+
+                        int count = 1;
+
+                        if (sequence_Split.is_open())
+                        {
+                            string line;
+                            fstream sequence_out;
+                            int write = 0;
+                            while (getline(sequence_Split, line))
+                            {
+                                if (line.at(0) == '>')
+                                {
+                                    if (write == 0)
+                                    {
+                                        sequence_out.open(subject_Folder + "/subject_" + to_string(count) + ".fasta", ios::out);
+                                        sequence_out << line << endl;
+                                        write = 1;
+                                        count++;
+                                    }
+                                    else
+                                    {
+                                        sequence_out.close();
+                                        sequence_out.open(subject_Folder + "/subject_" + to_string(count) + ".fasta", ios::out);
+                                        sequence_out << line << endl;
+                                        // write = 1;
+                                        count++;
+                                    }
+                                }
+                                else
+                                {
+                                    sequence_out << line << endl;
+                                }
+                            }
+                            sequence_out.close();
+                            sequence_Split.close();
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            cout << "Not found\n";
+            exit(-1);
+        }
+        //exit(-1);
+    }
+}
+
 void network::ncbi_gene_Count()
 {
     functions_library function = functions_library();

@@ -4,8 +4,9 @@
 
   "Mutation availability":"Yes",
 
-  # Control the viral transmission bottleneck from one host to another 
-  "Transmitted sequence distribution":"Fixed",
+  # DO
+  # Control the viral transmission bottleneck from one host to another
+  "Transmitted sequence distribution":"BINOMIAL",
   "Transmitted sequence Binomial trials":2,
   "Transmitted sequence Binomial probability":"0.5",
   "Transmitted sequence Fixed":1,

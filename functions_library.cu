@@ -13,6 +13,19 @@ functions_library::functions_library(int tot_Blocks, int tot_ThreadsperBlock, in
     this->CPU_cores = CPU_cores;
 }
 
+functions_library::functions_library(int *tot_Blocks_array, int *tot_ThreadsperBlock_array, int *CUDA_device_IDs, int num_Cuda_devices, int gpu_Limit, int CPU_cores)
+{
+    this->tot_Blocks_array = tot_Blocks_array;
+    this->tot_ThreadsperBlock_array = tot_ThreadsperBlock_array;
+    this->CUDA_device_IDs = CUDA_device_IDs;
+    this->num_Cuda_devices = num_Cuda_devices;
+    this->gpu_Limit = gpu_Limit;
+    this->CPU_cores = CPU_cores;
+
+    tot_Blocks = tot_Blocks_array[0];
+    tot_ThreadsperBlock = tot_Blocks_array[0];
+}
+
 string functions_library::to_Upper_Case(const string &text)
 {
     string result = text;
@@ -43,6 +56,40 @@ void functions_library::print_Cuda_device(int cuda_ID, int &tot_Blocks, int &tot
     tot_Blocks = prop.maxBlocksPerMultiProcessor;
     tot_ThreadsperBlock = prop.maxThreadsPerBlock;
     cout << "GPU thread(s) per block\t: " << tot_ThreadsperBlock << endl;
+}
+
+void functions_library::print_Cuda_devices(vector<string> cuda_IDs, int *CUDA_device_IDs, int num_Cuda_devices, int *tot_Blocks, int *tot_ThreadsperBlock)
+{
+    int nDevices;
+    cudaGetDeviceCount(&nDevices);
+
+    if (nDevices >= num_Cuda_devices)
+    {
+        cout << "Properties of selected " << num_Cuda_devices << " CUDA GPU(s):" << endl;
+        for (int device = 0; device < num_Cuda_devices; device++)
+        {
+            cudaDeviceProp prop;
+            CUDA_device_IDs[device] = stoi(cuda_IDs[device]);
+            cudaGetDeviceProperties(&prop, CUDA_device_IDs[device]);
+            cout << "\nGPU number\t: " << CUDA_device_IDs[device] << endl;
+            cout << "GPU name\t: " << prop.name << endl;
+            size_t l_free = 0;
+            size_t l_Total = 0;
+            cudaError_t error_id = cudaMemGetInfo(&l_free, &l_Total);
+            cout << "GPU memory (GB)\t: " << l_Total / (1000 * 1000 * 1000) << endl;
+            cout << "GPU number of multiprocessor(s)\t: " << prop.multiProcessorCount << endl;
+            tot_Blocks[device] = prop.maxBlocksPerMultiProcessor;
+            cout << "GPU block(s) per multiprocessor\t: " << tot_Blocks[device] << endl;
+            tot_ThreadsperBlock[device] = prop.maxThreadsPerBlock;
+            cout << "GPU thread(s) per block\t: " << tot_ThreadsperBlock[device] << endl;
+        }
+    }
+    else
+    {
+        cout << "ERROR: THERE MORE CUDA DEVICES THAN PRESENT HAVE BEEN SELECTED\n";
+        cout << "USER HAS SELECTED " << num_Cuda_devices << " BUT THERE IS/ ARE ONLY " << nDevices << " PRESENT IN THE SYSTEM\n";
+        exit(-1);
+    }
 }
 
 float functions_library::beta_Distribution(float &alpha, float &beta, mt19937 &gen)
@@ -5548,4 +5595,27 @@ string functions_library::clean_Line(string &line)
     }
 
     return output_Line;
+}
+
+void functions_library::process_Reference_Sequences(vector<string> collect_Sequences)
+{
+    cout << "\nProcessing collected sequences\n";
+
+    int total_Sequences = collect_Sequences.size();
+    string all_Sequences = "";
+
+    int site_Index[total_Sequences + 1];
+    site_Index[0] = 0;
+
+    for (size_t i = 0; i < total_Sequences; i++)
+    {
+        all_Sequences.append(collect_Sequences[i]);
+        site_Index[i + 1] = site_Index[i] + collect_Sequences[i].size();
+    }
+
+    char *full_Char;
+    full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+    strcpy(full_Char, all_Sequences.c_str());
+
+    collect_Sequences.clear();
 }

@@ -64,4 +64,6 @@ public:
     void ncbi_Read();
     void ncbi_find_conserved();
     void ncbi_gene_Count();
+
+    void align_One();
 };
