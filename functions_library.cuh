@@ -243,5 +243,5 @@ public:
 
     string clean_Line(string &line);
 
-    void process_Reference_Sequences(vector<string> collect_Sequences);
+    void process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length);
 };

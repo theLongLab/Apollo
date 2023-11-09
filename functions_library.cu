@@ -5597,25 +5597,193 @@ string functions_library::clean_Line(string &line)
     return output_Line;
 }
 
-void functions_library::process_Reference_Sequences(vector<string> collect_Sequences)
+__global__ void cuda_Sequences_to_INT(int num_Sequences, int *sequence_INT, int genome_Length, char *sites)
 {
-    cout << "\nProcessing collected sequences\n";
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
-    int total_Sequences = collect_Sequences.size();
-    string all_Sequences = "";
-
-    int site_Index[total_Sequences + 1];
-    site_Index[0] = 0;
-
-    for (size_t i = 0; i < total_Sequences; i++)
+    while (tid < num_Sequences)
     {
-        all_Sequences.append(collect_Sequences[i]);
-        site_Index[i + 1] = site_Index[i] + collect_Sequences[i].size();
+        int site_Start = tid * genome_Length;
+        int site_End = site_Start + genome_Length;
+
+        for (int site = site_Start; site < site_End; site++)
+        {
+            if (sites[site] == 'A' || sites[site] == 'a' || sites[site] == '0')
+            {
+                sequence_INT[site] = 0;
+            }
+            else if (sites[site] == 'T' || sites[site] == 't' || sites[site] == '1')
+            {
+                sequence_INT[site] = 1;
+            }
+            else if (sites[site] == 'G' || sites[site] == 'g' || sites[site] == '2')
+            {
+                sequence_INT[site] = 2;
+            }
+            else if (sites[site] == 'C' || sites[site] == 'c' || sites[site] == '3')
+            {
+                sequence_INT[site] = 3;
+            }
+        }
+
+        tid += blockDim.x * gridDim.x;
+    }
+}
+
+void functions_library::process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length)
+{
+    int total_Sequences = collect_Sequences.size();
+
+    cout << "\nProcessing " << total_Sequences << " collected sequence(s)\n";
+
+    int full_Rounds = total_Sequences / this->gpu_Limit;
+    int partial_Rounds = total_Sequences % this->gpu_Limit;
+
+    vector<pair<int, int>> start_stops;
+
+    for (int full = 0; full < full_Rounds; full++)
+    {
+        int start = full * this->gpu_Limit;
+        int stop = start + this->gpu_Limit;
+        start_stops.push_back(make_pair(start, stop));
     }
 
-    char *full_Char;
-    full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
-    strcpy(full_Char, all_Sequences.c_str());
+    if (partial_Rounds != 0)
+    {
+        int start = total_Sequences - partial_Rounds;
+        start_stops.push_back(make_pair(start, total_Sequences));
+    }
+
+    for (int round = 0; round < start_stops.size(); round++)
+    {
+        cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
+
+        int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
+
+        cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+
+        int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
+        int remainder = num_of_Sequences_current % num_Cuda_devices;
+
+        vector<pair<int, int>> start_stop_Per_GPU;
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            int start = gpu * standard_num_per_GPU;
+            int stop = start + standard_num_per_GPU;
+
+            start_stop_Per_GPU.push_back(make_pair(start, stop));
+        }
+
+        start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+
+        string all_Sequences = "";
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
+            {
+                all_Sequences.append(collect_Sequences[sequence]);
+            }
+        }
+
+        // int site_Index[num_of_Sequences_current + 1];
+        // site_Index[0] = 0;
+
+        // for (int i = 0; i < num_of_Sequences_current; i++)
+        // {
+        //     all_Sequences.append(collect_Sequences[start_stops[round].first + i]);
+        //     site_Index[i + 1] = site_Index[i] + collect_Sequences[start_stops[round].first + i].size();
+        // }
+
+        char *full_Char;
+        int *sequence;
+        full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+        sequence = (int *)malloc((all_Sequences.size() + 1) * sizeof(int));
+        strcpy(full_Char, all_Sequences.c_str());
+
+        cout << "Genome length: " << genome_Length << endl;
+        // exit(-1);
+
+        // for (size_t i = 0; i < num_of_Sequences_current; i++)
+        // {
+        //     int start = i * genome_Length;
+        //     for (size_t s = start; s < start + genome_Length; s++)
+        //     {
+        //         cout << full_Char[s];
+        //     }
+        //     cout << "\n\n";
+        // }
+
+        char *cuda_full_Char[num_Cuda_devices];
+        int *cuda_Sequence[num_Cuda_devices];
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+
+            cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
+            cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
+
+            cudaMalloc(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int));
+        }
+
+        cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPUs\n";
+
+        // int devID[num_Cuda_devices];
+        cudaStream_t streams[num_Cuda_devices];
+        cudaDeviceProp deviceProp;
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+            cudaGetDeviceProperties(&deviceProp, gpu);
+            cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
+            // devID[gpu] = CUDA_device_IDs[gpu];
+            cudaStreamCreate(&streams[gpu]);
+        }
+
+        // cout << "Run\n";
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+            cuda_Sequences_to_INT<<<tot_Blocks_array[gpu], tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu]);
+        }
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+            cudaStreamSynchronize(streams[gpu]);
+        }
+
+        cout << "GPUs streams completed and synchronized\nCopying data from GPU to Host memory";
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+            cudaMemcpy(sequence + (start_stop_Per_GPU[gpu].first * genome_Length), cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
+        }
+
+        cout << "Data received by host\n";
+
+        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        {
+            cudaSetDevice(CUDA_device_IDs[gpu]);
+            cudaFree(cuda_full_Char);
+            cudaFree(cuda_Sequence);
+            cudaStreamDestroy(streams[gpu]);
+        }
+
+        for (size_t i = 0; i < num_of_Sequences_current; i++)
+        {
+            int start = i * genome_Length;
+            for (size_t s = start; s < start + genome_Length; s++)
+            {
+                cout << sequence[s];
+            }
+            cout << "\n\n";
+        }
+    }
 
     collect_Sequences.clear();
 }

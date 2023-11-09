@@ -316,7 +316,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
 
     cout << "Infecting node with reference genomes\n";
 
-    functions.process_Reference_Sequences(read_Reference_Sequences(node_infected));
+    functions.process_Reference_Sequences(read_Reference_Sequences(node_infected),genome_Length);
 
     return node_infected;
 }
