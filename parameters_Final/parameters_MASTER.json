@@ -10,6 +10,8 @@
   "Output folders":"results",
   "Intermediate folders":"intermediates",
 
+  "Intermediate Sequences per file":10000
+
   "Seed":"x",
 
   # Network profile

@@ -48,6 +48,8 @@ private:
     set<int> parent_Indexes_Unique;
     vector<string> sequences;
 
+    vector<string> all_sequences_String;
+
 public:
     string mode = "PARENT";
 
@@ -243,5 +245,8 @@ public:
 
     string clean_Line(string &line);
 
-    void process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length);
+    int **process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length, int &round, int &num_of_Sequences_current);
+
+    vector<string> convert_Sequences_Master(int **sequences, int &genome_Length, int &num_of_Sequences_current);
+    void sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length);
 };

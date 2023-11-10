@@ -42,6 +42,8 @@ private:
     string output_Folder_location;
     string intermediate_Folder_location;
 
+    string intermediary_Sequence_location;
+
     int CUDA_device_number;
 
     int *CUDA_device_IDs;
@@ -55,6 +57,8 @@ private:
     string output_Folder_Sequences;
     string intermediate_Folders;
     string intermediate_sequence_Store;
+
+    int max_sequences_per_File = 0;
 
     string node_Master_location;
     string sequence_Master_location;

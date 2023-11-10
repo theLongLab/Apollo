@@ -5634,187 +5634,228 @@ __global__ void cuda_Sequences_to_INT(int num_Sequences, int **sequence_INT, int
     }
 }
 
-void functions_library::process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length)
+int **functions_library::process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length, int &round, int &num_of_Sequences_current)
 {
-    int total_Sequences = collect_Sequences.size();
+    // int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
 
-    cout << "\nProcessing " << total_Sequences << " collected sequence(s)\n";
+    cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
 
-    int full_Rounds = total_Sequences / this->gpu_Limit;
-    int partial_Rounds = total_Sequences % this->gpu_Limit;
+    int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
+    int remainder = num_of_Sequences_current % num_Cuda_devices;
 
-    vector<pair<int, int>> start_stops;
+    vector<pair<int, int>> start_stop_Per_GPU;
 
-    for (int full = 0; full < full_Rounds; full++)
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
-        int start = full * this->gpu_Limit;
-        int stop = start + this->gpu_Limit;
-        start_stops.push_back(make_pair(start, stop));
+        int start = gpu * standard_num_per_GPU;
+        int stop = start + standard_num_per_GPU;
+
+        start_stop_Per_GPU.push_back(make_pair(start, stop));
     }
 
-    if (partial_Rounds != 0)
+    start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+
+    string all_Sequences = "";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
-        int start = total_Sequences - partial_Rounds;
-        start_stops.push_back(make_pair(start, total_Sequences));
+        for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
+        {
+            all_Sequences.append(collect_Sequences[sequence]);
+        }
     }
 
-    for (int round = 0; round < start_stops.size(); round++)
+    // int site_Index[num_of_Sequences_current + 1];
+    // site_Index[0] = 0;
+
+    // for (int i = 0; i < num_of_Sequences_current; i++)
+    // {
+    //     all_Sequences.append(collect_Sequences[start_stops[round].first + i]);
+    //     site_Index[i + 1] = site_Index[i] + collect_Sequences[start_stops[round].first + i].size();
+    // }
+
+    char *full_Char;
+    full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+    // sequence = (int *)malloc((all_Sequences.size() + 1) * sizeof(int));
+    strcpy(full_Char, all_Sequences.c_str());
+
+    // cout << "Genome length: " << genome_Length << endl;
+    //  exit(-1);
+
+    // for (size_t i = 0; i < num_of_Sequences_current; i++)
+    // {
+    //     int start = i * genome_Length;
+    //     for (size_t s = start; s < start + genome_Length; s++)
+    //     {
+    //         cout << full_Char[s];
+    //     }
+    //     cout << "\n\n";
+    // }
+
+    cudaStream_t streams[num_Cuda_devices];
+    cudaDeviceProp deviceProp;
+
+    char *cuda_full_Char[num_Cuda_devices];
+    int **cuda_Sequence[num_Cuda_devices];
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
-        cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaGetDeviceProperties(&deviceProp, gpu);
+        cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
 
-        int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
+        cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
+        cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
 
-        cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+        // cudaMalloc(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int));
 
-        int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
-        int remainder = num_of_Sequences_current % num_Cuda_devices;
-
-        vector<pair<int, int>> start_stop_Per_GPU;
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+        cudaMallocManaged(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
         {
-            int start = gpu * standard_num_per_GPU;
-            int stop = start + standard_num_per_GPU;
-
-            start_stop_Per_GPU.push_back(make_pair(start, stop));
+            cudaMalloc((void **)&cuda_Sequence[gpu][row], genome_Length * sizeof(int));
         }
 
-        start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
-
-        string all_Sequences = "";
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
-            {
-                all_Sequences.append(collect_Sequences[sequence]);
-            }
-        }
-
-        // int site_Index[num_of_Sequences_current + 1];
-        // site_Index[0] = 0;
-
-        // for (int i = 0; i < num_of_Sequences_current; i++)
-        // {
-        //     all_Sequences.append(collect_Sequences[start_stops[round].first + i]);
-        //     site_Index[i + 1] = site_Index[i] + collect_Sequences[start_stops[round].first + i].size();
-        // }
-
-        char *full_Char;
-        full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
-        // sequence = (int *)malloc((all_Sequences.size() + 1) * sizeof(int));
-        strcpy(full_Char, all_Sequences.c_str());
-
-        // cout << "Genome length: " << genome_Length << endl;
-        //  exit(-1);
-
-        // for (size_t i = 0; i < num_of_Sequences_current; i++)
-        // {
-        //     int start = i * genome_Length;
-        //     for (size_t s = start; s < start + genome_Length; s++)
-        //     {
-        //         cout << full_Char[s];
-        //     }
-        //     cout << "\n\n";
-        // }
-
-        cudaStream_t streams[num_Cuda_devices];
-        cudaDeviceProp deviceProp;
-
-        char *cuda_full_Char[num_Cuda_devices];
-        int **cuda_Sequence[num_Cuda_devices];
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cudaGetDeviceProperties(&deviceProp, gpu);
-            cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
-
-            cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
-            cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
-
-            // cudaMalloc(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int));
-
-            cudaMallocManaged(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
-            for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
-            {
-                cudaMalloc((void **)&cuda_Sequence[gpu][row], genome_Length * sizeof(int));
-            }
-
-            cudaStreamCreate(&streams[gpu]);
-        }
-
-        cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPUs\n";
-
-        // int devID[num_Cuda_devices];
-
-        // cout << "Run\n";
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cuda_Sequences_to_INT<<<tot_Blocks_array[gpu], tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu]);
-        }
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cudaStreamSynchronize(streams[gpu]);
-        }
-
-        cout << "GPUs streams completed and synchronized\nCopying data from GPU to Host memory";
-
-        int **sequence;
-        sequence = create_INT_2D_arrays(num_of_Sequences_current, genome_Length);
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            // cudaMemcpy(sequence + (start_stop_Per_GPU[gpu].first * genome_Length), cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
-            // cudaMemcpy(sequence[start_stop_Per_GPU[gpu].first], cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *), cudaMemcpyDeviceToHost);
-
-            for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
-            {
-                cudaMemcpy(sequence[start_stop_Per_GPU[gpu].first + row], cuda_Sequence[gpu][row], genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
-            }
-        }
-
-        cout << "Data received by host\n";
-
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cudaFree(cuda_full_Char);
-            // cudaFree(cuda_Sequence);
-
-            for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
-            {
-                cudaFree(cuda_Sequence[gpu][row]);
-            }
-            cudaFree(cuda_Sequence[gpu]);
-
-            cudaStreamDestroy(streams[gpu]);
-        }
-
-        for (int row = 0; row < num_of_Sequences_current; row++)
-        {
-            for (size_t c = 0; c < genome_Length; c++)
-            {
-                cout << sequence[row][c];
-            }
-            cout << "\n\n";
-        }
-
-        // for (size_t i = 0; i < num_of_Sequences_current; i++)
-        // {
-        //     int start = i * genome_Length;
-        //     for (size_t s = start; s < start + genome_Length; s++)
-        //     {
-        //         cout << sequence[s];
-        //     }
-        //     cout << "\n\n";
-        // }
+        cudaStreamCreate(&streams[gpu]);
     }
 
-    collect_Sequences.clear();
+    cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPUs\n";
+
+    // int devID[num_Cuda_devices];
+
+    // cout << "Run\n";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cuda_Sequences_to_INT<<<tot_Blocks_array[gpu], tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu]);
+    }
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaStreamSynchronize(streams[gpu]);
+    }
+
+    cout << "GPUs streams completed and synchronized\nCopying data from GPU to Host memory\n";
+
+    int **sequence;
+    sequence = create_INT_2D_arrays(num_of_Sequences_current, genome_Length);
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        // cudaMemcpy(sequence + (start_stop_Per_GPU[gpu].first * genome_Length), cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
+        // cudaMemcpy(sequence[start_stop_Per_GPU[gpu].first], cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *), cudaMemcpyDeviceToHost);
+
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaMemcpy(sequence[start_stop_Per_GPU[gpu].first + row], cuda_Sequence[gpu][row], genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
+        }
+    }
+
+    cout << "Data received by host\n";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaFree(cuda_full_Char);
+        // cudaFree(cuda_Sequence);
+
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaFree(cuda_Sequence[gpu][row]);
+        }
+        cudaFree(cuda_Sequence[gpu]);
+
+        cudaStreamDestroy(streams[gpu]);
+    }
+
+    // for (int row = 0; row < num_of_Sequences_current; row++)
+    // {
+    //     for (size_t c = 0; c < genome_Length; c++)
+    //     {
+    //         cout << sequence[row][c];
+    //     }
+    //     cout << "\n\n";
+    // }
+
+    return sequence;
+
+    // for (size_t i = 0; i < num_of_Sequences_current; i++)
+    // {
+    //     int start = i * genome_Length;
+    //     for (size_t s = start; s < start + genome_Length; s++)
+    //     {
+    //         cout << sequence[s];
+    //     }
+    //     cout << "\n\n";
+    // }
+}
+
+vector<string> functions_library::convert_Sequences_Master(int **sequences, int &genome_Length, int &num_of_Sequences_current)
+{
+    cout << "Converting sequences to strings\n";
+    for (int sequence = 0; sequence < num_of_Sequences_current; sequence++)
+    {
+        all_sequences_String.push_back("");
+    }
+
+    int num_per_Core = num_of_Sequences_current / this->CPU_cores;
+    int remainder = num_of_Sequences_current % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Cell = core_ID * num_per_Core;
+        int stop_Cell = start_Cell + num_per_Core;
+
+        threads_vec.push_back(thread{&functions_library::sequence_to_string_Threads, this, start_Cell, stop_Cell, sequences, genome_Length});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Cell = num_of_Sequences_current - remainder;
+        int stop_Cell = num_of_Sequences_current;
+
+        threads_vec.push_back(thread{&functions_library::sequence_to_string_Threads, this, start_Cell, stop_Cell, sequences, genome_Length});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    vector<string> return_Vector = all_sequences_String;
+    all_sequences_String.clear();
+
+    return return_Vector;
+}
+
+void functions_library::sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length)
+{
+    vector<string> sequences_Converted;
+
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        string sequence_String = "";
+        for (int base = 0; base < genome_Length; base++)
+        {
+            sequence_String.append(to_string(sequences[sequence][base]));
+        }
+        sequences_Converted.push_back(sequence_String);
+    }
+
+    int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        all_sequences_String[sequence] = sequences_Converted[index];
+        index++;
+    }
 }

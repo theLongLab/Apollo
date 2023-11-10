@@ -16,7 +16,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Multi read\"",
         "\"Network profile\"",
         "\"Nodes master profile\"",
-        "\"Sequence master profile\""};
+        "\"Sequence master profile\"",
+        "\"Intermediate Sequences per file\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -24,6 +25,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
 
     output_Folder_location = Parameters.get_STRING(found_Parameters[4]);
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[3]);
+    max_sequences_per_File = Parameters.get_INT(found_Parameters[9]);
 
     function.config_Folder(intermediate_Folder_location, "Intermediate");
     function.config_Folder(output_Folder_location, "Output");
@@ -44,6 +46,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     cout << "Available CPU cores: " << this->CPU_cores << endl
          << endl;
 
+    cout << "Maximum sequences per file (Intermediary): " << this->max_sequences_per_File << endl
+         << endl;
     this->multi_Read = Parameters.get_STRING(found_Parameters[5]);
     transform(multi_Read.begin(), multi_Read.end(), multi_Read.begin(), ::toupper);
     cout << "Multiple read and write: " << this->multi_Read << endl
@@ -316,7 +320,137 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
 
     cout << "Infecting node with reference genomes\n";
 
-    functions.process_Reference_Sequences(read_Reference_Sequences(node_infected),genome_Length);
+    intermediary_Sequence_location = intermediate_Folder_location + "/sequence_Data";
+    functions.config_Folder(intermediary_Sequence_location, "Intermediary sequence data");
+
+    string first_Node_folder = intermediary_Sequence_location + "/" + to_string(node_infected);
+    functions.config_Folder(first_Node_folder, "Node " + to_string(all_node_IDs[node_infected].first) + "_" + to_string(all_node_IDs[node_infected].second) + " sequence");
+
+    // functions.process_Reference_Sequences(read_Reference_Sequences(node_infected),genome_Length);
+
+    vector<string> collect_Sequences = read_Reference_Sequences(node_infected);
+
+    int total_Sequences = collect_Sequences.size();
+
+    cout << "\nProcessing " << total_Sequences << " collected sequence(s)\n";
+
+    int full_Rounds = total_Sequences / this->gpu_Limit;
+    int partial_Rounds = total_Sequences % this->gpu_Limit;
+
+    vector<pair<int, int>> start_stops;
+
+    for (int full = 0; full < full_Rounds; full++)
+    {
+        int start = full * this->gpu_Limit;
+        int stop = start + this->gpu_Limit;
+        start_stops.push_back(make_pair(start, stop));
+    }
+
+    if (partial_Rounds != 0)
+    {
+        int start = total_Sequences - partial_Rounds;
+        start_stops.push_back(make_pair(start, total_Sequences));
+    }
+
+    vector<string> sequence_Write_Store_All;
+    int last_seq_Num = 0;
+
+    for (int round = 0; round < start_stops.size(); round++)
+    {
+        cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
+
+        int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
+        // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
+
+        int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, round, num_of_Sequences_current);
+        vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
+
+        for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
+        {
+            sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
+        }
+
+        sequence_Write_Store.clear();
+
+        if (sequence_Write_Store_All.size() >= max_sequences_per_File)
+        {
+            int full_Write_Count = sequence_Write_Store_All.size() / max_sequences_per_File;
+
+            for (int full = 0; full < full_Write_Count; full++)
+            {
+
+                string fasta_file_Location = first_Node_folder + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + max_sequences_per_File - 1) + ".nfasta";
+                fstream fasta_File;
+                fasta_File.open(fasta_file_Location, ios::out);
+
+                if (fasta_File.is_open())
+                {
+
+                    for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
+                    {
+                        fasta_File << to_string(node_infected) << "_" << last_seq_Num << endl;
+                        fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                        last_seq_Num++;
+                    }
+
+                    fasta_File.close();
+                }
+                else
+                {
+                    cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+                    exit(-1);
+                }
+                // last_seq_Num = last_seq_Num + max_sequences_per_File;
+            }
+
+            int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
+            vector<string> sequence_Write_Store_temp;
+
+            for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
+            {
+                sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
+            }
+
+            sequence_Write_Store_All.clear();
+            sequence_Write_Store_All = sequence_Write_Store_temp;
+        }
+
+        // for (int row = 0; row < num_of_Sequences_current; row++)
+        // {
+        //     for (size_t c = 0; c < genome_Length; c++)
+        //     {
+        //         cout << sequence[row][c];
+        //     }
+        //     cout << "\n\n";
+        // }
+
+        functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+    }
+
+    if (sequence_Write_Store_All.size() > 0)
+    {
+        string fasta_file_Location = first_Node_folder + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + sequence_Write_Store_All.size() - 1) + ".nfasta";
+        fstream fasta_File;
+        fasta_File.open(fasta_file_Location, ios::out);
+        if (fasta_File.is_open())
+        {
+            for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
+            {
+                fasta_File << to_string(node_infected) << "_" << last_seq_Num << endl;
+                fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                last_seq_Num++;
+            }
+
+            fasta_File.close();
+        }
+        else
+        {
+            cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+            exit(-1);
+        }
+    }
+
+    collect_Sequences.clear();
 
     return node_infected;
 }
@@ -1203,7 +1337,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         }
     }
     cout << endl;
-   // exit(-1);
+    // exit(-1);
 }
 
 void simulator_Master::node_Master_Manager(functions_library &functions)
