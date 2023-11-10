@@ -365,6 +365,8 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, round, num_of_Sequences_current);
         vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
 
+        functions.clear_Array_int_CPU(sequences,num_of_Sequences_current);
+
         for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
         {
             sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
@@ -424,7 +426,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         //     cout << "\n\n";
         // }
 
-        functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+       // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
     }
 
     if (sequence_Write_Store_All.size() > 0)

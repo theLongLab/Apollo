@@ -5718,7 +5718,7 @@ int **functions_library::process_Reference_Sequences(vector<string> collect_Sequ
         cudaStreamCreate(&streams[gpu]);
     }
 
-    cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPUs\n";
+    cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPU(s)\n";
 
     // int devID[num_Cuda_devices];
 
@@ -5736,7 +5736,7 @@ int **functions_library::process_Reference_Sequences(vector<string> collect_Sequ
         cudaStreamSynchronize(streams[gpu]);
     }
 
-    cout << "GPUs streams completed and synchronized\nCopying data from GPU to Host memory\n";
+    cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
 
     int **sequence;
     sequence = create_INT_2D_arrays(num_of_Sequences_current, genome_Length);
