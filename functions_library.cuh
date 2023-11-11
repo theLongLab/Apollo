@@ -116,6 +116,8 @@ public:
     void config_File_delete_create(string location, string headers);
     void config_File_delete_create(string location);
 
+    void folder_Delete(string location);
+
     void config_File_progeny(string location);
 
     string read_Reference(string file_location, string &header, int &genome_Size);
@@ -249,4 +251,10 @@ public:
 
     vector<string> convert_Sequences_Master(int **sequences, int &genome_Length, int &num_of_Sequences_current);
     void sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length);
+
+    void sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+                                     int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num);
+
+    void partial_Write_Check(vector<string> &sequence_Write_Store_All,
+                             const string &folder_Location, int &last_seq_Num);
 };

@@ -10,7 +10,7 @@
   "Output folders":"results",
   "Intermediate folders":"intermediates",
 
-  "Intermediate Sequences per file":10000
+  "Intermediate Sequences per file":1000,
 
   "Seed":"x",
 

@@ -46,12 +46,14 @@ private:
     int *cell_Limit;
 
     string status = "Susceptible";
+
     int current_Generation = 0;
+    int *current_Viral_load_per_Tissue;
 
 public:
     node_within_host();
 
-    void setHost(int host_Index, int cave_ID, int host_ID, int profile_ID);
+    void setHost(int host_Index, int cave_ID, int host_ID, int profile_ID, int num_Tissues);
     void setNum_Generation(int num_Generation);
     void setInfectious_Load(int infectious_Load);
     void setTerminal_Load(int terminal_Load);
@@ -60,6 +62,10 @@ public:
 
     void print_All();
 
+    void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
+                         int entry_tissues, int *entry_array, int &max_sequences_per_File);
     void begin_Infection();
     void run_Generation();
+
+    void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
 };

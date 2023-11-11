@@ -27,6 +27,12 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[3]);
     max_sequences_per_File = Parameters.get_INT(found_Parameters[9]);
 
+    if (max_sequences_per_File <= 0)
+    {
+        cout << "ERROR: Intermediate Sequences per file PARAMETER MUST BE GREATER THAN ZERO.\n";
+        exit(-1);
+    }
+
     function.config_Folder(intermediate_Folder_location, "Intermediate");
     function.config_Folder(output_Folder_location, "Output");
 
@@ -265,7 +271,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         susceptible_Population.push_back(i);
     }
 
-    cout << "Starting infection\n";
+    cout << "Starting infection\n\n";
 
     vector<int> infected_Population;
     vector<int> infectious_Population;
@@ -273,6 +279,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     vector<int> removed_Population;
 
     int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
+    Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File);
+    cout << endl;
+    functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
+
     // cout << Total_number_of_Nodes << endl;
     // cout << susceptible_Population.size() << endl;
     // cout << infected_Population.size() << endl;
@@ -323,8 +333,8 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
     intermediary_Sequence_location = intermediate_Folder_location + "/sequence_Data";
     functions.config_Folder(intermediary_Sequence_location, "Intermediary sequence data");
 
-    string first_Node_folder = intermediary_Sequence_location + "/" + to_string(node_infected);
-    functions.config_Folder(first_Node_folder, "Node " + to_string(all_node_IDs[node_infected].first) + "_" + to_string(all_node_IDs[node_infected].second) + " sequence");
+    string reference_Sequences = intermediary_Sequence_location + "/reference_Sequences";
+    functions.config_Folder(reference_Sequences, "Converted reference sequence(s)");
 
     // functions.process_Reference_Sequences(read_Reference_Sequences(node_infected),genome_Length);
 
@@ -365,57 +375,10 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, round, num_of_Sequences_current);
         vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
 
-        functions.clear_Array_int_CPU(sequences,num_of_Sequences_current);
+        functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
 
-        for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
-        {
-            sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
-        }
-
-        sequence_Write_Store.clear();
-
-        if (sequence_Write_Store_All.size() >= max_sequences_per_File)
-        {
-            int full_Write_Count = sequence_Write_Store_All.size() / max_sequences_per_File;
-
-            for (int full = 0; full < full_Write_Count; full++)
-            {
-
-                string fasta_file_Location = first_Node_folder + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + max_sequences_per_File - 1) + ".nfasta";
-                fstream fasta_File;
-                fasta_File.open(fasta_file_Location, ios::out);
-
-                if (fasta_File.is_open())
-                {
-
-                    for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
-                    {
-                        fasta_File << to_string(node_infected) << "_" << last_seq_Num << endl;
-                        fasta_File << sequence_Write_Store_All[write_Seq] << endl;
-                        last_seq_Num++;
-                    }
-
-                    fasta_File.close();
-                }
-                else
-                {
-                    cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
-                    exit(-1);
-                }
-                // last_seq_Num = last_seq_Num + max_sequences_per_File;
-            }
-
-            int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
-            vector<string> sequence_Write_Store_temp;
-
-            for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
-            {
-                sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
-            }
-
-            sequence_Write_Store_All.clear();
-            sequence_Write_Store_All = sequence_Write_Store_temp;
-        }
+        functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
+                                              max_sequences_per_File, reference_Sequences, last_seq_Num);
 
         // for (int row = 0; row < num_of_Sequences_current; row++)
         // {
@@ -426,33 +389,14 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         //     cout << "\n\n";
         // }
 
-       // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+        // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
     }
 
-    if (sequence_Write_Store_All.size() > 0)
-    {
-        string fasta_file_Location = first_Node_folder + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + sequence_Write_Store_All.size() - 1) + ".nfasta";
-        fstream fasta_File;
-        fasta_File.open(fasta_file_Location, ios::out);
-        if (fasta_File.is_open())
-        {
-            for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
-            {
-                fasta_File << to_string(node_infected) << "_" << last_seq_Num << endl;
-                fasta_File << sequence_Write_Store_All[write_Seq] << endl;
-                last_seq_Num++;
-            }
-
-            fasta_File.close();
-        }
-        else
-        {
-            cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
-            exit(-1);
-        }
-    }
+    functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num);
 
     collect_Sequences.clear();
+
+    cout << endl;
 
     return node_infected;
 }
@@ -641,7 +585,7 @@ vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(funct
                                << "\t" << all_node_IDs[node].first
                                << "\t" << profile_names[each_Node_Profile_Configuration[node][0]];
 
-            Hosts[Hosts.size() - 1].setHost(node, all_node_IDs[node].first, all_node_IDs[node].second, (int)each_Node_Profile_Configuration[node][0]);
+            Hosts[Hosts.size() - 1].setHost(node, all_node_IDs[node].first, all_node_IDs[node].second, (int)each_Node_Profile_Configuration[node][0], num_tissues_per_Node);
 
             for (int col = 1; col < 4; col++)
             {
