@@ -60,6 +60,15 @@ public:
     void setSampling_Effect(float sampling_Effect);
     void setCell_Limit(vector<int> cell_Limit_vec);
 
+    string get_Name();
+    string get_Status();
+    int get_Profile();
+
+    int get_Load(int &num_tissues_Calc, int *tissue_array);
+
+    int infectious_status(int &num_tissues_Calc, int *tissue_array);
+    int terminal_status(int &num_tissues_Calc, int *tissue_array);
+
     void print_All();
 
     void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,

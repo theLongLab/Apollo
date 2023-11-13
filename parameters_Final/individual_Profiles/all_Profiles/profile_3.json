@@ -9,7 +9,7 @@
 
   # TERMINAL AND INFECTIOUS AMOUNTS
 
-  "Infectious load distribution type":"Binomial",
+  "Infectious load distribution type":"Fixed",
   "Infectious load Binomial trials":100,
   "Infectious load Binomial probability":"0.75",
   "Infectious load Fixed":1,
@@ -18,6 +18,12 @@
   "Terminal load Binomial trials":100000,
   "Terminal load Binomial probability":"0.75",
   "Terminal load Fixed":1,
+
+  # Control the viral transmission infection from one host to another
+  "Infection sequence distribution":"Fixed",
+  "Infection sequence Binomial trials":2,
+  "Infection sequence Binomial probability":"0.5",
+  "Infection sequence Fixed":2,
 
   "Tissue profiles":{
 

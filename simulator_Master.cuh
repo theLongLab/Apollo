@@ -71,6 +71,9 @@ private:
     vector<vector<pair<int, int>>> each_Nodes_Connection;
     vector<pair<int, int>> all_node_IDs;
 
+    vector<int> search_Indexes;
+    int overall_Found = 0;
+
     string connection_Model = "FIXED";
 
     int BA_FIXED = 1;
@@ -172,10 +175,20 @@ private:
     // 0 = inactive 1 = activated
     int *mutation_recombination_proof_Reading_availability;
 
+    // 0 = no reinfection
+    // 1 = reinfection YES
+    int reinfection_Availability = 0;
+
     // 0 = Fixed (0) or Binomial (1)
     // 1 = Fixed value / Trials bim,
     // 2 = Probability binom
     float *transmission_parameters;
+
+    // row = profile
+    //  0 = Fixed (0) or Binomial (1)
+    //  1 = Fixed value / Trials bim,
+    //  2 = Probability binom
+    float **infection_parameters;
 
     float *Reference_fitness_survivability_proof_reading;
 
@@ -247,4 +260,7 @@ public:
 
     vector<string> read_Reference_Sequences(int index_first_Infected);
     vector<string> read_Reference_Sequence_Files(vector<string> &reference_Files);
+
+    void Node_search(vector<pair<int, int>> &host_Connections);
+    void thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections);
 };

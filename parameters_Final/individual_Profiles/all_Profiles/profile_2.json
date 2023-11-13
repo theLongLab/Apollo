@@ -19,6 +19,12 @@
   "Terminal load Binomial probability":"0.75",
   "Terminal load Fixed":100000,
 
+  # Control the viral transmission infection from one host to another
+  "Infection sequence distribution":"Fixed",
+  "Infection sequence Binomial trials":2,
+  "Infection sequence Binomial probability":"0.5",
+  "Infection sequence Fixed":2,
+
   "Tissue profiles":{
 
     "Tissue 1":{

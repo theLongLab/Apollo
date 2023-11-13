@@ -6,13 +6,13 @@
   # Standard Caveman Model is selected by typing SC model
   # Dynamic Caveman Model is selected by typing DC model
 
-  "Network type":"DC model",
+  "Network type":"BA model",
 
   # Total number of nodes that will be present in the Random network model
   "Random model number of nodes":100,
 
   # Total number of nodes that will be present in the BA network model
-  "BA model number of nodes":50,
+  "BA model number of nodes":100,
 
   # FIXED, evey new connection will have a set number of connections to the existing nodes (Standard BA model when set to 1).
   # Negative binomial, every new node's number of connection will determined by a negative binomial distribution.

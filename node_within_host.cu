@@ -139,6 +139,7 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
             {
                 if (tissue_Sequences[entry_array[tissue]].size() > 0)
                 {
+                    current_Viral_load_per_Tissue[entry_array[tissue]] = tissue_Sequences[entry_array[tissue]].size();
                     functions.config_Folder(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(entry_array[tissue]) + " Generation 0");
 
                     vector<string> sequence_Write_Store_All;
@@ -147,8 +148,6 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
                                                           max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num);
                     functions.partial_Write_Check(sequence_Write_Store_All,
                                                   host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num);
-
-                    current_Viral_load_per_Tissue[tissue] = tissue_Sequences[entry_array[tissue]].size();
                 }
             }
         }
@@ -158,6 +157,12 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
             exit(-1);
         }
     }
+    status = "Infected";
+    // for (int tissue = 0; tissue < num_Tissues; tissue++)
+    // {
+    //     cout << current_Viral_load_per_Tissue[tissue] << endl;
+    // }
+    //exit(-1);
 }
 
 void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions)
@@ -167,8 +172,60 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
     {
         vector<string> tissue_Sequence;
         functions.config_Folder(host_Folder + "/" + to_string(tissue), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(tissue + 1));
-        
+
         tissue_Sequences.push_back(tissue_Sequence);
         current_Viral_load_per_Tissue[tissue] = 0;
     }
+}
+
+int node_within_host::get_Load(int &num_tissues_Calc, int *tissue_array)
+{
+    int sum = 0;
+
+    for (int tissue = 0; tissue < num_tissues_Calc; tissue++)
+    {
+        sum = sum + current_Viral_load_per_Tissue[tissue_array[tissue]];
+    }
+
+    return sum;
+}
+
+int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
+{
+    if (get_Load(num_tissues, tissue_array) >= infectious_Load)
+    {
+        status = "Infectious";
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int node_within_host::terminal_status(int &num_tissues, int *tissue_array)
+{
+    if (get_Load(num_tissues, tissue_array) >= terminal_Load)
+    {
+        status = "Dead";
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+string node_within_host::get_Name()
+{
+    return to_string(cave_ID) + "_" + to_string(host_ID);
+}
+
+string node_within_host::get_Status()
+{
+    return this->status;
+}
+
+int node_within_host::get_Profile()
+{
+    return profile_ID;
 }

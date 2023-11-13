@@ -264,22 +264,22 @@ void simulator_Master::ingress()
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
     cout << "Configuring susceptible population\n\n";
+
     vector<int> susceptible_Population;
 
     for (size_t i = 0; i < Total_number_of_Nodes; i++)
     {
         susceptible_Population.push_back(i);
+        // removed_Population.push_back(-1);
     }
 
     cout << "Starting infection\n\n";
 
     vector<int> infected_Population;
-    vector<int> infectious_Population;
-
-    vector<int> removed_Population;
 
     int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
     Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File);
+
     cout << endl;
     functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
 
@@ -290,12 +290,226 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
     int stop = 0;
 
+    // test
+    // vector<pair<int, int>> host_Connections_TEST;
+    // host_Connections_TEST.push_back(make_pair(0, 88));
+    // host_Connections_TEST.push_back(make_pair(0, 77));
+    // host_Connections_TEST.push_back(make_pair(0, 1));
+    // Node_search(host_Connections_TEST);
+    // exit(-1);
+
+    random_device rd;
+    mt19937 gen(rd());
+
     do
     {
+        // check dead and remove from infected
+        cout << "\nDetermining removed/ dead and newly infectious hosts\n";
+        vector<int> temp;
+        vector<int> infectious_Population;
+        for (int host = 0; host < infected_Population.size(); host++)
+        {
+            if (Hosts[infected_Population[host]].get_Status() == "Dead" || Hosts[infected_Population[host]].get_Status() == "Removed" || Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array) == 1)
+            {
+                cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
+                // removed_Population.push_back(infected_Population[host]);
+            }
+            else
+            {
+                temp.push_back(infected_Population[host]);
+                if (Hosts[infected_Population[host]].get_Status() == "Infectious" || Hosts[infected_Population[host]].infectious_status(infectious_tissues, infectious_array) == 1)
+                {
+                    cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is infectious\n";
+                    infectious_Population.push_back(infected_Population[host]);
+                }
+            }
+        }
+
+        infected_Population = temp;
+        temp.clear();
+
+        // infect
+        if (infectious_Population.size() > 0)
+        {
+            cout << "\nNew host to host infections";
+            for (int host = 0; host < infectious_Population.size(); host++)
+            {
+                vector<int> new_Hosts_Indexes;
+                cout << "\nNode: " << Hosts[infectious_Population[host]].get_Name() << " is infecting new nodes\n";
+                int node_Profile = Hosts[infectious_Population[host]].get_Profile();
+
+                if (reinfection_Availability == 0)
+                {
+                    cout << "Preventing reinfection of hosts\n";
+                    // index and position in host_Connections
+                    vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
+                    Node_search(host_Connections);
+
+                    cout << "Checking index search\n";
+                    vector<int> possible_Infections;
+                    for (int host = 0; host < host_Connections.size(); host++)
+                    {
+                        if (search_Indexes[host] == -1)
+                        {
+                            cout << "ERROR: ID MISSING\n";
+                            exit(-1);
+                        }
+                        else
+                        {
+                            if (Hosts[search_Indexes[host]].get_Status() == "Susceptible")
+                            {
+                                possible_Infections.push_back(search_Indexes[host]);
+                            }
+                        }
+                    }
+                    search_Indexes.clear();
+                    overall_Found = 0;
+                    if (possible_Infections.size() > 0)
+                    {
+                        cout << "Novel hosts infected: ";
+                        int num_New_hosts = -1;
+                        if (infection_parameters[node_Profile][0] == 0)
+                        {
+                            num_New_hosts = infection_parameters[node_Profile][1];
+                        }
+                        else
+                        {
+                            binomial_distribution<> infections_distribution(infection_parameters[node_Profile][1], infection_parameters[node_Profile][2]);
+                            num_New_hosts = infections_distribution(gen);
+                        }
+
+                        if (possible_Infections.size() <= num_New_hosts)
+                        {
+                            new_Hosts_Indexes = possible_Infections;
+                            cout << possible_Infections.size() << endl;
+                            //cout << "x" << endl;
+                        }
+                        else
+                        {
+                            int new_Hosts = 0;
+                            cout << num_New_hosts << endl;
+                            uniform_int_distribution<> distribution_Hosts(0, possible_Infections.size() - 1);
+                            do
+                            {
+                                int host_index = distribution_Hosts(gen);
+
+                                if (find(new_Hosts_Indexes.begin(), new_Hosts_Indexes.end(), host_index) == new_Hosts_Indexes.end())
+                                {
+                                    new_Hosts_Indexes.push_back(host_index);
+                                    new_Hosts++;
+                                }
+
+                            } while (new_Hosts < num_New_hosts);
+                        }
+                    }
+                    else
+                    {
+                        cout << "No new infection from node as all surrounding nodes have already been infected.\n";
+                    }
+                }
+                else
+                {
+                    // !DO
+                }
+                cout << "Novel hosts recognised\n";
+                // !DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+            }
+        }
+
         stop = 1;
     } while (stop == 0);
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
+}
+
+void simulator_Master::Node_search(vector<pair<int, int>> &host_Connections)
+{
+    cout << "Intiating node index search\n";
+    search_Indexes.clear();
+    overall_Found = 0;
+    for (int host = 0; host < host_Connections.size(); host++)
+    {
+        search_Indexes.push_back(-1);
+    }
+
+    int num_per_Core = Total_number_of_Nodes / this->CPU_cores;
+    int remainder = Total_number_of_Nodes % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Node = core_ID * num_per_Core;
+        int stop_Node = start_Node + num_per_Core;
+
+        threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Node = Total_number_of_Nodes - remainder;
+        int stop_Node = Total_number_of_Nodes;
+
+        threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    // for (int host = 0; host < host_Connections.size(); host++)
+    // {
+    //     cout << "Index: " << search_Indexes[host] << endl;
+    // }
+}
+
+void simulator_Master::thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections)
+{
+    vector<int> found_Indexes;
+
+    for (int host = 0; host < host_Connections.size(); host++)
+    {
+        found_Indexes.push_back(-1);
+    }
+
+    int found = 0;
+
+    for (int node = start_Node; node < stop_Node; node++)
+    {
+        if (overall_Found == host_Connections.size())
+        {
+            break;
+        }
+        for (int check = 0; check < host_Connections.size(); check++)
+        {
+            if (all_node_IDs[node].first == host_Connections[check].first && all_node_IDs[node].second == host_Connections[check].second)
+            {
+                found_Indexes[check] = node;
+                found++;
+                break;
+            }
+        }
+        if (found == host_Connections.size())
+        {
+            break;
+        }
+    }
+
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int host = 0; host < host_Connections.size(); host++)
+    {
+        if (found_Indexes[host] != -1)
+        {
+            search_Indexes[host] = found_Indexes[host];
+            overall_Found++;
+        }
+    }
 }
 
 int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
@@ -802,12 +1016,59 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         "\"Recombination availability\"",
         "\"Reference Fitness\"",
         "\"Reference Survivability\"",
-        "\"Transmitted sequence distribution\""};
+        "\"Transmitted sequence distribution\"",
+        "\"Reinfection availability\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
 
     parent_Sequence_Folder = Parameters.get_STRING(found_Parameters[0]);
     cout << "\nParent sequences folder: " << parent_Sequence_Folder << endl;
+
+    // cout << "\nConfiguration of host to host infection\n";
+    // infection_parameters = (float *)malloc(sizeof(float) * 3);
+    // vector<string> infected_Parameters;
+    // cout << "Infection distribution: ";
+    // if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[7])) == "FIXED")
+    // {
+    //     infection_parameters[0] = 0;
+    //     cout << "FIXED\n";
+    //     parameters_List = {"\"Infection sequence Fixed\""};
+    //     infected_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+    //     infection_parameters[1] = Parameters.get_INT(infected_Parameters[0]);
+    //     cout << "Infection sequence Fixed: " << infection_parameters[1] << endl;
+    // }
+    // else if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[7])) == "BINOMIAL")
+    // {
+    //     infection_parameters[0] = 1;
+    //     cout << "BINOMIAL\n";
+    //     parameters_List = {"\"Infection sequence Binomial trials\"",
+    //                        "\"Infection sequence Binomial probability\""};
+    //     infected_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+    //     infection_parameters[1] = Parameters.get_INT(infected_Parameters[0]);
+    //     infection_parameters[2] = Parameters.get_FLOAT(infected_Parameters[1]);
+    //     cout << "Infection sequence Binomial trials: " << infection_parameters[1] << endl;
+    //     cout << "Infection sequence Binomial probability: " << infection_parameters[2] << endl;
+    // }
+    // else
+    // {
+    //     cout << "ERROR Infection sequence distribution HAS TO BE EITHER \"FIXED\" OR \"NEGATIVE BINOMIAL\"";
+    //     exit(1);
+    // }
+
+    // exit(-1);
+
+    cout << "\nReinfection availability: ";
+    if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[6])) == "YES")
+    {
+        reinfection_Availability = 1;
+        cout << "YES\n";
+    }
+    else
+    {
+        cout << "NO\n";
+    }
+
+    // exit(-1);
 
     cout << "\nConfiguration of Viral Tranmssion bottleneck\n";
     transmission_parameters = (float *)malloc(sizeof(float) * 3);
@@ -1646,10 +1907,13 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             cout << "Extracting profiles from: " << node_Profile_folder_Location << endl
                  << endl;
 
+            infection_parameters = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, -1);
+
             for (int profile = 0; profile < number_of_node_Profiles; profile++)
             {
                 parameters_List = {"\"Profile name\"",
-                                   "\"Probability of occurence\""};
+                                   "\"Probability of occurence\"",
+                                   "\"Infection sequence distribution\""};
 
                 string profile_check = node_Profile_folder_Location + "/profile_" + to_string(profile + 1) + ".json";
 
@@ -1664,6 +1928,39 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
                     cout << "Configuring profile: " << profile_names[profile] << endl;
                     cout << "Probability of occurence: " << node_profile_Distributions[profile] << endl;
+
+                    cout << "\nConfiguration of host to host infection\n";
+                    vector<string> infected_Parameters;
+                    cout << "Infection distribution: ";
+                    if (functions.to_Upper_Case(Parameters.get_STRING(profile_Parameters[2])) == "FIXED")
+                    {
+                        infection_parameters[profile][0] = 0;
+                        cout << "FIXED\n";
+                        parameters_List = {"\"Infection sequence Fixed\""};
+                        infected_Parameters = Parameters.get_parameters(profile_check, parameters_List);
+                        infection_parameters[profile][1] = Parameters.get_INT(infected_Parameters[0]);
+                        cout << "Infection sequence Fixed: " << infection_parameters[profile][1] << endl;
+                    }
+                    else if (functions.to_Upper_Case(Parameters.get_STRING(profile_Parameters[2])) == "BINOMIAL")
+                    {
+                        infection_parameters[profile][0] = 1;
+                        cout << "BINOMIAL\n";
+                        parameters_List = {"\"Infection sequence Binomial trials\"",
+                                           "\"Infection sequence Binomial probability\""};
+                        infected_Parameters = Parameters.get_parameters(profile_check, parameters_List);
+                        infection_parameters[profile][1] = Parameters.get_INT(infected_Parameters[0]);
+                        infection_parameters[profile][2] = Parameters.get_FLOAT(infected_Parameters[1]);
+                        cout << "Infection sequence Binomial trials: " << infection_parameters[profile][1] << endl;
+                        cout << "Infection sequence Binomial probability: " << infection_parameters[profile][2] << endl;
+                    }
+                    else
+                    {
+                        cout << "ERROR Infection sequence distribution HAS TO BE EITHER \"FIXED\" OR \"NEGATIVE BINOMIAL\"";
+                        exit(1);
+                    }
+                    cout << endl;
+
+                    // exit(-1);
 
                     // Configure tisses and their phases
                     if (trials_Sampling != -1)
