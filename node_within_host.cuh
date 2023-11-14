@@ -73,7 +73,12 @@ public:
 
     void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
                          int entry_tissues, int *entry_array, int &max_sequences_per_File);
-    void begin_Infection();
+    void begin_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
+                         int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
+                         int num_viruses_to_transfer,
+                         int &entry_tissues, int *entry_array, int &exit_Load, int &exit_tissues, int *exit_array,
+                         int &max_sequences_per_File,
+                         mt19937 &gen);
     void run_Generation();
 
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);

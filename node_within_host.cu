@@ -66,6 +66,7 @@ void node_within_host::print_All()
 void node_within_host::begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
                                        int entry_tissues, int *entry_array, int &max_sequences_per_File)
 {
+    // FIRST NODE OF INFECTION IN THE HOST
     string host_Folder = intermediary_Sequence_location + "/" + to_string(host_Index);
     functions.config_Folder(host_Folder, to_string(cave_ID) + "_" + to_string(host_ID));
 
@@ -162,7 +163,35 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
     // {
     //     cout << current_Viral_load_per_Tissue[tissue] << endl;
     // }
-    //exit(-1);
+    // exit(-1);
+}
+
+void node_within_host::begin_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
+                                       int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
+                                       int num_viruses_to_transfer,
+                                       int &entry_tissues, int *entry_array, int &exit_Load, int &exit_tissues, int *exit_array,
+                                       int &max_sequences_per_File,
+                                       mt19937 &gen)
+{
+    cout << "Node " << this->cave_ID << "_" << this->host_ID << " is being infected by " << source_Name;
+
+    if (num_viruses_to_transfer > exit_Load)
+    {
+        num_viruses_to_transfer = exit_Load;
+    }
+
+    cout << "Transferring " << num_viruses_to_transfer << " viral particle(s)\n";
+
+    uniform_int_distribution<> distribution_exit_Tissue(0, exit_tissues - 1);
+
+    for (int particle = 0; particle < num_viruses_to_transfer; particle++)
+    {
+        int exit_tissue_Index = distribution_exit_Tissue(gen);
+
+        uniform_int_distribution<> distribution_particle(0, exit_array[exit_tissue_Index] - 1);
+
+        int viral_Index = distribution_particle(gen);
+    }
 }
 
 void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions)

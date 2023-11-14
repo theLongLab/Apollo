@@ -40,6 +40,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     function.config_Folder(output_Network_location, "Network");
     network_File_location = output_Network_location + "/node_node_Relationships.csv";
     function.create_File(network_File_location, "Source\tTarget");
+    Host_source_target_network_location = output_Network_location + "/hosts_source_target_Relationships.csv";
+    function.create_File(Host_source_target_network_location, "Source\tTarget");
 
     cout << "\nConfiguring node master profiles:\n";
     node_Master_location = Parameters.get_STRING(found_Parameters[7]);
@@ -334,19 +336,22 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "\nNew host to host infections";
             for (int host = 0; host < infectious_Population.size(); host++)
             {
-                vector<int> new_Hosts_Indexes;
                 cout << "\nNode: " << Hosts[infectious_Population[host]].get_Name() << " is infecting new nodes\n";
                 int node_Profile = Hosts[infectious_Population[host]].get_Profile();
+
+                vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
+                Node_search(host_Connections);
+
+                cout << "Checking index search\n";
+                vector<int> possible_Infections;
+
+                vector<int> new_Hosts_Indexes;
 
                 if (reinfection_Availability == 0)
                 {
                     cout << "Preventing reinfection of hosts\n";
                     // index and position in host_Connections
-                    vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
-                    Node_search(host_Connections);
 
-                    cout << "Checking index search\n";
-                    vector<int> possible_Infections;
                     for (int host = 0; host < host_Connections.size(); host++)
                     {
                         if (search_Indexes[host] == -1)
@@ -366,41 +371,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     overall_Found = 0;
                     if (possible_Infections.size() > 0)
                     {
-                        cout << "Novel hosts infected: ";
-                        int num_New_hosts = -1;
-                        if (infection_parameters[node_Profile][0] == 0)
-                        {
-                            num_New_hosts = infection_parameters[node_Profile][1];
-                        }
-                        else
-                        {
-                            binomial_distribution<> infections_distribution(infection_parameters[node_Profile][1], infection_parameters[node_Profile][2]);
-                            num_New_hosts = infections_distribution(gen);
-                        }
-
-                        if (possible_Infections.size() <= num_New_hosts)
-                        {
-                            new_Hosts_Indexes = possible_Infections;
-                            cout << possible_Infections.size() << endl;
-                            //cout << "x" << endl;
-                        }
-                        else
-                        {
-                            int new_Hosts = 0;
-                            cout << num_New_hosts << endl;
-                            uniform_int_distribution<> distribution_Hosts(0, possible_Infections.size() - 1);
-                            do
-                            {
-                                int host_index = distribution_Hosts(gen);
-
-                                if (find(new_Hosts_Indexes.begin(), new_Hosts_Indexes.end(), host_index) == new_Hosts_Indexes.end())
-                                {
-                                    new_Hosts_Indexes.push_back(host_index);
-                                    new_Hosts++;
-                                }
-
-                            } while (new_Hosts < num_New_hosts);
-                        }
+                        new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
                     }
                     else
                     {
@@ -409,10 +380,46 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 }
                 else
                 {
-                    // !DO
+                    cout << "Reinfection of hosts can occur\n";
+                    // vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
+                    // Node_search(host_Connections);
+
+                    // cout << "Checking index search\n";
+                    // vector<int> possible_Infections;
+                    for (int host = 0; host < host_Connections.size(); host++)
+                    {
+                        if (search_Indexes[host] == -1)
+                        {
+                            cout << "ERROR: ID MISSING\n";
+                            exit(-1);
+                        }
+                        else
+                        {
+                            if (Hosts[search_Indexes[host]].get_Status() != "Dead" && Hosts[search_Indexes[host]].get_Status() != "Removed")
+                            {
+                                possible_Infections.push_back(search_Indexes[host]);
+                            }
+                        }
+                    }
+
+                    search_Indexes.clear();
+                    overall_Found = 0;
+
+                    if (possible_Infections.size() > 0)
+                    {
+                        new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
+                    }
+                    else
+                    {
+                        cout << "No new infection from node as all surrounding nodes are dead or removed.\n";
+                    }
                 }
-                cout << "Novel hosts recognised\n";
-                // !DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+
+                if (new_Hosts_Indexes.size() > 0)
+                {
+                    cout << "Novel hosts recognised\n";
+                    // !DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+                }
             }
         }
 
@@ -420,6 +427,49 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     } while (stop == 0);
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
+}
+
+vector<int> simulator_Master::get_new_Hosts_Indexes(int &node_Profile, mt19937 &gen, vector<int> &possible_Infections)
+{
+    vector<int> new_Hosts_Indexes;
+
+    cout << "Novel hosts infected: ";
+    int num_New_hosts = -1;
+    if (infection_parameters[node_Profile][0] == 0)
+    {
+        num_New_hosts = infection_parameters[node_Profile][1];
+    }
+    else
+    {
+        binomial_distribution<> infections_distribution(infection_parameters[node_Profile][1], infection_parameters[node_Profile][2]);
+        num_New_hosts = infections_distribution(gen);
+    }
+
+    if (possible_Infections.size() <= num_New_hosts)
+    {
+        new_Hosts_Indexes = possible_Infections;
+        cout << possible_Infections.size() << endl;
+        // cout << "x" << endl;
+    }
+    else
+    {
+        int new_Hosts = 0;
+        cout << num_New_hosts << endl;
+        uniform_int_distribution<> distribution_Hosts(0, possible_Infections.size() - 1);
+        do
+        {
+            int host_index = distribution_Hosts(gen);
+
+            if (find(new_Hosts_Indexes.begin(), new_Hosts_Indexes.end(), host_index) == new_Hosts_Indexes.end())
+            {
+                new_Hosts_Indexes.push_back(host_index);
+                new_Hosts++;
+            }
+
+        } while (new_Hosts < num_New_hosts);
+    }
+
+    return new_Hosts_Indexes;
 }
 
 void simulator_Master::Node_search(vector<pair<int, int>> &host_Connections)
@@ -1749,6 +1799,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         string viral_Entry = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral entry tissues");
         string viral_Infectious = Parameters.get_STRING(Tissue_profiles_block_Data, "Infectious load tissues");
         string viral_Terminal = Parameters.get_STRING(Tissue_profiles_block_Data, "Terminal load tissues");
+        string viral_Exit = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral exit tissues");
 
         vector<string> viral_tissue_Split;
 
@@ -1809,7 +1860,27 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             }
         }
 
+        functions.split(viral_tissue_Split, viral_Exit, ',');
+        this->exit_tissues = viral_tissue_Split.size();
+        this->exit_array = (int *)malloc(exit_tissues * sizeof(int));
+        cout << this->exit_tissues << " tissue(s) available for viral exit: ";
+        for (size_t i = 0; i < exit_tissues; i++)
+        {
+            exit_array[i] = stoi(viral_tissue_Split[i]) - 1;
+            cout << tissue_Names[exit_array[i]];
+
+            if ((i + 1) != exit_tissues)
+            {
+                cout << ", ";
+            }
+            else
+            {
+                cout << endl;
+            }
+        }
+
         cout << endl;
+        // exit(-1);
 
         // cout << "******\n\n";
         viral_Migration = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral tissue migration");

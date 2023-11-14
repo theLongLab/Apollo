@@ -50,6 +50,7 @@
     "Viral entry tissues":"1,2",
     "Infectious load tissues":"1",
     "Terminal load tissues":"1,2,3",
+    "Viral exit tissues":"1",
 
     "Viral tissue migration":"Yes",
 

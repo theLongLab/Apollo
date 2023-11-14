@@ -149,6 +149,9 @@ private:
     int terminal_tissues = 0;
     int *terminal_array;
 
+    int exit_tissues = 0;
+    int *exit_array;
+
     // rows = profiles
     // columns
     // 0 = distribution_type; 0=Binomial, -1 = Fixed
@@ -228,6 +231,7 @@ private:
 
     string output_Network_location = "";
     string network_File_location = "";
+    string Host_source_target_network_location = "";
 
     // vector<string> raw_parent_Sequences;
     int genome_Length = 0;
@@ -263,4 +267,6 @@ public:
 
     void Node_search(vector<pair<int, int>> &host_Connections);
     void thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections);
+
+    vector<int> get_new_Hosts_Indexes(int &node_Profile, mt19937 &gen, vector<int> &possible_Infections);
 };
