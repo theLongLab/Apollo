@@ -5861,7 +5861,8 @@ void functions_library::sequence_to_string_Threads(int start, int stop, int **se
 }
 
 void functions_library::sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
-                                                    int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num)
+                                                    int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
+                                                    vector<char> &seq_Status)
 {
     for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
     {
@@ -5886,7 +5887,16 @@ void functions_library::sequence_Write_Configurator(vector<string> &sequence_Wri
 
                 for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
                 {
-                    fasta_File << ">" << last_seq_Num << endl;
+                    fasta_File << ">" << last_seq_Num;
+                    if (seq_Status.size() == 0)
+                    {
+                        fasta_File << "_A";
+                    }
+                    else
+                    {
+                        fasta_File << "_" << seq_Status[write_Seq];
+                    }
+                    fasta_File << endl;
                     fasta_File << sequence_Write_Store_All[write_Seq] << endl;
                     last_seq_Num++;
                 }
@@ -5903,19 +5913,30 @@ void functions_library::sequence_Write_Configurator(vector<string> &sequence_Wri
 
         // int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
         vector<string> sequence_Write_Store_temp;
-
+        vector<char> temp_seq_Status;
         for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
         {
             sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
+            if (seq_Status.size() > 0)
+            {
+                temp_seq_Status.push_back(seq_Status[fill]);
+            }
         }
 
         sequence_Write_Store_All.clear();
         sequence_Write_Store_All = sequence_Write_Store_temp;
+
+        if (seq_Status.size() > 0)
+        {
+            seq_Status.clear();
+            seq_Status = temp_seq_Status;
+        }
     }
 }
 
 void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store_All,
-                                            const string &folder_Location, int &last_seq_Num)
+                                            const string &folder_Location, int &last_seq_Num,
+                                            vector<char> &seq_Status)
 {
     if (sequence_Write_Store_All.size() > 0)
     {
@@ -5926,7 +5947,16 @@ void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store
         {
             for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
             {
-                fasta_File << ">" << last_seq_Num << endl;
+                fasta_File << ">" << last_seq_Num;
+                if (seq_Status.size() == 0)
+                {
+                    fasta_File << "_A";
+                }
+                else
+                {
+                    fasta_File << "_" << seq_Status[write_Seq];
+                }
+                fasta_File << endl;
                 fasta_File << sequence_Write_Store_All[write_Seq] << endl;
                 last_seq_Num++;
             }

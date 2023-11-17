@@ -5,10 +5,10 @@
   "Mutation availability":"Yes",
 
   # Control the viral transmission bottleneck from one host to another
-  "Transmitted sequence distribution":"BINOMIAL",
+  "Transmitted sequence distribution":"Fixed",
   "Transmitted sequence Binomial trials":2,
   "Transmitted sequence Binomial probability":"0.5",
-  "Transmitted sequence Fixed":1,
+  "Transmitted sequence Fixed":2,
 
   # Can an already infected host be reinfected
   "Reinfection availability":"No",

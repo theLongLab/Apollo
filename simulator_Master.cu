@@ -417,8 +417,34 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 if (new_Hosts_Indexes.size() > 0)
                 {
-                    cout << "Novel hosts recognised\n";
+                    cout << "\nNovel host(s) recognised\n\n";
+
                     // !DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+                    int num_viruses_to_transfer = (int)transmission_parameters[1];
+
+                    string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
+                    int source_Index = Hosts[infectious_Population[host]].get_host_Index();
+                    int source_Generation = Hosts[infectious_Population[host]].get_Generation();
+                    string source_Name = Hosts[infectious_Population[host]].get_Name();
+
+                    //! INDEX FOLDER of Source HOST
+
+                    for (int target_Host = 0; target_Host < new_Hosts_Indexes.size(); target_Host++)
+                    {
+                        if (transmission_parameters[0] == 1)
+                        {
+                            binomial_distribution<int> viruses_to_transfer_distribution(transmission_parameters[1], transmission_parameters[2]);
+                            num_viruses_to_transfer = viruses_to_transfer_distribution(gen);
+                        }
+
+                        Hosts[new_Hosts_Indexes[target_Host]].transfer_Infection(functions, intermediary_Sequence_location, source_Target_file_Location,
+                                                                                 source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
+                                                                                 num_viruses_to_transfer,
+                                                                                 entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
+                                                                                 max_sequences_per_File,
+                                                                                 gen);
+                        exit(-1);
+                    }
                 }
             }
         }
@@ -455,6 +481,7 @@ vector<int> simulator_Master::get_new_Hosts_Indexes(int &node_Profile, mt19937 &
     {
         int new_Hosts = 0;
         cout << num_New_hosts << endl;
+        // ! CHANGE so changes in infection rate can be accounted for, by sampleing effects
         uniform_int_distribution<> distribution_Hosts(0, possible_Infections.size() - 1);
         do
         {
@@ -629,6 +656,8 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
     vector<string> sequence_Write_Store_All;
     int last_seq_Num = 0;
 
+    vector<char> seq_Status;
+
     for (int round = 0; round < start_stops.size(); round++)
     {
         cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
@@ -642,7 +671,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
 
         functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
-                                              max_sequences_per_File, reference_Sequences, last_seq_Num);
+                                              max_sequences_per_File, reference_Sequences, last_seq_Num, seq_Status);
 
         // for (int row = 0; row < num_of_Sequences_current; row++)
         // {
@@ -656,7 +685,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
     }
 
-    functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num);
+    functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num, seq_Status);
 
     collect_Sequences.clear();
 

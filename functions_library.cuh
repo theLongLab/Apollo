@@ -253,8 +253,8 @@ public:
     void sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length);
 
     void sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
-                                     int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num);
+                                     int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status);
 
     void partial_Write_Check(vector<string> &sequence_Write_Store_All,
-                             const string &folder_Location, int &last_seq_Num);
+                             const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status);
 };
