@@ -257,4 +257,6 @@ public:
 
     void partial_Write_Check(vector<string> &sequence_Write_Store_All,
                              const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status);
+
+    vector<vector<pair<int, int>>> index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read);
 };

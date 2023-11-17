@@ -428,6 +428,9 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     string source_Name = Hosts[infectious_Population[host]].get_Name();
 
                     //! INDEX FOLDER of Source HOST
+                    vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_Target_file_Location, num_tissues_per_Node, source_Generation, multi_Read);
+
+                    exit(-1);
 
                     for (int target_Host = 0; target_Host < new_Hosts_Indexes.size(); target_Host++)
                     {
