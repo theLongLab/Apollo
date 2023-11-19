@@ -429,8 +429,17 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                     //! INDEX FOLDER of Source HOST
                     vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_Target_file_Location, num_tissues_per_Node, source_Generation, multi_Read);
+                    // for (int test = 0; test < num_tissues_per_Node; test++)
+                    // {
+                    //     cout << "tissue: " << test << endl;
+                    //     for (size_t i = 0; i < indexed_Source_Folders[test].size(); i++)
+                    //     {
+                    //         cout << indexed_Source_Folders[test][i].first << "_" << indexed_Source_Folders[test][i].second << endl;
+                    //     }
+                    //     cout << endl;
+                    // }
 
-                    exit(-1);
+                    // exit(-1);
 
                     for (int target_Host = 0; target_Host < new_Hosts_Indexes.size(); target_Host++)
                     {
@@ -445,6 +454,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                                  num_viruses_to_transfer,
                                                                                  entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
                                                                                  max_sequences_per_File,
+                                                                                 indexed_Source_Folders,
                                                                                  gen);
                         exit(-1);
                     }

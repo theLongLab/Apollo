@@ -173,6 +173,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                                           int num_viruses_to_transfer,
                                           int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
                                           int &max_sequences_per_File,
+                                          vector<vector<pair<int, int>>> &indexed_Source_Folders,
                                           mt19937 &gen)
 {
     if (exit_tissues > 0)
@@ -219,7 +220,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                 }
             }
 
-            cout << "Viral particles and their tissues have been indentifed\n";
+            cout << "Viral particle(s) and their exit tissue(s) have been indentifed\n";
 
             // vector<vector<int>> indexes_to_Remove;
 
@@ -231,7 +232,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
 
                 if (init_Tissue.size() > 0)
                 {
-                    cout << "Tissue index being infected: " << exit_array[tissue] << endl;
+                    cout << "Exit tissue: " << exit_array[tissue] +1<< endl;
 
                     vector<int> indexes_of_Seq_write;
 
@@ -245,12 +246,12 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                             indexes_of_Seq_write.push_back(init_Tissue[transfer_Cell]);
                             removed_by_Transfer_Indexes[exit_array[tissue]].insert(init_Tissue[transfer_Cell]);
                         }
-
-                        if (indexes_of_Seq_write.size() > 0)
-                        {
-                            cout << "Collecting " << indexes_of_Seq_write.size() << " sequence(s)\n";
-                            
-                        }
+                    }
+                    if (indexes_of_Seq_write.size() > 0)
+                    {
+                        // cout << "Collecting " << indexes_of_Seq_write.size() << " sequence(s)\n";
+                        vector<string> collected_Sequences = functions.find_Sequences_Master(source_Target_file_Location, indexes_of_Seq_write, exit_array[tissue], indexed_Source_Folders[exit_array[tissue]], source_Generation);
+                        
                     }
                 }
             }

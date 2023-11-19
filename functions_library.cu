@@ -5987,11 +5987,11 @@ void functions_library::folder_Delete(string location)
 
 vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read)
 {
-    vector<vector<pair<int, int>>> indexed_Source_Folders;
     cout << "Initiating indexing folder\t: " << source_Target_file_Location << endl;
 
-    if (multi_Read == "YES")
+    if (multi_Read == "NO")
     {
+        cout << "Via single read\n";
         for (int tissue = 0; tissue < num_Tissues; tissue++)
         {
             cout << "Indexing tissue: " << tissue + 1 << endl;
@@ -5999,7 +5999,7 @@ vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string 
             if (filesystem::exists(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
             {
                 for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
-                { 
+                {
                     // filesystem::path file_Name = entry.path().filename().stem().string();
                     string trim_Extension = entry.path().filename().stem().string();
                     // cout << trim_Extension << endl;
@@ -6012,6 +6012,248 @@ vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string 
             indexed_Source_Folders.push_back(indexed_tissue_Folders);
         }
     }
+    else
+    {
+        cout << "Via multi read\n";
 
-    return indexed_Source_Folders;
+        for (int tissue = 0; tissue < num_Tissues; tissue++)
+        {
+            vector<pair<int, int>> indexed_tissue_Folders;
+            indexed_Source_Folders.push_back(indexed_tissue_Folders);
+        }
+
+        int num_per_Core = num_Tissues / this->CPU_cores;
+        int remainder = num_Tissues % this->CPU_cores;
+
+        vector<thread> threads_vec;
+
+        for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+        {
+            int start_Cell = core_ID * num_per_Core;
+            int stop_Cell = start_Cell + num_per_Core;
+
+            threads_vec.push_back(thread{&functions_library::thread_Index_sequence_Folders, this, start_Cell, stop_Cell, source_Target_file_Location, current_Generation});
+        }
+
+        if (remainder != 0)
+        {
+            int start_Cell = num_Tissues - remainder;
+            int stop_Cell = num_Tissues;
+
+            threads_vec.push_back(thread{&functions_library::thread_Index_sequence_Folders, this, start_Cell, stop_Cell, source_Target_file_Location, current_Generation});
+        }
+
+        for (thread &t : threads_vec)
+        {
+            if (t.joinable())
+            {
+                t.join();
+            }
+        }
+
+        threads_vec.clear();
+    }
+
+    vector<vector<pair<int, int>>> indexed_Source_Folders_Return(indexed_Source_Folders);
+    indexed_Source_Folders.clear();
+
+    return indexed_Source_Folders_Return;
+}
+
+void functions_library::thread_Index_sequence_Folders(int start, int stop, string source_Target_file_Location, int current_Generation)
+{
+    vector<vector<pair<int, int>>> indexed_Source_Folders_TEMP;
+
+    for (int tissue = start; tissue < stop; tissue++)
+    {
+        vector<pair<int, int>> indexed_tissue_Folders;
+        if (filesystem::exists(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
+        {
+            for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
+            {
+                // filesystem::path file_Name = entry.path().filename().stem().string();
+                string trim_Extension = entry.path().filename().stem().string();
+                // cout << trim_Extension << endl;
+                vector<string> split_Data;
+                split(split_Data, trim_Extension, '_');
+                indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+            }
+            sort(indexed_tissue_Folders.begin(), indexed_tissue_Folders.end());
+        }
+        indexed_Source_Folders_TEMP.push_back(indexed_tissue_Folders);
+    }
+
+    int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int tissue = start; tissue < stop; tissue++)
+    {
+        indexed_Source_Folders[tissue] = indexed_Source_Folders_TEMP[index];
+        index++;
+    }
+}
+
+vector<string> functions_library::find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation)
+{
+    int num_Sequences = sequence_List.size();
+    cout << "Collecting " << num_Sequences << " sequence(s)\n";
+    string folder_Path = source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation);
+
+    int num_per_Core = num_Sequences / this->CPU_cores;
+    int remainder = num_Sequences % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Cell = core_ID * num_per_Core;
+        int stop_Cell = start_Cell + num_per_Core;
+
+        threads_vec.push_back(thread{&functions_library::thread_find_Files, this, start_Cell, stop_Cell, sequence_List, indexed_Tissue_Folder});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Cell = num_Sequences - remainder;
+        int stop_Cell = num_Sequences;
+
+        threads_vec.push_back(thread{&functions_library::thread_find_Files, this, start_Cell, stop_Cell, sequence_List, indexed_Tissue_Folder});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
+    found_Tissue_Folder_Indexes.clear();
+
+    cout << Tissue_files.size() << " file(s) identified\n";
+
+    vector<pair<int, int>> sequence_FileIndex_Position_list;
+    vector<string> collected_Sequences;
+    for (int index = 0; index < sequence_List.size(); index++)
+    {
+        sequence_FileIndex_Position_list.push_back(make_pair(sequence_List[index], index));
+        collected_Sequences.push_back("");
+    }
+
+    sort(sequence_FileIndex_Position_list.begin(), sequence_FileIndex_Position_list.end());
+
+    fstream nfasta;
+    int index_Files = 0;
+    int line_current = 0;
+
+    cout << "Retrieving sequence(s)\n";
+
+    int valid_Sequences = 0;
+
+    nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+
+    for (int find = 0; find < sequence_FileIndex_Position_list.size(); find++)
+    {
+        // cout << "Looking for " << sequence_FileIndex_Position_list[find].first << "\n";
+
+        while ((indexed_Tissue_Folder[Tissue_files[index_Files]].first <= sequence_FileIndex_Position_list[find].first && indexed_Tissue_Folder[Tissue_files[index_Files]].second >= sequence_FileIndex_Position_list[find].first) == 0)
+        {
+            nfasta.close();
+            index_Files++;
+            nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+            line_current = 0;
+        }
+
+        if (nfasta.is_open())
+        {
+            int line_t0_check = (sequence_FileIndex_Position_list[find].first - indexed_Tissue_Folder[Tissue_files[index_Files]].first) * 2;
+
+            string line;
+            string sequence = "";
+
+            while (getline(nfasta, line))
+            {
+                if (line_t0_check == line_current)
+                {
+                    // cout << line << endl;
+                    vector<string> line_Data;
+                    split(line_Data, line, '_');
+                    // cout << line_Data[0].substr(1) << endl;
+                    if (stoi(line_Data[0].substr(1)) == sequence_FileIndex_Position_list[find].first)
+                    {
+                        if (line_Data[line_Data.size() - 1].at(0) == 'A')
+                        {
+                            getline(nfasta, line);
+                            collected_Sequences[find] = line;
+                            valid_Sequences++;
+
+                            line_current++;
+                        }
+                    }
+                    else
+                    {
+                        cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                        cout << "Looking for: " << sequence_FileIndex_Position_list[find].first << endl
+                             << "Sequence ID at location: " << line << endl
+                             << "File: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first
+                             << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                        exit(-1);
+                    }
+                    line_current++;
+                    break;
+                }
+                line_current++;
+            }
+        }
+        else
+        {
+            cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+            exit(-1);
+        }
+    }
+    nfasta.close();
+
+    cout << valid_Sequences << " live sequence(s) collected\n";
+
+    return collected_Sequences;
+}
+
+void functions_library::thread_find_Files(int start, int stop, vector<int> sequence_List, vector<pair<int, int>> indexed_Tissue_Folder)
+{
+    vector<int> caught_Indexes;
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        int top = 0;
+        int bottom = indexed_Tissue_Folder.size() - 1;
+        int middle = top + ((bottom - top) / 2);
+
+        while (top <= bottom)
+        {
+            if ((indexed_Tissue_Folder[middle].first <= sequence_List[sequence]) && (indexed_Tissue_Folder[middle].second >= sequence_List[sequence]))
+            {
+                caught_Indexes.push_back(middle);
+                // found = 'Y';
+                break;
+            }
+            else if (indexed_Tissue_Folder[middle].first < sequence_List[sequence])
+            {
+                top = middle + 1;
+            }
+            else
+            {
+                bottom = middle - 1;
+            }
+            middle = top + ((bottom - top) / 2);
+        }
+    }
+
+    // int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int index = 0; index < caught_Indexes.size(); index++)
+    {
+        found_Tissue_Folder_Indexes.insert(caught_Indexes[index]);
+        //   index++;
+    }
 }

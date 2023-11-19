@@ -84,6 +84,7 @@ public:
                             int num_viruses_to_transfer,
                             int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
                             int &max_sequences_per_File,
+                            vector<vector<pair<int, int>>> &indexed_Source_Folders,
                             mt19937 &gen);
     void run_Generation();
 
