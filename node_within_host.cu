@@ -172,13 +172,15 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                                           int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
                                           int num_viruses_to_transfer,
                                           int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
+                                          vector<set<int>> &source_removed_by_Transfer_Indexes,
                                           int &max_sequences_per_File,
                                           vector<vector<pair<int, int>>> &indexed_Source_Folders,
+                                          string &Host_source_target_network_location,
                                           mt19937 &gen)
 {
     if (exit_Load > 0)
     {
-        cout << "Node " << this->cave_ID << "_" << this->host_ID << " is being infected by " << source_Name << endl;
+        cout << "\nNode " << this->cave_ID << "_" << this->host_ID << " is being infected by " << source_Name << endl;
 
         if (num_viruses_to_transfer > exit_Load)
         {
@@ -245,13 +247,13 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
 
                     for (int transfer_Cell = 0; transfer_Cell < init_Tissue.size(); transfer_Cell++)
                     {
-                        auto it = removed_by_Transfer_Indexes[exit_array[tissue]].find(init_Tissue[transfer_Cell]);
+                        auto it = source_removed_by_Transfer_Indexes[exit_array[tissue]].find(init_Tissue[transfer_Cell]);
 
-                        if (it == removed_by_Transfer_Indexes[exit_array[tissue]].end())
+                        if (it == source_removed_by_Transfer_Indexes[exit_array[tissue]].end())
                         {
                             // not present
                             indexes_of_Seq_write.push_back(init_Tissue[transfer_Cell]);
-                            removed_by_Transfer_Indexes[exit_array[tissue]].insert(init_Tissue[transfer_Cell]);
+                            source_removed_by_Transfer_Indexes[exit_array[tissue]].insert(init_Tissue[transfer_Cell]);
                         }
                     }
                     if (indexes_of_Seq_write.size() > 0)
@@ -271,6 +273,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
             }
             vector<char> seq_Status;
             cout << "Writing sequence(s) to entry tissue(s)\n";
+            int write_Check = 0;
             for (int tissue = 0; tissue < entry_tissues; tissue++)
             {
                 for (int sequence = 0; sequence < seq_to_Write[tissue].size(); sequence++)
@@ -285,13 +288,31 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                                                           max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
                     functions.partial_Write_Check(sequence_Write_Store_All,
                                                   host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
+                    write_Check = 1;
+                }
+            }
+            if (write_Check == 1)
+            {
+                fstream write_source_Target;
+                write_source_Target.open(Host_source_target_network_location, ios::app);
+
+                if (write_source_Target.is_open())
+                {
+                    cout << "Writing host's source target relationship\n";
+                    write_source_Target << source_Name << "\t" << this->get_Name() << endl;
+                    write_source_Target.close();
+                }
+                else
+                {
+                    cout << "ERROR: UNABLE TO OPEN SOURCE TARGET FILE:\n";
+                    exit(-1);
                 }
             }
         }
     }
     else
     {
-        cout << source_Name << " has no viral particles in the exist tissues\n";
+        cout << source_Name << " has no viral particles in the exit tissues\n";
     }
 }
 

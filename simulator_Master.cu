@@ -453,10 +453,12 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                                  source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
                                                                                  num_viruses_to_transfer,
                                                                                  entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
+                                                                                 Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
                                                                                  max_sequences_per_File,
                                                                                  indexed_Source_Folders,
+                                                                                 Host_source_target_network_location,
                                                                                  gen);
-                        exit(-1);
+                       // exit(-1);
                     }
                 }
             }
@@ -2632,12 +2634,12 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
         }
     }
 
-    vector<vector<pair<int, int>>> each_Nodes_Connections;
+   // vector<vector<pair<int, int>>> each_Nodes_Connections;
 
     for (size_t i = 0; i < Total_number_of_Nodes; i++)
     {
         vector<pair<int, int>> nodes_Intialize;
-        each_Nodes_Connections.push_back(nodes_Intialize);
+        each_Nodes_Connection.push_back(nodes_Intialize);
     }
 
     cout << "Configuring cave cohort relationships\n";
@@ -2663,8 +2665,8 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
             {
                 int node_child_Main = node_Count + (node_child - node_parent);
                 network_File << cave_ID << "_" << node_parent << "\t" << cave_ID << "_" << node_child << "\n";
-                each_Nodes_Connections[node_Count].push_back(make_pair(cave_ID, node_child));
-                each_Nodes_Connections[node_child_Main].push_back(make_pair(cave_ID, node_parent));
+                each_Nodes_Connection[node_Count].push_back(make_pair(cave_ID, node_child));
+                each_Nodes_Connection[node_child_Main].push_back(make_pair(cave_ID, node_parent));
                 // cout << node_Count << "\t" << node_child_Main << endl;
             }
         }
@@ -2698,8 +2700,8 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
         int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Node_Index;
         int attach_Node_all_Index = per_cave_Stride[attach_Cave] + attach_Node_Index;
 
-        each_Nodes_Connections[parent_Node_all_Index].push_back(make_pair(attach_Cave, attach_Node_Index));
-        each_Nodes_Connections[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
+        each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(attach_Cave, attach_Node_Index));
+        each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
     }
 
     cout << "Configuring Global networks attachments\n";
@@ -2755,8 +2757,8 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
                     int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Cave_Node;
                     int attach_Node_all_Index = per_cave_Stride[cave_Global] + Global_Cave_Node;
 
-                    each_Nodes_Connections[parent_Node_all_Index].push_back(make_pair(cave_Global, Global_Cave_Node));
-                    each_Nodes_Connections[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Cave_Node));
+                    each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(cave_Global, Global_Cave_Node));
+                    each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Cave_Node));
                 }
             }
         }
