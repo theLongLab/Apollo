@@ -176,7 +176,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                                           vector<vector<pair<int, int>>> &indexed_Source_Folders,
                                           mt19937 &gen)
 {
-    if (exit_tissues > 0)
+    if (exit_Load > 0)
     {
         cout << "Node " << this->cave_ID << "_" << this->host_ID << " is being infected by " << source_Name << endl;
 
@@ -224,7 +224,14 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
 
             // vector<vector<int>> indexes_to_Remove;
 
-            vector<string> seq_to_Write;
+            vector<vector<string>> seq_to_Write;
+            for (int init = 0; init < entry_tissues; init++)
+            {
+                vector<string> initialize;
+                seq_to_Write.push_back(initialize);
+            }
+
+            uniform_int_distribution<> entry_Select(0, entry_tissues - 1);
 
             for (int tissue = 0; tissue < exit_tissues; tissue++)
             {
@@ -232,7 +239,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
 
                 if (init_Tissue.size() > 0)
                 {
-                    cout << "Exit tissue: " << exit_array[tissue] +1<< endl;
+                    cout << "Exit tissue: " << exit_array[tissue] + 1 << endl;
 
                     vector<int> indexes_of_Seq_write;
 
@@ -251,8 +258,33 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                     {
                         // cout << "Collecting " << indexes_of_Seq_write.size() << " sequence(s)\n";
                         vector<string> collected_Sequences = functions.find_Sequences_Master(source_Target_file_Location, indexes_of_Seq_write, exit_array[tissue], indexed_Source_Folders[exit_array[tissue]], source_Generation);
-                        
+                        cout << "Assinging sequence(s) to entry tissue(s)\n";
+                        for (int check_Seq = 0; check_Seq < collected_Sequences.size(); check_Seq++)
+                        {
+                            if (collected_Sequences[check_Seq] != "")
+                            {
+                                seq_to_Write[entry_Select(gen)].push_back(collected_Sequences[check_Seq]);
+                            }
+                        }
                     }
+                }
+            }
+            vector<char> seq_Status;
+            cout << "Writing sequence(s) to entry tissue(s)\n";
+            for (int tissue = 0; tissue < entry_tissues; tissue++)
+            {
+                for (int sequence = 0; sequence < seq_to_Write[tissue].size(); sequence++)
+                {
+                    if (!filesystem::exists(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation)))
+                    {
+                        functions.config_Folder(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(entry_array[tissue]) + " Generation 0");
+                    }
+
+                    vector<string> sequence_Write_Store_All;
+                    functions.sequence_Write_Configurator(sequence_Write_Store_All, seq_to_Write[tissue],
+                                                          max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
+                    functions.partial_Write_Check(sequence_Write_Store_All,
+                                                  host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
                 }
             }
         }

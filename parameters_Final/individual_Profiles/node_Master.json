@@ -47,7 +47,7 @@
     "Tissue 2 Name":"Lung",
     "Tissue 3 Name":"Gut",
 
-    "Viral entry tissues":"1",
+    "Viral entry tissues":"1,2",
     "Infectious load tissues":"1",
     "Terminal load tissues":"1,2,3",
     "Viral exit tissues":"1",
