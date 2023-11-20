@@ -158,10 +158,10 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
                     int last_seq_Num = 0;
                     functions.sequence_Write_Configurator(sequence_Write_Store_All, tissue_Sequences[entry_array[tissue]],
                                                           max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
-                                                          output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]],current_Generation);
+                                                          output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
                     functions.partial_Write_Check(sequence_Write_Store_All,
                                                   host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
-                                                  output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]],current_Generation);
+                                                  output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
                 }
             }
         }
@@ -378,9 +378,57 @@ string node_within_host::transfer_Infection(functions_library &functions, string
     return status;
 }
 
+void node_within_host::run_Generation(vector<string> &tissue_Names,
+                                      int terminal_tissues, int *terminal_array)
+{
+    cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
+         << endl;
+
+    if (current_Generation < num_Generation)
+    {
+        cout << "Calculating actual particles in each tissue: \n";
+        int *real_Particle_count_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
+        int sum_Check = 0;
+        for (int tissue = 0; tissue < num_Tissues; tissue++)
+        {
+            real_Particle_count_per_Tissue[tissue] = current_Viral_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size() - dead_Particle_count[tissue];
+            cout << tissue_Names[tissue] << " tissue: " << real_Particle_count_per_Tissue[tissue] << endl;
+            sum_Check = sum_Check + real_Particle_count_per_Tissue[tissue];
+        }
+
+        if (sum_Check > 0)
+        {
+            if (terminal_status(terminal_tissues, terminal_array) != 1)
+            {
+                cout << "\nIntiating simulation\n";
+
+                for (int tissue = 0; tissue < num_Tissues; tissue++)
+                {
+                    if (real_Particle_count_per_Tissue[tissue] > 0)
+                    {
+                        cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particles for " << tissue_Names[tissue] << " tissue\n"
+                             << endl;
+                    }
+                }
+            }
+        }
+        else
+        {
+            set_Removed();
+        }
+    }
+    else
+    {
+        set_Removed();
+    }
+
+    // get each tissues generational phase
+}
+
 void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions)
 {
     current_Viral_load_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
+    dead_Particle_count = (int *)malloc(sizeof(int) * num_Tissues);
     current_Generation = 0;
 
     set<int> init_removed_by_Transfer_Indexes;
@@ -392,6 +440,7 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
 
         tissue_Sequences.push_back(tissue_Sequence);
         current_Viral_load_per_Tissue[tissue] = 0;
+        dead_Particle_count[tissue] = 0;
 
         removed_by_Transfer_Indexes.push_back(init_removed_by_Transfer_Indexes);
     }

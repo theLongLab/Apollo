@@ -282,7 +282,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     vector<int> infected_Population;
 
     int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
-    Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File,output_Node_location,tissue_Names);
+    Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File, output_Node_location, tissue_Names);
 
     cout << endl;
     functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
@@ -459,7 +459,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                                                  max_sequences_per_File,
                                                                                                  indexed_Source_Folders,
                                                                                                  Host_source_target_network_location,
-                                                                                                 output_Node_location,tissue_Names,
+                                                                                                 output_Node_location, tissue_Names,
                                                                                                  gen);
                         // exit(-1);
 
@@ -468,17 +468,36 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                             infected_Population.push_back(new_Hosts_Indexes[target_Host]);
                         }
                     }
-
-                    cout << "Attempting to simulate " << infected_Population.size() << " hosts\n";
-                    for (int host = 0; host < infected_Population.size(); host++)
-                    {
-                    }
                 }
             }
         }
 
+        if (infected_Population.size() > 0)
+        {
+            cout << "\nAttempting to simulate " << infected_Population.size() << " hosts\n";
+            for (int host = 0; host < infected_Population.size(); host++)
+            {
+                Hosts[infected_Population[host]].run_Generation(tissue_Names, terminal_tissues, terminal_array);
+            }
+        }
+        else
+        {
+            stop = 2;
+        }
+
         stop = 1;
     } while (stop == 0);
+
+    cout << "\nSimulation has concluded: ";
+
+    if (stop == 1)
+    {
+        cout << "GOD Mode STOP\n";
+    }
+    else if (stop == 2)
+    {
+        cout << "No infected population remaining\n";
+    }
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
 }

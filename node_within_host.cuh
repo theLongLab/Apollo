@@ -50,6 +50,8 @@ private:
     int current_Generation = -1;
     int *current_Viral_load_per_Tissue;
 
+    int *dead_Particle_count;
+
     // Remember to clear after getting the indexes in th current tissue;
 
 public:
@@ -99,7 +101,9 @@ public:
                               string &output_Node_location,
                               vector<string> &tissue_Names,
                               mt19937 &gen);
-    void run_Generation();
+
+    void run_Generation(vector<string> &tissue_Names,
+                        int terminal_tissues, int *terminal_array);
 
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
 };
