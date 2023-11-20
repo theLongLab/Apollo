@@ -257,14 +257,34 @@ public:
     void sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length);
 
     void sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+                                     int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status,
+                                     string sequence_Profiles_Location, string host, string tissue, int current_Generation);
+
+    void partial_Write_Check(vector<string> &sequence_Write_Store_All,
+                             const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status,
+                             string sequence_Profiles_Location, string host, string tissue, int current_Generation);
+
+    void sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
                                      int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status);
 
     void partial_Write_Check(vector<string> &sequence_Write_Store_All,
                              const string &folder_Location, int &last_seq_Num, vector<char> &seq_Status);
 
+    void sequence_Write_Configurator_transfer(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+                                              int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
+                                              vector<char> &seq_Status,
+                                              string sequence_Profiles_Location, string host, string tissue, int current_Generation,
+                                              vector<int> &indexes_Written);
+
+    void partial_Write_Check_transfer(vector<string> &sequence_Write_Store_All,
+                                      const string &folder_Location, int &last_seq_Num,
+                                      vector<char> &seq_Status,
+                                      string sequence_Profiles_Location, string host, string tissue, int current_Generation,
+                                      vector<int> &indexes_Written);
+
     vector<vector<pair<int, int>>> index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read);
     void thread_Index_sequence_Folders(int start, int stop, string source_Target_file_Location, int current_Generation);
 
-    vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation);
+    vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, int &valid_Sequences);
     void thread_find_Files(int start, int stop, vector<int> sequence_List, vector<pair<int, int>> indexed_Tissue_Folder);
 };

@@ -64,7 +64,9 @@ void node_within_host::print_All()
 }
 
 void node_within_host::begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
-                                       int entry_tissues, int *entry_array, int &max_sequences_per_File)
+                                       int entry_tissues, int *entry_array, int &max_sequences_per_File,
+                                       string &output_Node_location,
+                                       vector<string> &tissue_Names)
 {
     // FIRST NODE OF INFECTION IN THE HOST
 
@@ -145,12 +147,21 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
                     current_Viral_load_per_Tissue[entry_array[tissue]] = tissue_Sequences[entry_array[tissue]].size();
                     functions.config_Folder(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(entry_array[tissue]) + " Generation 0");
 
+                    if (!filesystem::exists(output_Node_location + "/" + get_Name()))
+                    {
+                        functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
+                        functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
+                        functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+                    }
+
                     vector<string> sequence_Write_Store_All;
                     int last_seq_Num = 0;
                     functions.sequence_Write_Configurator(sequence_Write_Store_All, tissue_Sequences[entry_array[tissue]],
-                                                          max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status);
+                                                          max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                                          output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]],current_Generation);
                     functions.partial_Write_Check(sequence_Write_Store_All,
-                                                  host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status);
+                                                  host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                                  output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]],current_Generation);
                 }
             }
         }
@@ -160,7 +171,7 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
             exit(-1);
         }
     }
-    status = "Infected";
+    set_Infected();
     // for (int tissue = 0; tissue < num_Tissues; tissue++)
     // {
     //     cout << current_Viral_load_per_Tissue[tissue] << endl;
@@ -168,15 +179,17 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
     // exit(-1);
 }
 
-void node_within_host::transfer_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
-                                          int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
-                                          int num_viruses_to_transfer,
-                                          int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
-                                          vector<set<int>> &source_removed_by_Transfer_Indexes,
-                                          int &max_sequences_per_File,
-                                          vector<vector<pair<int, int>>> &indexed_Source_Folders,
-                                          string &Host_source_target_network_location,
-                                          mt19937 &gen)
+string node_within_host::transfer_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
+                                            int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
+                                            int num_viruses_to_transfer,
+                                            int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
+                                            vector<set<int>> &source_removed_by_Transfer_Indexes,
+                                            int &max_sequences_per_File,
+                                            vector<vector<pair<int, int>>> &indexed_Source_Folders,
+                                            string &Host_source_target_network_location,
+                                            string &output_Node_location,
+                                            vector<string> &tissue_Names,
+                                            mt19937 &gen)
 {
     if (exit_Load > 0)
     {
@@ -227,10 +240,12 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
             // vector<vector<int>> indexes_to_Remove;
 
             vector<vector<string>> seq_to_Write;
+            vector<vector<string>> source_Seq_Data;
             for (int init = 0; init < entry_tissues; init++)
             {
                 vector<string> initialize;
                 seq_to_Write.push_back(initialize);
+                source_Seq_Data.push_back(initialize);
             }
 
             uniform_int_distribution<> entry_Select(0, entry_tissues - 1);
@@ -258,14 +273,29 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                     }
                     if (indexes_of_Seq_write.size() > 0)
                     {
+                        int valid_Sequences = 0;
                         // cout << "Collecting " << indexes_of_Seq_write.size() << " sequence(s)\n";
-                        vector<string> collected_Sequences = functions.find_Sequences_Master(source_Target_file_Location, indexes_of_Seq_write, exit_array[tissue], indexed_Source_Folders[exit_array[tissue]], source_Generation);
+                        vector<string> collected_Sequences = functions.find_Sequences_Master(source_Target_file_Location, indexes_of_Seq_write, exit_array[tissue], indexed_Source_Folders[exit_array[tissue]], source_Generation, valid_Sequences);
                         cout << "Assinging sequence(s) to entry tissue(s)\n";
+
+                        if (valid_Sequences != 0)
+                        {
+                            if (!filesystem::exists(output_Node_location + "/" + get_Name()))
+                            {
+                                functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
+                                functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
+                                functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+                            }
+                        }
+
                         for (int check_Seq = 0; check_Seq < collected_Sequences.size(); check_Seq++)
                         {
                             if (collected_Sequences[check_Seq] != "")
                             {
-                                seq_to_Write[entry_Select(gen)].push_back(collected_Sequences[check_Seq]);
+                                int entry_Tissue_index = entry_Select(gen);
+                                seq_to_Write[entry_Tissue_index].push_back(collected_Sequences[check_Seq]);
+                                // sequence_Profile << host << "_" << tissue << "_" << last_seq_Num << "\t" << host << tissue<<endl;
+                                source_Seq_Data[entry_Tissue_index].push_back(source_Name + "_" + tissue_Names[exit_array[tissue]] + "_" + to_string(source_Generation) + "_" + to_string(indexes_of_Seq_write[check_Seq]));
                             }
                         }
                     }
@@ -273,10 +303,10 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
             }
             vector<char> seq_Status;
             cout << "Writing sequence(s) to entry tissue(s)\n";
-            int write_Check = 0;
+            int infected_Check = 0;
             for (int tissue = 0; tissue < entry_tissues; tissue++)
             {
-                for (int sequence = 0; sequence < seq_to_Write[tissue].size(); sequence++)
+                if (seq_to_Write[tissue].size() > 0)
                 {
                     if (!filesystem::exists(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation)))
                     {
@@ -284,15 +314,45 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                     }
 
                     vector<string> sequence_Write_Store_All;
-                    functions.sequence_Write_Configurator(sequence_Write_Store_All, seq_to_Write[tissue],
-                                                          max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
-                    functions.partial_Write_Check(sequence_Write_Store_All,
-                                                  host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status);
-                    write_Check = 1;
+                    vector<int> indexes_Written;
+                    functions.sequence_Write_Configurator_transfer(sequence_Write_Store_All, seq_to_Write[tissue],
+                                                                   max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status,
+                                                                   output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation,
+                                                                   indexes_Written);
+                    functions.partial_Write_Check_transfer(sequence_Write_Store_All,
+                                                           host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), current_Viral_load_per_Tissue[entry_array[tissue]], seq_Status,
+                                                           output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation, indexes_Written);
+                    infected_Check = 1;
+
+                    //(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+                    fstream source;
+                    fstream target;
+                    source.open(output_Node_location + "/" + source_Name + "/sequence_parent_Progeny_relationships.csv", ios::app);
+                    target.open(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", ios::app);
+                    // functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
+                    fstream target_Profiles;
+                    target_Profiles.open(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", ios::app);
+                    fstream source_Profiles;
+                    source_Profiles.open(output_Node_location + "/" + source_Name + "/sequence_Profiles.csv", ios::app);
+                    for (int transfers = 0; transfers < indexes_Written.size(); transfers++)
+                    {
+                        source << source_Seq_Data[tissue][transfers] << "\t" << get_Name() << "_" << tissue_Names[entry_array[tissue]] << "_" << current_Generation << "_" << to_string(indexes_Written[transfers]) << "\tTransmission" << endl;
+                        target << source_Seq_Data[tissue][transfers] << "\t" << get_Name() << "_" << tissue_Names[entry_array[tissue]] << "_" << current_Generation << "_" << to_string(indexes_Written[transfers]) << "\tTransmission" << endl;
+                        target_Profiles << source_Seq_Data[tissue][transfers] << "\t" << source_Name << "\t" << tissue_Names[entry_array[tissue]] << endl;
+                        source_Profiles << get_Name() << "_" << tissue_Names[entry_array[tissue]] << "_" << current_Generation << "_" << to_string(indexes_Written[transfers]) << "\t" << get_Name() << "\t" << tissue_Names[entry_array[tissue]] << endl;
+                    }
+                    source.close();
+                    target.close();
+                    target_Profiles.close();
                 }
             }
-            if (write_Check == 1)
+            if (infected_Check == 1)
             {
+                if (status == "Susceptible")
+                {
+                    set_Infected();
+                }
+
                 fstream write_source_Target;
                 write_source_Target.open(Host_source_target_network_location, ios::app);
 
@@ -304,7 +364,7 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
                 }
                 else
                 {
-                    cout << "ERROR: UNABLE TO OPEN SOURCE TARGET FILE:\n";
+                    cout << "ERROR: UNABLE TO OPEN SOURCE TARGET FILE: " << Host_source_target_network_location << "\n";
                     exit(-1);
                 }
             }
@@ -314,6 +374,8 @@ void node_within_host::transfer_Infection(functions_library &functions, string &
     {
         cout << source_Name << " has no viral particles in the exit tissues\n";
     }
+
+    return status;
 }
 
 void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions)
@@ -351,7 +413,7 @@ int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
 {
     if (get_Load(num_tissues, tissue_array) >= infectious_Load)
     {
-        status = "Infectious";
+        set_Infectious();
         return 1;
     }
     else
@@ -363,7 +425,7 @@ int node_within_host::terminal_status(int &num_tissues, int *tissue_array)
 {
     if (get_Load(num_tissues, tissue_array) >= terminal_Load)
     {
-        status = "Dead";
+        set_Dead();
         return 1;
     }
     else
@@ -400,4 +462,21 @@ int node_within_host::get_Generation()
 int *node_within_host::get_current_Viral_load_per_Tissue()
 {
     return current_Viral_load_per_Tissue;
+}
+
+void node_within_host::set_Infected()
+{
+    this->status = "Infected";
+}
+void node_within_host::set_Infectious()
+{
+    this->status = "Infectious";
+}
+void node_within_host::set_Removed()
+{
+    this->status = "Removed";
+}
+void node_within_host::set_Dead()
+{
+    this->status = "Dead";
 }

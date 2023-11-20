@@ -38,6 +38,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
 
     output_Network_location = this->output_Folder_location + "/network_Data";
     function.config_Folder(output_Network_location, "Network");
+    output_Node_location = this->output_Folder_location + "/node_Data";
+    function.config_Folder(output_Node_location, "Node");
     network_File_location = output_Network_location + "/node_node_Relationships.csv";
     function.create_File(network_File_location, "Source\tTarget");
     Host_source_target_network_location = output_Network_location + "/hosts_source_target_Relationships.csv";
@@ -280,7 +282,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     vector<int> infected_Population;
 
     int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
-    Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File);
+    Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File,output_Node_location,tissue_Names);
 
     cout << endl;
     functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
@@ -349,7 +351,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 if (reinfection_Availability == 0)
                 {
-                    cout << "Preventing reinfection of hosts\n";
+                    cout << "Preventing reinfection of infeceted hosts\n";
                     // index and position in host_Connections
 
                     for (int host = 0; host < host_Connections.size(); host++)
@@ -380,7 +382,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 }
                 else
                 {
-                    cout << "Reinfection of hosts can occur\n";
+                    cout << "Reinfection of infected hosts can occur\n";
                     // vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
                     // Node_search(host_Connections);
 
@@ -419,7 +421,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 {
                     cout << "\nNovel host(s) recognised\n\n";
 
-                    // !DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+                    //// DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
                     int num_viruses_to_transfer = (int)transmission_parameters[1];
 
                     string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
@@ -427,7 +429,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     int source_Generation = Hosts[infectious_Population[host]].get_Generation();
                     string source_Name = Hosts[infectious_Population[host]].get_Name();
 
-                    //! INDEX FOLDER of Source HOST
+                    //// INDEX FOLDER of Source HOST
                     vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_Target_file_Location, num_tissues_per_Node, source_Generation, multi_Read);
                     // for (int test = 0; test < num_tissues_per_Node; test++)
                     // {
@@ -449,16 +451,27 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                             num_viruses_to_transfer = viruses_to_transfer_distribution(gen);
                         }
 
-                        Hosts[new_Hosts_Indexes[target_Host]].transfer_Infection(functions, intermediary_Sequence_location, source_Target_file_Location,
-                                                                                 source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
-                                                                                 num_viruses_to_transfer,
-                                                                                 entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
-                                                                                 Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
-                                                                                 max_sequences_per_File,
-                                                                                 indexed_Source_Folders,
-                                                                                 Host_source_target_network_location,
-                                                                                 gen);
-                       // exit(-1);
+                        string status = Hosts[new_Hosts_Indexes[target_Host]].transfer_Infection(functions, intermediary_Sequence_location, source_Target_file_Location,
+                                                                                                 source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
+                                                                                                 num_viruses_to_transfer,
+                                                                                                 entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
+                                                                                                 Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
+                                                                                                 max_sequences_per_File,
+                                                                                                 indexed_Source_Folders,
+                                                                                                 Host_source_target_network_location,
+                                                                                                 output_Node_location,tissue_Names,
+                                                                                                 gen);
+                        // exit(-1);
+
+                        if (status == "Infected")
+                        {
+                            infected_Population.push_back(new_Hosts_Indexes[target_Host]);
+                        }
+                    }
+
+                    cout << "Attempting to simulate " << infected_Population.size() << " hosts\n";
+                    for (int host = 0; host < infected_Population.size(); host++)
+                    {
                     }
                 }
             }
@@ -2634,7 +2647,7 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
         }
     }
 
-   // vector<vector<pair<int, int>>> each_Nodes_Connections;
+    // vector<vector<pair<int, int>>> each_Nodes_Connections;
 
     for (size_t i = 0; i < Total_number_of_Nodes; i++)
     {

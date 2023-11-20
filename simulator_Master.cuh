@@ -232,6 +232,7 @@ private:
     string output_Network_location = "";
     string network_File_location = "";
     string Host_source_target_network_location = "";
+    string output_Node_location = "";
 
     // vector<string> raw_parent_Sequences;
     int genome_Length = 0;

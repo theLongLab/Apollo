@@ -69,6 +69,11 @@ public:
     int get_Generation();
     int *get_current_Viral_load_per_Tissue();
 
+    void set_Infected();
+    void set_Infectious();
+    void set_Removed();
+    void set_Dead();
+
     int get_Load(int &num_tissues_Calc, int *tissue_array);
 
     int infectious_status(int &num_tissues_Calc, int *tissue_array);
@@ -77,19 +82,23 @@ public:
     void print_All();
 
     void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
-                         int entry_tissues, int *entry_array, int &max_sequences_per_File);
+                         int entry_tissues, int *entry_array, int &max_sequences_per_File,
+                         string &output_Node_location,
+                         vector<string> &tissue_Names);
 
     vector<set<int>> removed_by_Transfer_Indexes;
 
-    void transfer_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
-                            int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
-                            int num_viruses_to_transfer,
-                            int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
-                            vector<set<int>> &source_removed_by_Transfer_Indexes,
-                            int &max_sequences_per_File,
-                            vector<vector<pair<int, int>>> &indexed_Source_Folders,
-                            string &Host_source_target_network_location,
-                            mt19937 &gen);
+    string transfer_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
+                              int &source_Index, int &source_Generation, string &source_Name, int *source_current_Viral_load_per_Tissue,
+                              int num_viruses_to_transfer,
+                              int &entry_tissues, int *entry_array, int exit_Load, int &exit_tissues, int *exit_array,
+                              vector<set<int>> &source_removed_by_Transfer_Indexes,
+                              int &max_sequences_per_File,
+                              vector<vector<pair<int, int>>> &indexed_Source_Folders,
+                              string &Host_source_target_network_location,
+                              string &output_Node_location,
+                              vector<string> &tissue_Names,
+                              mt19937 &gen);
     void run_Generation();
 
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);

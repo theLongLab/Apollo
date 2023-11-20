@@ -5884,7 +5884,6 @@ void functions_library::sequence_Write_Configurator(vector<string> &sequence_Wri
 
             if (fasta_File.is_open())
             {
-
                 for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
                 {
                     fasta_File << ">" << last_seq_Num;
@@ -5962,6 +5961,253 @@ void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store
             }
 
             fasta_File.close();
+        }
+        else
+        {
+            cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+            exit(-1);
+        }
+    }
+}
+
+void functions_library::sequence_Write_Configurator_transfer(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+                                                             int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
+                                                             vector<char> &seq_Status,
+                                                             string sequence_Profiles_Location, string host, string tissue, int current_Generation,
+                                                             vector<int> &indexes_Written)
+{
+    for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
+    {
+        sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
+    }
+
+    sequence_Write_Store.clear();
+
+    if (sequence_Write_Store_All.size() >= max_sequences_per_File)
+    {
+        int full_Write_Count = sequence_Write_Store_All.size() / max_sequences_per_File;
+
+        for (int full = 0; full < full_Write_Count; full++)
+        {
+
+            string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + max_sequences_per_File - 1) + ".nfasta";
+            fstream fasta_File;
+            fasta_File.open(fasta_file_Location, ios::out);
+            fstream sequence_Profile;
+            //"Sequence_ID\tHost\tTissue"
+            sequence_Profile.open(sequence_Profiles_Location, ios::app);
+
+            if (fasta_File.is_open())
+            {
+                for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
+                {
+                    fasta_File << ">" << last_seq_Num;
+                    indexes_Written.push_back(last_seq_Num);
+                    if (seq_Status.size() == 0)
+                    {
+                        fasta_File << "_A";
+                    }
+                    else
+                    {
+                        fasta_File << "_" << seq_Status[write_Seq];
+                    }
+                    fasta_File << endl;
+                    fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                    sequence_Profile << host << "_" << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << host << "\t" << tissue << endl;
+                    last_seq_Num++;
+                }
+
+                fasta_File.close();
+                sequence_Profile.close();
+            }
+            else
+            {
+                cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+                exit(-1);
+            }
+            // last_seq_Num = last_seq_Num + max_sequences_per_File;
+        }
+
+        // int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
+        vector<string> sequence_Write_Store_temp;
+        vector<char> temp_seq_Status;
+        for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
+        {
+            sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
+            if (seq_Status.size() > 0)
+            {
+                temp_seq_Status.push_back(seq_Status[fill]);
+            }
+        }
+
+        sequence_Write_Store_All.clear();
+        sequence_Write_Store_All = sequence_Write_Store_temp;
+
+        if (seq_Status.size() > 0)
+        {
+            seq_Status.clear();
+            seq_Status = temp_seq_Status;
+        }
+    }
+}
+
+void functions_library::partial_Write_Check_transfer(vector<string> &sequence_Write_Store_All,
+                                                     const string &folder_Location, int &last_seq_Num,
+                                                     vector<char> &seq_Status,
+                                                     string sequence_Profiles_Location, string host, string tissue, int current_Generation,
+                                                     vector<int> &indexes_Written)
+{
+    if (sequence_Write_Store_All.size() > 0)
+    {
+        string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + sequence_Write_Store_All.size() - 1) + ".nfasta";
+        fstream fasta_File;
+        fasta_File.open(fasta_file_Location, ios::out);
+        fstream sequence_Profile;
+        sequence_Profile.open(sequence_Profiles_Location, ios::app);
+
+        if (fasta_File.is_open())
+        {
+            for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
+            {
+                fasta_File << ">" << last_seq_Num;
+                indexes_Written.push_back(last_seq_Num);
+                if (seq_Status.size() == 0)
+                {
+                    fasta_File << "_A";
+                }
+                else
+                {
+                    fasta_File << "_" << seq_Status[write_Seq];
+                }
+                fasta_File << endl;
+                fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                sequence_Profile << host << "_" << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << host << "\t" << tissue << endl;
+                last_seq_Num++;
+            }
+
+            fasta_File.close();
+            sequence_Profile.close();
+        }
+        else
+        {
+            cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+            exit(-1);
+        }
+    }
+}
+
+void functions_library::sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+                                                    int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
+                                                    vector<char> &seq_Status,
+                                                    string sequence_Profiles_Location, string host, string tissue, int current_Generation)
+{
+    for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
+    {
+        sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
+    }
+
+    sequence_Write_Store.clear();
+
+    if (sequence_Write_Store_All.size() >= max_sequences_per_File)
+    {
+        int full_Write_Count = sequence_Write_Store_All.size() / max_sequences_per_File;
+
+        for (int full = 0; full < full_Write_Count; full++)
+        {
+
+            string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + max_sequences_per_File - 1) + ".nfasta";
+            fstream fasta_File;
+            fasta_File.open(fasta_file_Location, ios::out);
+            fstream sequence_Profile;
+            //"Sequence_ID\tHost\tTissue"
+            sequence_Profile.open(sequence_Profiles_Location, ios::app);
+
+            if (fasta_File.is_open())
+            {
+                for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
+                {
+                    fasta_File << ">" << last_seq_Num;
+                    if (seq_Status.size() == 0)
+                    {
+                        fasta_File << "_A";
+                    }
+                    else
+                    {
+                        fasta_File << "_" << seq_Status[write_Seq];
+                    }
+                    fasta_File << endl;
+                    fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                    sequence_Profile << host << "_" << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << host << "\t" << tissue << endl;
+                    last_seq_Num++;
+                }
+
+                fasta_File.close();
+                sequence_Profile.close();
+            }
+            else
+            {
+                cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+                exit(-1);
+            }
+            // last_seq_Num = last_seq_Num + max_sequences_per_File;
+        }
+
+        // int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
+        vector<string> sequence_Write_Store_temp;
+        vector<char> temp_seq_Status;
+        for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
+        {
+            sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
+            if (seq_Status.size() > 0)
+            {
+                temp_seq_Status.push_back(seq_Status[fill]);
+            }
+        }
+
+        sequence_Write_Store_All.clear();
+        sequence_Write_Store_All = sequence_Write_Store_temp;
+
+        if (seq_Status.size() > 0)
+        {
+            seq_Status.clear();
+            seq_Status = temp_seq_Status;
+        }
+    }
+}
+
+void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store_All,
+                                            const string &folder_Location, int &last_seq_Num,
+                                            vector<char> &seq_Status,
+                                            string sequence_Profiles_Location, string host, string tissue, int current_Generation)
+{
+    if (sequence_Write_Store_All.size() > 0)
+    {
+        string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + sequence_Write_Store_All.size() - 1) + ".nfasta";
+        fstream fasta_File;
+        fasta_File.open(fasta_file_Location, ios::out);
+        fstream sequence_Profile;
+        sequence_Profile.open(sequence_Profiles_Location, ios::app);
+        if (fasta_File.is_open())
+        {
+            for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
+            {
+                fasta_File << ">" << last_seq_Num;
+                if (seq_Status.size() == 0)
+                {
+                    fasta_File << "_A";
+                }
+                else
+                {
+                    fasta_File << "_" << seq_Status[write_Seq];
+                }
+                fasta_File << endl;
+                fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                sequence_Profile << host << "_" << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << host << "\t" << tissue << endl;
+                last_seq_Num++;
+            }
+
+            fasta_File.close();
+            sequence_Profile.close();
         }
         else
         {
@@ -6092,7 +6338,7 @@ void functions_library::thread_Index_sequence_Folders(int start, int stop, strin
     }
 }
 
-vector<string> functions_library::find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation)
+vector<string> functions_library::find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, int &valid_Sequences)
 {
     int num_Sequences = sequence_List.size();
     cout << "Collecting " << num_Sequences << " sequence(s)\n";
@@ -6150,7 +6396,7 @@ vector<string> functions_library::find_Sequences_Master(string &source_Target_fi
 
     cout << "Retrieving sequence(s)\n";
 
-    int valid_Sequences = 0;
+    valid_Sequences = 0;
 
     nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
 
