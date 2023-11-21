@@ -378,8 +378,11 @@ string node_within_host::transfer_Infection(functions_library &functions, string
     return status;
 }
 
-void node_within_host::run_Generation(vector<string> &tissue_Names,
-                                      int terminal_tissues, int *terminal_array)
+void node_within_host::run_Generation(functions_library &functions,
+                                      vector<string> &tissue_Names,
+                                      int terminal_tissues, int *terminal_array,
+                                      int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
+                                      mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
          << endl;
@@ -401,6 +404,7 @@ void node_within_host::run_Generation(vector<string> &tissue_Names,
             if (terminal_status(terminal_tissues, terminal_array) != 1)
             {
                 cout << "\nIntiating simulation\n";
+                // cout << profile_ID << endl;
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
@@ -408,7 +412,13 @@ void node_within_host::run_Generation(vector<string> &tissue_Names,
                     {
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particles for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
+
+                        int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
                     }
+                    // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
+
+                    // cout << "Distribution type: " << cell_Distribution_Type[profile_ID][tissue] << endl;
+                    // cout << viral_distribution_per_Tissue_param[tissue].first << "\t" << viral_distribution_per_Tissue_param[tissue].second << endl;
                 }
             }
         }
@@ -423,6 +433,58 @@ void node_within_host::run_Generation(vector<string> &tissue_Names,
     }
 
     // get each tissues generational phase
+}
+
+vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int &num_Viral_particles, int &tissue,
+                                           int &distribution_Type, float &parameter_1, float &parameter_2,
+                                           mt19937 &gen)
+{
+    vector<int> start_Stop_cells;
+
+    int cells_Assigned = 0;
+    int particles_Assigned = 0;
+    start_Stop_cells.push_back(0);
+
+    do
+    {
+        if (cell_Limit[tissue] != -1 && cells_Assigned > cell_Limit[tissue])
+        {
+            break;
+        }
+
+        int num_Particles_in_Cell;
+
+        if (distribution_Type == 0)
+        {
+            binomial_distribution<int> num_Particles(parameter_1, parameter_2);
+            num_Particles_in_Cell = num_Particles(gen);
+        }
+        else
+        {
+            gamma_distribution<int> num_Particles(parameter_1, parameter_2);
+            num_Particles_in_Cell = num_Particles(gen);
+        }
+
+        if (num_Particles_in_Cell > 0)
+        {
+            for (int cell = 0; i < num_Particles_in_Cell; cell++)
+            {
+                parents_in_Tissue[1][particles_Assigned] = cells_Assigned;
+                particles_Assigned++;
+
+                if (particles_Assigned >= num_Viral_particles)
+                {
+                    break;
+                }
+            }
+
+            start_Stop_cells.push_back(start_Stop_cells[cells_Assigned] + particles_Assigned);
+            cells_Assigned++
+        }
+
+    } while (particles_Assigned < num_Viral_particles);
+
+    return start_Stop_cells;
 }
 
 void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions)

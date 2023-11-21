@@ -168,6 +168,13 @@ private:
     // column 2 = prob
     float **profile_tissue_Limits;
 
+    // rows = profiles
+    //  columns = tissues;
+    // 0 = Binomial
+    // 1 = Gamma
+    int **cell_Distribution_Type;
+    vector<vector<pair<float, float>>> ALL_profiles_Tissue_cell_disribution;
+
     int *num_replication_phases;
     float **tissue_replication_data;
 

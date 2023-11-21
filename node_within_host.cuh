@@ -102,8 +102,15 @@ public:
                               vector<string> &tissue_Names,
                               mt19937 &gen);
 
-    void run_Generation(vector<string> &tissue_Names,
-                        int terminal_tissues, int *terminal_array);
+    void run_Generation(functions_library &functions,
+                        vector<string> &tissue_Names,
+                        int terminal_tissues, int *terminal_array,
+                        int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
+                        mt19937 &gen);
+
+    vector<int> assign_Cells(int **parents_in_Tissue, int &num_Viral_particles, int &tissue,
+                             int &distribution_Type, float &parameter_1, float &parameter_2,
+                             mt19937 &gen);
 
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
 };

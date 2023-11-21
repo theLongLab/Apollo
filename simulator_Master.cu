@@ -477,7 +477,11 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "\nAttempting to simulate " << infected_Population.size() << " hosts\n";
             for (int host = 0; host < infected_Population.size(); host++)
             {
-                Hosts[infected_Population[host]].run_Generation(tissue_Names, terminal_tissues, terminal_array);
+                Hosts[infected_Population[host]].run_Generation(functions,
+                                                                tissue_Names,
+                                                                terminal_tissues, terminal_array,
+                                                                cell_Distribution_Type, ALL_profiles_Tissue_cell_disribution[Hosts[infected_Population[host]].get_Profile()],
+                                                                gen);
             }
         }
         else
@@ -489,6 +493,8 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     } while (stop == 0);
 
     cout << "\nSimulation has concluded: ";
+
+    functions.clear_Array_int_CPU(cell_Distribution_Type, number_of_node_Profiles);
 
     if (stop == 1)
     {
@@ -2056,6 +2062,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
             infection_parameters = functions.create_Fill_2D_array_FLOAT(number_of_node_Profiles, 3, -1);
 
+            cell_Distribution_Type = functions.create_INT_2D_arrays(number_of_node_Profiles, num_tissues_per_Node);
+
             for (int profile = 0; profile < number_of_node_Profiles; profile++)
             {
                 parameters_List = {"\"Profile name\"",
@@ -2239,6 +2247,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
                     int tissue_Limit_Start = profile * num_tissues_per_Node;
 
+                    vector<pair<float, float>> Tissue_cell_disribution;
+
                     for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
                     {
                         string get_Tissue = "Tissue " + to_string(tissue + 1);
@@ -2266,6 +2276,46 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                             cout << " NO\n";
                         }
                         cout << endl;
+
+                        string viral_distribution_Type = Parameters.get_STRING(current_tissue_Profile_block_Data, "Viral distribution type");
+                        transform(viral_distribution_Type.begin(), viral_distribution_Type.end(), viral_distribution_Type.begin(), ::toupper);
+
+                        cout << "Viral distribution type: ";
+                        if (viral_distribution_Type == "BINOMIAL")
+                        {
+                            cell_Distribution_Type[profile][tissue] = 0;
+                            cout << viral_distribution_Type << endl;
+
+                            int viral_distribution_Binomial_trials = Parameters.get_INT(current_tissue_Profile_block_Data, "Viral distribution Binomial trials");
+                            float viral_distribution_Binomial_probability = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Viral distribution Binomial probability");
+
+                            Tissue_cell_disribution.push_back(make_pair(viral_distribution_Binomial_trials, viral_distribution_Binomial_probability));
+
+                            cout << "Viral distribution Binomial trials: " << viral_distribution_Binomial_trials << endl;
+                            cout << "Viral distribution Binomial probability: " << viral_distribution_Binomial_probability << endl;
+                        }
+                        else if (viral_distribution_Type == "GAMMA")
+                        {
+                            cell_Distribution_Type[profile][tissue] = 1;
+                            cout << viral_distribution_Type << endl;
+
+                            float viral_distribution_Gamma_shape = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Viral distribution Gamma shape");
+                            float viral_distribution_Gamma_scale = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Viral distribution Gamma scale");
+
+                            Tissue_cell_disribution.push_back(make_pair(viral_distribution_Gamma_shape, viral_distribution_Gamma_scale));
+
+                            cout << "Viral distribution Gamma shape: " << viral_distribution_Gamma_shape << endl;
+                            cout << "Viral distribution Gamma scale: " << viral_distribution_Gamma_scale << endl;
+                        }
+                        else
+                        {
+                            cout << "ERROR: VIRAL DISTRIBUTION TYPE HAS TO BE BINOMIAL OR GAMMA\n";
+                            exit(-1);
+                        }
+
+                        cout << endl;
+
+                        // exit(-1);
 
                         cout << "Configuring Tissue " << tissue + 1 << " replication phases: \n";
                         vector<pair<string, string>> replication_Phases_Block = Parameters.get_block_from_block(current_tissue_Profile_block_Data, "Replication phases");
@@ -2328,6 +2378,10 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                         }
                         cout << endl;
                     }
+
+                    ALL_profiles_Tissue_cell_disribution.push_back(Tissue_cell_disribution);
+
+                    // exit(-1);
 
                     replication_phases_Profile_tissues.push_back(replication_phases_tissues);
                     tissue_param_profile_Stride[profile + 1] = phase_Type.size();
