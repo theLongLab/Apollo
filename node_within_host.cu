@@ -490,7 +490,6 @@ void node_within_host::run_Generation(functions_library &functions,
 
                         // functions.clear_Array_int_CPU(parents_in_Tissue, 2);
                         free(parents_in_Tissue);
-
                         exit(-1);
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
