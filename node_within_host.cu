@@ -409,14 +409,19 @@ void node_within_host::run_Generation(functions_library &functions,
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
-                    cout << "\nIndetifying indexes to remove\n";
-                    set<int> check_to_Remove;
                     if (real_Particle_count_per_Tissue[tissue] > 0)
                     {
+                        // real_Particle_count_per_Tissue[tissue] = 100;
+
+                        cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
+                             << endl;
+
+                        cout << "Identifying indexes to remove\n";
+                        set<int> check_to_Remove;
                         //// Account for dead file
                         if (dead_Particle_count[tissue] > 0)
                         {
-                            cout << "\nIndetifying dead viral indexes\n";
+                            cout << "\nIdentifying dead viral indexe(s)\n";
                             // indexes_of_Dead = (int *)malloc(sizeof(int) * dead_Particle_count[tissue]);
 
                             fstream dead_File;
@@ -441,18 +446,13 @@ void node_within_host::run_Generation(functions_library &functions,
 
                         if (removed_by_Transfer_Indexes[tissue].size() > 0)
                         {
-                            cout << "\nIndetifying transfered viral indexes\n";
+                            cout << "\nIdentifying transfered viral indexe(s)\n";
                             for (auto it = removed_by_Transfer_Indexes[tissue].begin(); it != removed_by_Transfer_Indexes[tissue].end(); ++it)
                             {
                                 int value = *it; // Dereference the iterator to get the value
                                 check_to_Remove.insert(value);
                             }
                         }
-
-                        real_Particle_count_per_Tissue[tissue] = 100;
-
-                        cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particles for " << tissue_Names[tissue] << " tissue\n"
-                             << endl;
 
                         int *parents_in_Tissue = (int *)malloc(sizeof(int) * real_Particle_count_per_Tissue[tissue]);
                         // int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
@@ -472,7 +472,7 @@ void node_within_host::run_Generation(functions_library &functions,
                         removed_by_Transfer_Indexes[tissue].clear();
                         dead_Particle_count[tissue] = 0;
 
-                        cout << "Number of cells infected: " << start_Stop_cells.size() - 1 << endl;
+                        cout << "Number of cell(s) infected: " << start_Stop_cells.size() - 1 << endl;
 
                         if (start_Stop_cells.size() - 1 > 0)
                         {
@@ -517,7 +517,7 @@ vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral
                                            set<int> &check_to_Remove,
                                            mt19937 &gen)
 {
-    cout << "Assigning cells their virulant particles\n";
+    cout << "Assigning cell(s) their virulant particle(s)\n";
 
     vector<int> start_Stop_cells;
 
