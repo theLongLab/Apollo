@@ -477,7 +477,9 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "\nAttempting to simulate " << infected_Population.size() << " hosts\n";
             for (int host = 0; host < infected_Population.size(); host++)
             {
+                // string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
                 Hosts[infected_Population[host]].run_Generation(functions,
+                                                                intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),
                                                                 tissue_Names,
                                                                 terminal_tissues, terminal_array,
                                                                 cell_Distribution_Type, ALL_profiles_Tissue_cell_disribution[Hosts[infected_Population[host]].get_Profile()],

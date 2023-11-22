@@ -103,13 +103,15 @@ public:
                               mt19937 &gen);
 
     void run_Generation(functions_library &functions,
+                        string source_sequence_Data_folder,
                         vector<string> &tissue_Names,
                         int terminal_tissues, int *terminal_array,
                         int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
                         mt19937 &gen);
 
-    vector<int> assign_Cells(int **parents_in_Tissue, int &num_Viral_particles, int &tissue,
-                             int &distribution_Type, float &parameter_1, float &parameter_2,
+    vector<int> assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
+                             int distribution_Type, float &parameter_1, float &parameter_2,
+                             set<int> &check_to_Remove,
                              mt19937 &gen);
 
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);

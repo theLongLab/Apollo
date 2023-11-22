@@ -379,6 +379,7 @@ string node_within_host::transfer_Infection(functions_library &functions, string
 }
 
 void node_within_host::run_Generation(functions_library &functions,
+                                      string source_sequence_Data_folder,
                                       vector<string> &tissue_Names,
                                       int terminal_tissues, int *terminal_array,
                                       int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
@@ -408,12 +409,89 @@ void node_within_host::run_Generation(functions_library &functions,
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
+                    cout << "\nIndetifying indexes to remove\n";
+                    set<int> check_to_Remove;
                     if (real_Particle_count_per_Tissue[tissue] > 0)
                     {
+                        //// Account for dead file
+                        if (dead_Particle_count[tissue] > 0)
+                        {
+                            cout << "\nIndetifying dead viral indexes\n";
+                            // indexes_of_Dead = (int *)malloc(sizeof(int) * dead_Particle_count[tissue]);
+
+                            fstream dead_File;
+                            dead_File.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation) + "/dead_List.txt");
+                            if (dead_File.is_open())
+                            {
+                                string line;
+                                // int index = 0;
+                                while (getline(dead_File, line))
+                                {
+                                    check_to_Remove.insert(stoi(line));
+                                    // index++;
+                                }
+                                dead_File.close();
+                            }
+                            else
+                            {
+                                cout << "ERROR: UNABLE TO OPEN DEAD LIST FILE: " << source_sequence_Data_folder << "/" << tissue << "/generation_" << current_Generation << "/dead_List.txt" << endl;
+                                exit(-1);
+                            }
+                        }
+
+                        if (removed_by_Transfer_Indexes[tissue].size() > 0)
+                        {
+                            cout << "\nIndetifying transfered viral indexes\n";
+                            for (auto it = removed_by_Transfer_Indexes[tissue].begin(); it != removed_by_Transfer_Indexes[tissue].end(); ++it)
+                            {
+                                int value = *it; // Dereference the iterator to get the value
+                                check_to_Remove.insert(value);
+                            }
+                        }
+
+                        real_Particle_count_per_Tissue[tissue] = 100;
+
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particles for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
 
-                        int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
+                        int *parents_in_Tissue = (int *)malloc(sizeof(int) * real_Particle_count_per_Tissue[tissue]);
+                        // int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
+
+                        // test
+                        // check_to_Remove.insert(0);
+                        // check_to_Remove.insert(1);
+                        // check_to_Remove.insert(5);
+                        // check_to_Remove.insert(99);
+
+                        vector<int> start_Stop_cells = assign_Cells(parents_in_Tissue, real_Particle_count_per_Tissue[tissue], tissue,
+                                                                    cell_Distribution_Type[profile_ID][tissue], viral_distribution_per_Tissue_param[tissue].first, viral_distribution_per_Tissue_param[tissue].second,
+                                                                    check_to_Remove,
+                                                                    gen);
+
+                        check_to_Remove.clear();
+                        removed_by_Transfer_Indexes[tissue].clear();
+                        dead_Particle_count[tissue] = 0;
+
+                        cout << "Number of cells infected: " << start_Stop_cells.size() - 1 << endl;
+
+                        if (start_Stop_cells.size() - 1 > 0)
+                        {
+                            for (int i = 0; i < start_Stop_cells.size() - 1; i++)
+                            {
+                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                                for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
+                                {
+                                    // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
+                                    cout << parents_in_Tissue[particle] << endl;
+                                }
+                                cout << endl;
+                            }
+                        }
+
+                        // functions.clear_Array_int_CPU(parents_in_Tissue, 2);
+                        free(parents_in_Tissue);
+
+                        exit(-1);
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
 
@@ -435,22 +513,37 @@ void node_within_host::run_Generation(functions_library &functions,
     // get each tissues generational phase
 }
 
-vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int &num_Viral_particles, int &tissue,
-                                           int &distribution_Type, float &parameter_1, float &parameter_2,
+vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
+                                           int distribution_Type, float &parameter_1, float &parameter_2,
+                                           set<int> &check_to_Remove,
                                            mt19937 &gen)
 {
+    cout << "Assigning cells their virulant particles\n";
+
     vector<int> start_Stop_cells;
 
-    int cells_Assigned = 0;
+    // int cells_Assigned = 0;
     int particles_Assigned = 0;
+
     start_Stop_cells.push_back(0);
+
+    // int cells_Full = 0;
+
+    int index_Track_removed = 0;
+    int particle_ID = 0;
+
+    // test
+    // cell_Limit[tissue] = 2;
+
+    vector<int> removals(check_to_Remove.begin(), check_to_Remove.end());
 
     do
     {
-        if (cell_Limit[tissue] != -1 && cells_Assigned > cell_Limit[tissue])
-        {
-            break;
-        }
+        // if (cell_Limit[tissue] != -1 && cells_Assigned >= cell_Limit[tissue])
+        // {
+        //     cells_Full = 1;
+        //     break;
+        // }
 
         int num_Particles_in_Cell;
 
@@ -461,15 +554,28 @@ vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int &num_Vir
         }
         else
         {
-            gamma_distribution<int> num_Particles(parameter_1, parameter_2);
-            num_Particles_in_Cell = num_Particles(gen);
+            gamma_distribution<float> num_Particles(parameter_1, parameter_2);
+            num_Particles_in_Cell = (int)num_Particles(gen);
         }
 
         if (num_Particles_in_Cell > 0)
         {
-            for (int cell = 0; i < num_Particles_in_Cell; cell++)
+            for (int cell = 0; cell < num_Particles_in_Cell; cell++)
             {
-                parents_in_Tissue[1][particles_Assigned] = cells_Assigned;
+                // parents_in_Tissue[1][particles_Assigned] = cells_Assigned;
+                //// Account for dead
+                if (index_Track_removed < removals.size())
+                {
+                    while (particle_ID == removals[index_Track_removed])
+                    {
+                        particle_ID++;
+                        index_Track_removed++;
+                    }
+                }
+
+                parents_in_Tissue[particles_Assigned] = particle_ID;
+
+                particle_ID++;
                 particles_Assigned++;
 
                 if (particles_Assigned >= num_Viral_particles)
@@ -478,11 +584,26 @@ vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int &num_Vir
                 }
             }
 
-            start_Stop_cells.push_back(start_Stop_cells[cells_Assigned] + particles_Assigned);
-            cells_Assigned++
+            start_Stop_cells.push_back(particles_Assigned);
+            // cells_Assigned++;
         }
 
     } while (particles_Assigned < num_Viral_particles);
+
+    // cout << cells_Assigned - 1 << endl;
+
+    random_shuffle(&parents_in_Tissue[0], &parents_in_Tissue[num_Viral_particles]);
+
+    if ((start_Stop_cells.size() - 1) > cell_Limit[tissue])
+    {
+        vector<int> temp;
+        for (int cell = 0; cell < cell_Limit[tissue] + 1; cell++)
+        {
+            temp.push_back(start_Stop_cells[cell]);
+        }
+        start_Stop_cells.clear();
+        start_Stop_cells = temp;
+    }
 
     return start_Stop_cells;
 }
