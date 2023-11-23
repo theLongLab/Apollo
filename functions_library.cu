@@ -6338,6 +6338,133 @@ void functions_library::thread_Index_sequence_Folders(int start, int stop, strin
     }
 }
 
+vector<string> functions_library::find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation)
+{
+    int num_Sequences = sequence_List.size();
+    cout << "Collecting " << num_Sequences << " sequence(s)\n";
+    string folder_Path = source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation);
+
+    int num_per_Core = num_Sequences / this->CPU_cores;
+    int remainder = num_Sequences % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Cell = core_ID * num_per_Core;
+        int stop_Cell = start_Cell + num_per_Core;
+
+        threads_vec.push_back(thread{&functions_library::thread_find_Files, this, start_Cell, stop_Cell, sequence_List, indexed_Tissue_Folder});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Cell = num_Sequences - remainder;
+        int stop_Cell = num_Sequences;
+
+        threads_vec.push_back(thread{&functions_library::thread_find_Files, this, start_Cell, stop_Cell, sequence_List, indexed_Tissue_Folder});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
+    found_Tissue_Folder_Indexes.clear();
+
+    cout << Tissue_files.size() << " file(s) identified\n";
+
+    vector<pair<int, int>> sequence_FileIndex_Position_list;
+    vector<string> collected_Sequences;
+    for (int index = 0; index < sequence_List.size(); index++)
+    {
+        sequence_FileIndex_Position_list.push_back(make_pair(sequence_List[index], index));
+        collected_Sequences.push_back("");
+    }
+
+    sort(sequence_FileIndex_Position_list.begin(), sequence_FileIndex_Position_list.end());
+
+    fstream nfasta;
+    int index_Files = 0;
+    int line_current = 0;
+
+    cout << "Retrieving sequence(s)\n";
+
+    // valid_Sequences = 0;
+
+    nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+
+    for (int find = 0; find < sequence_FileIndex_Position_list.size(); find++)
+    {
+        // cout << "Looking for " << sequence_FileIndex_Position_list[find].first << "\n";
+
+        while ((indexed_Tissue_Folder[Tissue_files[index_Files]].first <= sequence_FileIndex_Position_list[find].first && indexed_Tissue_Folder[Tissue_files[index_Files]].second >= sequence_FileIndex_Position_list[find].first) == 0)
+        {
+            nfasta.close();
+            index_Files++;
+            nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+            line_current = 0;
+        }
+
+        if (nfasta.is_open())
+        {
+            int line_t0_check = (sequence_FileIndex_Position_list[find].first - indexed_Tissue_Folder[Tissue_files[index_Files]].first) * 2;
+
+            string line;
+            string sequence = "";
+
+            while (getline(nfasta, line))
+            {
+                if (line_t0_check == line_current)
+                {
+                    // cout << line << endl;
+                    vector<string> line_Data;
+                    split(line_Data, line, '_');
+                    // cout << line_Data[0].substr(1) << endl;
+                    if (stoi(line_Data[0].substr(1)) == sequence_FileIndex_Position_list[find].first)
+                    {
+                        // if (line_Data[line_Data.size() - 1].at(0) == 'A')
+                        //  {
+                        getline(nfasta, line);
+                        collected_Sequences[sequence_FileIndex_Position_list[find].second] = line;
+                        // valid_Sequences++;
+                        line_current++;
+                        // }
+                    }
+                    else
+                    {
+                        cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                        cout << "Looking for: " << sequence_FileIndex_Position_list[find].first << endl
+                             << "Sequence ID at location: " << line << endl
+                             << "File: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first
+                             << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                        exit(-1);
+                    }
+                    line_current++;
+                    break;
+                }
+                line_current++;
+            }
+        }
+        else
+        {
+            cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+            exit(-1);
+        }
+    }
+    nfasta.close();
+
+    // cout << valid_Sequences << " live sequence(s) collected\n";
+
+    return collected_Sequences;
+}
+
 vector<string> functions_library::find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, int &valid_Sequences)
 {
     int num_Sequences = sequence_List.size();
@@ -6432,7 +6559,7 @@ vector<string> functions_library::find_Sequences_Master(string &source_Target_fi
                         if (line_Data[line_Data.size() - 1].at(0) == 'A')
                         {
                             getline(nfasta, line);
-                            collected_Sequences[find] = line;
+                            collected_Sequences[sequence_FileIndex_Position_list[find].second] = line;
                             valid_Sequences++;
 
                             line_current++;

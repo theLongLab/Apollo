@@ -53,6 +53,7 @@ private:
     int *tot_ThreadsperBlock;
 
     int CPU_cores;
+    int max_Cells_at_a_time = 0;
     string output_Folder;
     string output_Folder_Sequences;
     string intermediate_Folders;

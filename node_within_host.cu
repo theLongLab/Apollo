@@ -378,7 +378,7 @@ string node_within_host::transfer_Infection(functions_library &functions, string
     return status;
 }
 
-void node_within_host::run_Generation(functions_library &functions,
+void node_within_host::run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int &genome_Length,
                                       string source_sequence_Data_folder,
                                       vector<string> &tissue_Names,
                                       int terminal_tissues, int *terminal_array,
@@ -407,11 +407,13 @@ void node_within_host::run_Generation(functions_library &functions,
                 cout << "\nIntiating simulation\n";
                 // cout << profile_ID << endl;
 
+                vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, current_Generation, multi_Read);
+
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
                     if (real_Particle_count_per_Tissue[tissue] > 0)
                     {
-                        // real_Particle_count_per_Tissue[tissue] = 100;
+                        // real_Particle_count_per_Tissue[tissue] = 123;
 
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
@@ -446,7 +448,7 @@ void node_within_host::run_Generation(functions_library &functions,
 
                         if (removed_by_Transfer_Indexes[tissue].size() > 0)
                         {
-                            cout << "\nIdentifying transfered viral indexe(s)\n";
+                            cout << "Identifying transfered viral indexe(s)\n";
                             for (auto it = removed_by_Transfer_Indexes[tissue].begin(); it != removed_by_Transfer_Indexes[tissue].end(); ++it)
                             {
                                 int value = *it; // Dereference the iterator to get the value
@@ -472,20 +474,58 @@ void node_within_host::run_Generation(functions_library &functions,
                         removed_by_Transfer_Indexes[tissue].clear();
                         dead_Particle_count[tissue] = 0;
 
-                        cout << "Number of cell(s) infected: " << start_Stop_cells.size() - 1 << endl;
+                        cout << "Total number of cell(s) infected: " << start_Stop_cells.size() - 1 << endl;
 
-                        if (start_Stop_cells.size() - 1 > 0)
+                        // if (start_Stop_cells.size() - 1 > 0)
+                        // {
+                        //     for (int i = 0; i < start_Stop_cells.size() - 1; i++)
+                        //     {
+                        //         // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                        //         for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
+                        //         {
+                        //             // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
+                        //             cout << parents_in_Tissue[particle] << ",";
+                        //         }
+                        //         cout << endl;
+                        //     }
+                        // }
+
+                        vector<pair<int, int>> cells_Rounds_start_stop;
+
+                        int full_Rounds = (start_Stop_cells.size() - 1) / max_Cells_at_a_time;
+                        int partial_Rounds = (start_Stop_cells.size() - 1) % max_Cells_at_a_time;
+
+                        for (int full = 0; full < full_Rounds; full++)
                         {
-                            for (int i = 0; i < start_Stop_cells.size() - 1; i++)
-                            {
-                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
-                                for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
-                                {
-                                    // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
-                                    cout << parents_in_Tissue[particle] << endl;
-                                }
-                                cout << endl;
-                            }
+                            int start = full * max_Cells_at_a_time;
+                            int stop = start + max_Cells_at_a_time;
+                            cells_Rounds_start_stop.push_back(make_pair(start, stop));
+                        }
+
+                        if (partial_Rounds != 0)
+                        {
+                            int start = (start_Stop_cells.size() - 1) - partial_Rounds;
+                            cells_Rounds_start_stop.push_back(make_pair(start, (start_Stop_cells.size() - 1)));
+                        }
+
+                        int sequence_Count = 0;
+                        // size_t arraySize = sizeof(parents_in_Tissue) / sizeof(parents_in_Tissue[0]);
+
+                        for (int cell_Round = 0; cell_Round < cells_Rounds_start_stop.size(); cell_Round++)
+                        {
+                            int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
+                            cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
+
+                            int seqeunces_to_Process = start_Stop_cells[cells_Rounds_start_stop[cell_Round].second] - start_Stop_cells[cells_Rounds_start_stop[cell_Round].first];
+                            cout << "Processing " << seqeunces_to_Process << " sequence(s) in total\n";
+
+                            simulate_Cell_replication(functions, multi_Read, gpu_Limit, source_sequence_Data_folder, indexed_Source_Folders[tissue],
+                                                      genome_Length,
+                                                      tissue, parents_in_Tissue,
+                                                      start_Stop_cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second, num_of_Cells,
+                                                      seqeunces_to_Process,
+                                                      sequence_Count,
+                                                      gen);
                         }
 
                         // functions.clear_Array_int_CPU(parents_in_Tissue, 2);
@@ -512,12 +552,82 @@ void node_within_host::run_Generation(functions_library &functions,
     // get each tissues generational phase
 }
 
+void node_within_host::simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
+                                                 int &genome_Length,
+                                                 int &tissue, int *parents_in_Tissue,
+                                                 vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
+                                                 int &Total_seqeunces_to_Process,
+                                                 int &sequence_Count,
+                                                 mt19937 &gen)
+{
+    // gpu_Limit = 5;
+
+    int full_Rounds = Total_seqeunces_to_Process / gpu_Limit;
+    int partial_Rounds = Total_seqeunces_to_Process % gpu_Limit;
+
+    vector<pair<int, int>> start_stops;
+
+    for (int full = 0; full < full_Rounds; full++)
+    {
+        int start = full * gpu_Limit;
+        int stop = start + gpu_Limit;
+        start_stops.push_back(make_pair(start, stop));
+    }
+
+    if (partial_Rounds != 0)
+    {
+        int start = Total_seqeunces_to_Process - partial_Rounds;
+        start_stops.push_back(make_pair(start, Total_seqeunces_to_Process));
+    }
+
+    cout << "Retrieving parent sequences and configuring their profiles\n";
+    // int **parent_Sequences = functions.create_INT_2D_arrays(Total_seqeunces_to_Process, genome_Length);
+    // ! CONFIGURE ARRAY LAYOUT
+    // float **sequence_Configuration = functions.create_Fill_2D_array_FLOAT(Total_seqeunces_to_Process, , -1);
+
+    for (int round = 0; round < start_stops.size(); round++)
+    {
+        cout << "\nParent sequence processing round " << round + 1 << " of " << start_stops.size() << endl;
+
+        vector<int> sequence_List;
+        for (int parent = start_stops[round].first; parent < start_stops[round].second; parent++)
+        {
+            sequence_List.push_back(parents_in_Tissue[start_Stop_cells[start_Cell] + parent]);
+        }
+
+        // int valid_Sequences = 0;
+        vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
+
+        if (collected_Sequences.size() == sequence_List.size())
+        {
+            // for (int test = 0; test < collected_Sequences.size(); test++)
+            // {
+            //     cout << collected_Sequences[test] << endl;
+            // }
+            // cout << endl;
+
+            process_Sequences_get_Configuration(vector<string> & collected_Sequences);
+        }
+        else
+        {
+            cout << "ERROR: WAS UNABLE TO FIND ALL REQUIRED SEQUENCES.\n";
+            exit(-1);
+        }
+
+        cout << endl;
+    }
+}
+
+void node_within_host::process_Sequences_get_Configuration(vector<string> &collected_Sequences)
+{
+}
+
 vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
                                            int distribution_Type, float &parameter_1, float &parameter_2,
                                            set<int> &check_to_Remove,
                                            mt19937 &gen)
 {
-    cout << "Assigning cell(s) their virulant particle(s)\n";
+    cout << "\nAssigning cell(s) their virulant particle(s)\n";
 
     vector<int> start_Stop_cells;
 

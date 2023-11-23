@@ -17,7 +17,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Network profile\"",
         "\"Nodes master profile\"",
         "\"Sequence master profile\"",
-        "\"Intermediate Sequences per file\""};
+        "\"Intermediate Sequences per file\"",
+        "\"Process cell rate\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -26,10 +27,17 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     output_Folder_location = Parameters.get_STRING(found_Parameters[4]);
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[3]);
     max_sequences_per_File = Parameters.get_INT(found_Parameters[9]);
+    max_Cells_at_a_time = Parameters.get_INT(found_Parameters[10]);
 
     if (max_sequences_per_File <= 0)
     {
         cout << "ERROR: Intermediate Sequences per file PARAMETER MUST BE GREATER THAN ZERO.\n";
+        exit(-1);
+    }
+
+    if (max_Cells_at_a_time <= 0)
+    {
+        cout << "ERROR: Process cell rate PARAMETER MUST BE GREATER THAN ZERO.\n";
         exit(-1);
     }
 
@@ -54,6 +62,9 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     cout << "\nConfiguring hardware resources:\n\n";
     this->CPU_cores = Parameters.get_INT(found_Parameters[1]);
     cout << "Available CPU cores: " << this->CPU_cores << endl
+         << endl;
+
+    cout << "Maximum cells processed at a time: " << this->max_Cells_at_a_time << endl
          << endl;
 
     cout << "Maximum sequences per file (Intermediary): " << this->max_sequences_per_File << endl
@@ -478,7 +489,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             for (int host = 0; host < infected_Population.size(); host++)
             {
                 // string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
-                Hosts[infected_Population[host]].run_Generation(functions,
+                Hosts[infected_Population[host]].run_Generation(functions,this->multi_Read, this->max_Cells_at_a_time, this->gpu_Limit, this->genome_Length,
                                                                 intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),
                                                                 tissue_Names,
                                                                 terminal_tissues, terminal_array,

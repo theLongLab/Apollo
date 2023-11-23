@@ -102,7 +102,9 @@ public:
                               vector<string> &tissue_Names,
                               mt19937 &gen);
 
-    void run_Generation(functions_library &functions,
+    void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
+
+    void run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int &genome_Length,
                         string source_sequence_Data_folder,
                         vector<string> &tissue_Names,
                         int terminal_tissues, int *terminal_array,
@@ -114,5 +116,13 @@ public:
                              set<int> &check_to_Remove,
                              mt19937 &gen);
 
-    void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
+    void simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
+                                   int &genome_Length,
+                                   int &tissue, int *parents_in_Tissue,
+                                   vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
+                                   int &Total_seqeunces_to_Process,
+                                   int &sequence_Count,
+                                   mt19937 &gen);
+
+    void process_Sequences_get_Configuration(vector<string> &collected_Sequences);
 };
