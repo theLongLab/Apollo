@@ -5634,7 +5634,7 @@ __global__ void cuda_Sequences_to_INT(int num_Sequences, int **sequence_INT, int
     }
 }
 
-int **functions_library::process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length, int &round, int &num_of_Sequences_current)
+int **functions_library::process_Reference_Sequences(vector<string> collect_Sequences, int &genome_Length, int &num_of_Sequences_current)
 {
     // int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
 

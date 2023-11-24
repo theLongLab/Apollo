@@ -378,11 +378,30 @@ string node_within_host::transfer_Infection(functions_library &functions, string
     return status;
 }
 
-void node_within_host::run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int &genome_Length,
+void node_within_host::run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
                                       string source_sequence_Data_folder,
                                       vector<string> &tissue_Names,
                                       int terminal_tissues, int *terminal_array,
                                       int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
+                                      float *Reference_fitness_survivability_proof_reading,
+                                      int *mutation_recombination_proof_Reading_availability,
+                                      int *num_effect_Segregating_sites,
+                                      float **sequence_Fitness_changes,
+                                      float **sequence_Survivability_changes,
+                                      float **sequence_Proof_reading_changes,
+                                      int &mutation_Hotspots,
+                                      float **mutation_hotspot_parameters,
+                                      float **A_0_mutation,
+                                      float **T_1_mutation,
+                                      float **G_2_mutation,
+                                      float **C_3_mutation,
+                                      int &recombination_Hotspots,
+                                      float **recombination_hotspot_parameters,
+                                      int *tot_prob_selectivity,
+                                      int *recombination_prob_Stride,
+                                      int *recombination_select_Stride,
+                                      float **recombination_Prob_matrix,
+                                      float **recombination_Select_matrix,
                                       mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
@@ -413,7 +432,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 {
                     if (real_Particle_count_per_Tissue[tissue] > 0)
                     {
-                        // real_Particle_count_per_Tissue[tissue] = 123;
+                        //  real_Particle_count_per_Tissue[tissue] = 123;
 
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
@@ -519,12 +538,31 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             int seqeunces_to_Process = start_Stop_cells[cells_Rounds_start_stop[cell_Round].second] - start_Stop_cells[cells_Rounds_start_stop[cell_Round].first];
                             cout << "Processing " << seqeunces_to_Process << " sequence(s) in total\n";
 
-                            simulate_Cell_replication(functions, multi_Read, gpu_Limit, source_sequence_Data_folder, indexed_Source_Folders[tissue],
+                            simulate_Cell_replication(functions, multi_Read, gpu_Limit, CUDA_device_IDs, num_Cuda_devices, source_sequence_Data_folder, indexed_Source_Folders[tissue],
                                                       genome_Length,
                                                       tissue, parents_in_Tissue,
                                                       start_Stop_cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second, num_of_Cells,
                                                       seqeunces_to_Process,
                                                       sequence_Count,
+                                                      Reference_fitness_survivability_proof_reading,
+                                                      mutation_recombination_proof_Reading_availability,
+                                                      num_effect_Segregating_sites,
+                                                      sequence_Fitness_changes,
+                                                      sequence_Survivability_changes,
+                                                      sequence_Proof_reading_changes,
+                                                      mutation_Hotspots,
+                                                      mutation_hotspot_parameters,
+                                                      A_0_mutation,
+                                                      T_1_mutation,
+                                                      G_2_mutation,
+                                                      C_3_mutation,
+                                                      recombination_Hotspots,
+                                                      recombination_hotspot_parameters,
+                                                      tot_prob_selectivity,
+                                                      recombination_prob_Stride,
+                                                      recombination_select_Stride,
+                                                      recombination_Prob_matrix,
+                                                      recombination_Select_matrix,
                                                       gen);
                         }
 
@@ -552,12 +590,31 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
     // get each tissues generational phase
 }
 
-void node_within_host::simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
+void node_within_host::simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
                                                  int &genome_Length,
                                                  int &tissue, int *parents_in_Tissue,
                                                  vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
                                                  int &Total_seqeunces_to_Process,
                                                  int &sequence_Count,
+                                                 float *Reference_fitness_survivability_proof_reading,
+                                                 int *mutation_recombination_proof_Reading_availability,
+                                                 int *num_effect_Segregating_sites,
+                                                 float **sequence_Fitness_changes,
+                                                 float **sequence_Survivability_changes,
+                                                 float **sequence_Proof_reading_changes,
+                                                 int &mutation_Hotspots,
+                                                 float **mutation_hotspot_parameters,
+                                                 float **A_0_mutation,
+                                                 float **T_1_mutation,
+                                                 float **G_2_mutation,
+                                                 float **C_3_mutation,
+                                                 int &recombination_Hotspots,
+                                                 float **recombination_hotspot_parameters,
+                                                 int *tot_prob_selectivity,
+                                                 int *recombination_prob_Stride,
+                                                 int *recombination_select_Stride,
+                                                 float **recombination_Prob_matrix,
+                                                 float **recombination_Select_matrix,
                                                  mt19937 &gen)
 {
     // gpu_Limit = 5;
@@ -581,9 +638,21 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     }
 
     cout << "Retrieving parent sequences and configuring their profiles\n";
-    // int **parent_Sequences = functions.create_INT_2D_arrays(Total_seqeunces_to_Process, genome_Length);
-    // ! CONFIGURE ARRAY LAYOUT
-    // float **sequence_Configuration = functions.create_Fill_2D_array_FLOAT(Total_seqeunces_to_Process, , -1);
+
+    // ! clear 2d array
+    int **parent_Sequences = functions.create_INT_2D_arrays(Total_seqeunces_to_Process, genome_Length);
+    // ! clear 2d array
+    float **sequence_Configuration_standard;
+    // int columns = 3 + (2 * recombination_Hotspots);
+    sequence_Configuration_standard = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 3 + (2 * recombination_Hotspots));
+
+    // float **sequence_Configuration_recombination;
+    // if (mutation_recombination_proof_Reading_availability[1] == 1)
+    // {
+    //     sequence_Configuration_recombination = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 * recombination_Hotspots);
+    // }
+
+    int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
 
     for (int round = 0; round < start_stops.size(); round++)
     {
@@ -593,20 +662,34 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         for (int parent = start_stops[round].first; parent < start_stops[round].second; parent++)
         {
             sequence_List.push_back(parents_in_Tissue[start_Stop_cells[start_Cell] + parent]);
+            parent_IDs[parent] = parents_in_Tissue[start_Stop_cells[start_Cell] + parent];
         }
 
-        // int valid_Sequences = 0;
+        int valid_Sequences = 0;
         vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
 
         if (collected_Sequences.size() == sequence_List.size())
         {
+            sequence_List.clear();
             // for (int test = 0; test < collected_Sequences.size(); test++)
             // {
             //     cout << collected_Sequences[test] << endl;
             // }
             // cout << endl;
 
-            process_Sequences_get_Configuration(vector<string> & collected_Sequences);
+            process_Sequences_get_Configuration(collected_Sequences, CUDA_device_IDs, num_Cuda_devices, genome_Length,
+                                                Reference_fitness_survivability_proof_reading,
+                                                mutation_recombination_proof_Reading_availability,
+                                                num_effect_Segregating_sites,
+                                                sequence_Fitness_changes,
+                                                sequence_Survivability_changes,
+                                                sequence_Proof_reading_changes,
+                                                tot_prob_selectivity,
+                                                recombination_Hotspots,
+                                                recombination_prob_Stride,
+                                                recombination_select_Stride,
+                                                recombination_Prob_matrix,
+                                                recombination_Select_matrix);
         }
         else
         {
@@ -616,10 +699,134 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
         cout << endl;
     }
+
+    // for (size_t i = 0; i < Total_seqeunces_to_Process; i++)
+    // {
+    //     cout << parent_IDs[i] << endl;
+    // }
 }
 
-void node_within_host::process_Sequences_get_Configuration(vector<string> &collected_Sequences)
+void node_within_host::process_Sequences_get_Configuration(vector<string> &collected_Sequences, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
+                                                           float *Reference_fitness_survivability_proof_reading,
+                                                           int *mutation_recombination_proof_Reading_availability,
+                                                           int *num_effect_Segregating_sites,
+                                                           float **sequence_Fitness_changes,
+                                                           float **sequence_Survivability_changes,
+                                                           float **sequence_Proof_reading_changes,
+                                                           int *tot_prob_selectivity,
+                                                           int recombination_Hotspots,
+                                                           int *recombination_prob_Stride,
+                                                           int *recombination_select_Stride,
+                                                           float **recombination_Prob_matrix,
+                                                           float **recombination_Select_matrix)
 {
+    int num_of_Sequences_current = collected_Sequences.size();
+    cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+
+    int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
+    int remainder = num_of_Sequences_current % num_Cuda_devices;
+
+    vector<pair<int, int>> start_stop_Per_GPU;
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        int start = gpu * standard_num_per_GPU;
+        int stop = start + standard_num_per_GPU;
+
+        start_stop_Per_GPU.push_back(make_pair(start, stop));
+    }
+
+    start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+
+    string all_Sequences = "";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
+        {
+            all_Sequences.append(collected_Sequences[sequence]);
+        }
+    }
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
+        {
+            all_Sequences.append(collected_Sequences[sequence]);
+        }
+    }
+
+    char *full_Char;
+    full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+    strcpy(full_Char, all_Sequences.c_str());
+
+    cudaStream_t streams[num_Cuda_devices];
+    cudaDeviceProp deviceProp;
+
+    char *cuda_full_Char[num_Cuda_devices];
+    int **cuda_Sequence[num_Cuda_devices];
+    float **cuda_sequence_Configuration_standard[num_Cuda_devices];
+
+    int *cuda_Reference_fitness_survivability_proof_reading[num_Cuda_devices];
+    int *cuda_mutation_recombination_proof_Reading_availability[num_Cuda_devices];
+    int *cuda_num_effect_Segregating_sites[num_Cuda_devices];
+
+    float **cuda_sequence_Fitness_changes[num_Cuda_devices];
+    // functions.float_2D_Array_load_to_CUDA(sequence_Fitness_changes, num_effect_Segregating_sites[0], 5);
+    // cout << "Sites: " << num_effect_Segregating_sites[0] << endl;
+    // for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
+    // {
+    //     for (size_t i = 0; i < 5; i++)
+    //     {
+    //         cout << sequence_Fitness_changes[row][i] << "\t";
+    //     }
+    //     cout << endl;
+    // }
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaGetDeviceProperties(&deviceProp, gpu);
+        cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
+
+        cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
+        cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
+
+        cudaMallocManaged(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
+        cudaMallocManaged(&cuda_sequence_Configuration_standard[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaMalloc((void **)&cuda_Sequence[gpu][row], genome_Length * sizeof(int));
+            cudaMalloc((void **)&cuda_sequence_Configuration_standard[gpu][row], (3 + (2 * recombination_Hotspots)) * sizeof(int));
+        }
+
+        // cout << "check 1\n";
+        cudaMallocManaged(&cuda_Reference_fitness_survivability_proof_reading[gpu], 3 * sizeof(int));
+        cudaMemcpy(cuda_Reference_fitness_survivability_proof_reading[gpu], Reference_fitness_survivability_proof_reading, 3 * sizeof(int), cudaMemcpyHostToDevice);
+
+        // cout << "check 2\n";
+        cudaMallocManaged(&cuda_mutation_recombination_proof_Reading_availability[gpu], 3 * sizeof(int));
+        cudaMemcpy(cuda_mutation_recombination_proof_Reading_availability[gpu], mutation_recombination_proof_Reading_availability, 3 * sizeof(int), cudaMemcpyHostToDevice);
+
+        // cout << "check 3\n";
+        cudaMallocManaged(&cuda_num_effect_Segregating_sites[gpu], 3 * sizeof(int));
+        cudaMemcpy(cuda_num_effect_Segregating_sites[gpu], num_effect_Segregating_sites, 3 * sizeof(int), cudaMemcpyHostToDevice);
+
+        // cout << "check 4\n";
+        cudaMallocManaged(&cuda_sequence_Fitness_changes[gpu], num_effect_Segregating_sites[0] * sizeof(float *));
+        for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
+        {
+            cudaMalloc((void **)&cuda_sequence_Fitness_changes[gpu][row], 5 * sizeof(float));
+        }
+        // cout << "check 5\n";
+        for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
+        {
+            cudaMemcpy(cuda_sequence_Fitness_changes[gpu][row], sequence_Fitness_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+        }
+        // cout << "check 6\n";
+
+        cudaStreamCreate(&streams[gpu]);
+    }
 }
 
 vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,

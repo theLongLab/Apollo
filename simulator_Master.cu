@@ -489,11 +489,30 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             for (int host = 0; host < infected_Population.size(); host++)
             {
                 // string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
-                Hosts[infected_Population[host]].run_Generation(functions,this->multi_Read, this->max_Cells_at_a_time, this->gpu_Limit, this->genome_Length,
+                Hosts[infected_Population[host]].run_Generation(functions, this->multi_Read, this->max_Cells_at_a_time, this->gpu_Limit, CUDA_device_IDs, this->num_Cuda_devices, this->genome_Length,
                                                                 intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),
                                                                 tissue_Names,
                                                                 terminal_tissues, terminal_array,
                                                                 cell_Distribution_Type, ALL_profiles_Tissue_cell_disribution[Hosts[infected_Population[host]].get_Profile()],
+                                                                Reference_fitness_survivability_proof_reading,
+                                                                mutation_recombination_proof_Reading_availability,
+                                                                num_effect_Segregating_sites,
+                                                                sequence_Fitness_changes,
+                                                                sequence_Survivability_changes,
+                                                                sequence_Proof_reading_changes,
+                                                                mutation_Hotspots,
+                                                                mutation_hotspot_parameters,
+                                                                A_0_mutation,
+                                                                T_1_mutation,
+                                                                G_2_mutation,
+                                                                C_3_mutation,
+                                                                recombination_Hotspots,
+                                                                recombination_hotspot_parameters,
+                                                                tot_prob_selectivity,
+                                                                recombination_prob_Stride,
+                                                                recombination_select_Stride,
+                                                                recombination_Prob_matrix,
+                                                                recombination_Select_matrix,
                                                                 gen);
             }
         }
@@ -731,7 +750,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
         // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
 
-        int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, round, num_of_Sequences_current);
+        int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, num_of_Sequences_current);
         vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
 
         functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
