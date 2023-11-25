@@ -657,6 +657,11 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
 
+    // cout << progeny_distribution_parameters_Array[0] << endl;
+    // cout << progeny_distribution_parameters_Array[1] << endl;
+    // cout << progeny_distribution_parameters_Array[2] << endl;
+    // exit(-1);
+
     for (int round = 0; round < start_stops.size(); round++)
     {
         cout << "\nParent sequence processing round " << round + 1 << " of " << start_stops.size() << endl;
@@ -736,6 +741,12 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     // }
 }
 
+__device__ float generateExponential(curandState *state, float lambda)
+{
+    float u = curand_uniform(state);
+    return -logf(u) / lambda;
+}
+
 __global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT, int genome_Length, char *sites, float **cuda_sequence_Configuration_standard,
                                           float *cuda_Reference_fitness_survivability_proof_reading, int *cuda_num_effect_Segregating_sites,
                                           float **cuda_sequence_Fitness_changes, float **cuda_sequence_Proof_reading_changes,
@@ -797,7 +808,48 @@ __global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT,
             }
         }
 
-        cuda_sequence_Configuration_standard[tid][0] = fitness;
+        curandState localState;
+        curand_init(clock64(), tid, 0, &localState);
+
+        int progeny = 1;
+
+        if (cuda_progeny_distribution_parameters_Array[0] == 0)
+        {
+            int failures = 0;
+            int successes = 0;
+
+            while (successes < cuda_progeny_distribution_parameters_Array[1])
+            {
+                float rand_num = curand_uniform(&localState);
+                if (rand_num < cuda_progeny_distribution_parameters_Array[2])
+                {
+                    successes++;
+                }
+                else
+                {
+                    failures++;
+                }
+            }
+
+            progeny = failures;
+        }
+        else if (cuda_progeny_distribution_parameters_Array[0] == 1)
+        {
+            // progeny = (int)rand_gamma_node(&localState, cuda_progeny_distribution_parameters_Array[1], cuda_progeny_distribution_parameters_Array[2]);
+
+            float sum = 0.0f;
+            for (int j = 0; j < cuda_progeny_distribution_parameters_Array[1]; ++j)
+            {
+                sum += generateExponential(&localState, 1.0f / cuda_progeny_distribution_parameters_Array[2]);
+            }
+            progeny = (int)sum;
+        }
+        else if (cuda_progeny_distribution_parameters_Array[0] == 2)
+        {
+            progeny = curand_poisson(&localState, cuda_progeny_distribution_parameters_Array[1]);
+        }
+
+        cuda_sequence_Configuration_standard[tid][0] = progeny * fitness;
 
         // proof reading
         if (cuda_Reference_fitness_survivability_proof_reading[2] != -1)

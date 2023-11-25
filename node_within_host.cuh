@@ -128,6 +128,7 @@ public:
                         int *recombination_select_Stride,
                         float **recombination_Prob_matrix,
                         float **recombination_Select_matrix,
+                        float *progeny_distribution_parameters_Array,
                         mt19937 &gen);
 
     vector<int> assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
