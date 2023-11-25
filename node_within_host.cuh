@@ -162,7 +162,8 @@ public:
                                    float **recombination_Select_matrix,
                                    mt19937 &gen);
 
-    void process_Sequences_get_Configuration(vector<string> &collected_Sequences, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
+    void process_Sequences_get_Configuration(functions_library &functions,
+                                             vector<string> &collected_Sequences, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
                                              float *Reference_fitness_survivability_proof_reading,
                                              int *mutation_recombination_proof_Reading_availability,
                                              int *num_effect_Segregating_sites,
@@ -174,5 +175,8 @@ public:
                                              int *recombination_prob_Stride,
                                              int *recombination_select_Stride,
                                              float **recombination_Prob_matrix,
-                                             float **recombination_Select_matrix);
+                                             float **recombination_Select_matrix,
+                                             int **parent_Sequences,
+                                             float **sequence_Configuration_standard,
+                                             int &start_Index);
 };

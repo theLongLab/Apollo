@@ -39,8 +39,6 @@ private:
 
     int *CUDA_device_IDs;
     int num_Cuda_devices;
-    int *tot_Blocks_array;
-    int *tot_ThreadsperBlock_array;
 
     int gpu_Limit;
     int CPU_cores;
@@ -55,6 +53,9 @@ private:
     // vector<string> sequence_Files;
 
 public:
+    int *tot_Blocks_array;
+    int *tot_ThreadsperBlock_array;
+
     string mode = "PARENT";
 
     int genome_Size;
