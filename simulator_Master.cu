@@ -1427,6 +1427,10 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                     num_effect_Segregating_sites[2] = 0;
                 }
             }
+            else
+            {
+                num_effect_Segregating_sites[2] = 0;
+            }
 
             // CREATE MUTATION ARRAYs
             vector<pair<string, string>> mutations_Block = Parameters.get_block_from_File(sequence_Master_location, "Mutations");
@@ -1537,6 +1541,11 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                 cout << "No mutational hotspots present to configure.\n";
             }
         }
+        else
+        {
+            //num_effect_Segregating_sites[0] = 0;
+            num_effect_Segregating_sites[2] = 0;
+        }
 
         if (mutation_recombination_proof_Reading_availability[1] == 1)
         {
@@ -1623,8 +1632,8 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
                 recombination_Prob_matrix = functions.create_FLOAT_2D_arrays(tot_prob_selectivity[0], 5);
                 recombination_Select_matrix = functions.create_FLOAT_2D_arrays(tot_prob_selectivity[1], 5);
 
-                recombination_prob_Stride = (int *)malloc(sizeof(int) * recombination_Hotspots + 1);
-                recombination_select_Stride = (int *)malloc(sizeof(int) * recombination_Hotspots + 1);
+                recombination_prob_Stride = (int *)malloc(sizeof(int) * (recombination_Hotspots + 1));
+                recombination_select_Stride = (int *)malloc(sizeof(int) * (recombination_Hotspots + 1));
 
                 int pos_curent_prob = 0;
                 int pos_curent_select = 0;

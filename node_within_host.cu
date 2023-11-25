@@ -644,7 +644,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     // ! clear 2d array
     float **sequence_Configuration_standard;
     // int columns = 3 + (2 * recombination_Hotspots);
-    sequence_Configuration_standard = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 3 + (2 * recombination_Hotspots));
+    sequence_Configuration_standard = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
 
     // float **sequence_Configuration_recombination;
     // if (mutation_recombination_proof_Reading_availability[1] == 1)
@@ -682,10 +682,10 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
                                                 mutation_recombination_proof_Reading_availability,
                                                 num_effect_Segregating_sites,
                                                 sequence_Fitness_changes,
-                                                sequence_Survivability_changes,
                                                 sequence_Proof_reading_changes,
-                                                tot_prob_selectivity,
                                                 recombination_Hotspots,
+                                                recombination_hotspot_parameters,
+                                                tot_prob_selectivity,
                                                 recombination_prob_Stride,
                                                 recombination_select_Stride,
                                                 recombination_Prob_matrix,
@@ -706,22 +706,175 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     // }
 }
 
+__global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT, int genome_Length, char *sites, float **cuda_sequence_Configuration_standard,
+                                          int *cuda_Reference_fitness_survivability_proof_reading, int *cuda_num_effect_Segregating_sites,
+                                          float **cuda_sequence_Fitness_changes, float **cuda_sequence_Proof_reading_changes,
+                                          int recombination_Hotspots, float **cuda_recombination_hotspot_parameters,
+                                          int *cuda_recombination_prob_Stride, float **cuda_recombination_Prob_matrix,
+                                          int *cuda_recombination_select_Stride, float **cuda_recombination_Select_matrix)
+{
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+    while (tid < num_Sequences)
+    {
+        int site_Start = tid * genome_Length;
+        int site_End = site_Start + genome_Length;
+
+        int bp_Pos = 0;
+
+        for (int site = site_Start; site < site_End; site++)
+        {
+            if (sites[site] == 'A' || sites[site] == 'a' || sites[site] == '0')
+            {
+                sequence_INT[tid][bp_Pos] = 0;
+            }
+            else if (sites[site] == 'T' || sites[site] == 't' || sites[site] == '1')
+            {
+                sequence_INT[tid][bp_Pos] = 1;
+            }
+            else if (sites[site] == 'G' || sites[site] == 'g' || sites[site] == '2')
+            {
+                sequence_INT[tid][bp_Pos] = 2;
+            }
+            else if (sites[site] == 'C' || sites[site] == 'c' || sites[site] == '3')
+            {
+                sequence_INT[tid][bp_Pos] = 3;
+            }
+
+            bp_Pos++;
+        }
+
+        // Fitness
+        float fitness = cuda_Reference_fitness_survivability_proof_reading[0];
+        for (int pos = 0; pos < cuda_num_effect_Segregating_sites[0]; pos++)
+        {
+            if (sequence_INT[tid][(int)cuda_sequence_Fitness_changes[pos][0] - 1] == 0)
+            {
+                fitness = fitness * cuda_sequence_Fitness_changes[pos][1];
+            }
+            else if (sequence_INT[tid][(int)cuda_sequence_Fitness_changes[pos][0] - 1] == 1)
+            {
+                fitness = fitness * cuda_sequence_Fitness_changes[pos][2];
+            }
+            else if (sequence_INT[tid][(int)cuda_sequence_Fitness_changes[pos][0] - 1] == 2)
+            {
+                fitness = fitness * cuda_sequence_Fitness_changes[pos][3];
+            }
+            else if (sequence_INT[tid][(int)cuda_sequence_Fitness_changes[pos][0] - 1] == 3)
+            {
+                fitness = fitness * cuda_sequence_Fitness_changes[pos][4];
+            }
+        }
+
+        cuda_sequence_Configuration_standard[tid][0] = fitness;
+
+        // proof reading
+        if (cuda_Reference_fitness_survivability_proof_reading[2] != -1)
+        {
+            float proof_Reading = cuda_Reference_fitness_survivability_proof_reading[2];
+
+            for (int pos = 0; pos < cuda_num_effect_Segregating_sites[2]; pos++)
+            {
+                if (sequence_INT[tid][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] == 0)
+                {
+                    proof_Reading = proof_Reading * cuda_sequence_Proof_reading_changes[pos][1];
+                }
+                else if (sequence_INT[tid][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] == 1)
+                {
+                    proof_Reading = proof_Reading * cuda_sequence_Proof_reading_changes[pos][2];
+                }
+                else if (sequence_INT[tid][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] == 2)
+                {
+                    proof_Reading = proof_Reading * cuda_sequence_Proof_reading_changes[pos][3];
+                }
+                else if (sequence_INT[tid][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] == 3)
+                {
+                    proof_Reading = proof_Reading * cuda_sequence_Proof_reading_changes[pos][4];
+                }
+            }
+
+            cuda_sequence_Configuration_standard[tid][1] = proof_Reading;
+        }
+        else
+        {
+            cuda_sequence_Configuration_standard[tid][1] = -1;
+        }
+
+        if (recombination_Hotspots > 0)
+        {
+            for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+            {
+                int index_Probability = (hotspot * 2) + 2;
+                int index_Selectivity = index_Probability + 1;
+
+                float probability = cuda_recombination_hotspot_parameters[hotspot][2];
+                float selectivity = cuda_recombination_hotspot_parameters[hotspot][3];
+
+                for (int stride = cuda_recombination_prob_Stride[hotspot]; stride < cuda_recombination_prob_Stride[hotspot + 1]; stride++)
+                {
+                    if (sequence_INT[tid][(int)cuda_recombination_Prob_matrix[stride][0] - 1] == 0)
+                    {
+                        probability = probability + cuda_recombination_Prob_matrix[stride][1];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Prob_matrix[stride][0] - 1] == 1)
+                    {
+                        probability = probability + cuda_recombination_Prob_matrix[stride][2];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Prob_matrix[stride][0] - 1] == 2)
+                    {
+                        probability = probability + cuda_recombination_Prob_matrix[stride][3];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Prob_matrix[stride][0] - 1] == 3)
+                    {
+                        probability = probability + cuda_recombination_Prob_matrix[stride][4];
+                    }
+                }
+
+                for (int stride = cuda_recombination_select_Stride[hotspot]; stride < cuda_recombination_select_Stride[hotspot + 1]; stride++)
+                {
+                    if (sequence_INT[tid][(int)cuda_recombination_Select_matrix[stride][0] - 1] == 0)
+                    {
+                        selectivity = selectivity + cuda_recombination_Select_matrix[stride][1];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Select_matrix[stride][0] - 1] == 1)
+                    {
+                        selectivity = selectivity + cuda_recombination_Select_matrix[stride][2];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Select_matrix[stride][0] - 1] == 2)
+                    {
+                        selectivity = selectivity + cuda_recombination_Select_matrix[stride][3];
+                    }
+                    else if (sequence_INT[tid][(int)cuda_recombination_Select_matrix[stride][0] - 1] == 3)
+                    {
+                        selectivity = selectivity + cuda_recombination_Select_matrix[stride][4];
+                    }
+                }
+
+                cuda_sequence_Configuration_standard[tid][index_Probability] = probability;
+                cuda_sequence_Configuration_standard[tid][index_Selectivity] = selectivity;
+            }
+        }
+
+        tid += blockDim.x * gridDim.x;
+    }
+}
+
 void node_within_host::process_Sequences_get_Configuration(vector<string> &collected_Sequences, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
                                                            float *Reference_fitness_survivability_proof_reading,
                                                            int *mutation_recombination_proof_Reading_availability,
                                                            int *num_effect_Segregating_sites,
                                                            float **sequence_Fitness_changes,
-                                                           float **sequence_Survivability_changes,
                                                            float **sequence_Proof_reading_changes,
-                                                           int *tot_prob_selectivity,
                                                            int recombination_Hotspots,
+                                                           float **recombination_hotspot_parameters,
+                                                           int *tot_prob_selectivity,
                                                            int *recombination_prob_Stride,
                                                            int *recombination_select_Stride,
                                                            float **recombination_Prob_matrix,
                                                            float **recombination_Select_matrix)
 {
     int num_of_Sequences_current = collected_Sequences.size();
-    cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+    cout << "\nConfiguring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
 
     int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
     int remainder = num_of_Sequences_current % num_Cuda_devices;
@@ -772,7 +925,15 @@ void node_within_host::process_Sequences_get_Configuration(vector<string> &colle
     int *cuda_num_effect_Segregating_sites[num_Cuda_devices];
 
     float **cuda_sequence_Fitness_changes[num_Cuda_devices];
-    // functions.float_2D_Array_load_to_CUDA(sequence_Fitness_changes, num_effect_Segregating_sites[0], 5);
+    float **cuda_sequence_Proof_reading_changes[num_Cuda_devices];
+
+    float **cuda_recombination_hotspot_parameters[num_Cuda_devices];
+    int *cuda_tot_prob_selectivity[num_Cuda_devices];
+    int *cuda_recombination_prob_Stride[num_Cuda_devices];
+    int *cuda_recombination_select_Stride[num_Cuda_devices];
+    float **cuda_recombination_Prob_matrix[num_Cuda_devices];
+    float **cuda_recombination_Select_matrix[num_Cuda_devices];
+
     // cout << "Sites: " << num_effect_Segregating_sites[0] << endl;
     // for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
     // {
@@ -800,33 +961,87 @@ void node_within_host::process_Sequences_get_Configuration(vector<string> &colle
             cudaMalloc((void **)&cuda_sequence_Configuration_standard[gpu][row], (3 + (2 * recombination_Hotspots)) * sizeof(int));
         }
 
-        // cout << "check 1\n";
         cudaMallocManaged(&cuda_Reference_fitness_survivability_proof_reading[gpu], 3 * sizeof(int));
         cudaMemcpy(cuda_Reference_fitness_survivability_proof_reading[gpu], Reference_fitness_survivability_proof_reading, 3 * sizeof(int), cudaMemcpyHostToDevice);
 
-        // cout << "check 2\n";
         cudaMallocManaged(&cuda_mutation_recombination_proof_Reading_availability[gpu], 3 * sizeof(int));
         cudaMemcpy(cuda_mutation_recombination_proof_Reading_availability[gpu], mutation_recombination_proof_Reading_availability, 3 * sizeof(int), cudaMemcpyHostToDevice);
 
-        // cout << "check 3\n";
         cudaMallocManaged(&cuda_num_effect_Segregating_sites[gpu], 3 * sizeof(int));
         cudaMemcpy(cuda_num_effect_Segregating_sites[gpu], num_effect_Segregating_sites, 3 * sizeof(int), cudaMemcpyHostToDevice);
 
-        // cout << "check 4\n";
         cudaMallocManaged(&cuda_sequence_Fitness_changes[gpu], num_effect_Segregating_sites[0] * sizeof(float *));
         for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
         {
             cudaMalloc((void **)&cuda_sequence_Fitness_changes[gpu][row], 5 * sizeof(float));
-        }
-        // cout << "check 5\n";
-        for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
-        {
             cudaMemcpy(cuda_sequence_Fitness_changes[gpu][row], sequence_Fitness_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
         }
-        // cout << "check 6\n";
+
+        // cudaMallocManaged(&cuda_sequence_Survivability_changes[gpu], num_effect_Segregating_sites[1] * sizeof(float *));
+        // for (int row = 0; row < num_effect_Segregating_sites[1]; row++)
+        // {
+        //     cudaMalloc((void **)&cuda_sequence_Survivability_changes[gpu][row], 5 * sizeof(float));
+        //     cudaMemcpy(cuda_sequence_Survivability_changes[gpu][row], sequence_Survivability_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+        // }
+
+        cudaMallocManaged(&cuda_sequence_Proof_reading_changes[gpu], num_effect_Segregating_sites[2] * sizeof(float *));
+        for (int row = 0; row < num_effect_Segregating_sites[2]; row++)
+        {
+            cudaMalloc((void **)&cuda_sequence_Proof_reading_changes[gpu][row], 5 * sizeof(float));
+            cudaMemcpy(cuda_sequence_Proof_reading_changes[gpu][row], sequence_Proof_reading_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+        }
+
+        cudaMallocManaged(&cuda_tot_prob_selectivity[gpu], 2 * sizeof(int));
+        cudaMallocManaged(&cuda_recombination_prob_Stride[gpu], (recombination_Hotspots + 1) * sizeof(int));
+        cudaMallocManaged(&cuda_recombination_select_Stride[gpu], (recombination_Hotspots + 1) * sizeof(int));
+
+        cudaMallocManaged(&cuda_recombination_hotspot_parameters[gpu], recombination_Hotspots * sizeof(float *));
+        cudaMallocManaged(&cuda_recombination_Prob_matrix[gpu], tot_prob_selectivity[0] * sizeof(float *));
+        cudaMallocManaged(&cuda_recombination_Select_matrix[gpu], tot_prob_selectivity[1] * sizeof(float *));
+
+        if (recombination_Hotspots > 0)
+        {
+            cudaMemcpy(cuda_tot_prob_selectivity[gpu], tot_prob_selectivity, 2 * sizeof(int), cudaMemcpyHostToDevice);
+            cudaMemcpy(cuda_recombination_prob_Stride[gpu], recombination_prob_Stride, (recombination_Hotspots + 1) * sizeof(int), cudaMemcpyHostToDevice);
+            cudaMemcpy(cuda_recombination_select_Stride[gpu], recombination_select_Stride, (recombination_Hotspots + 1) * sizeof(int), cudaMemcpyHostToDevice);
+
+            for (int row = 0; row < recombination_Hotspots; row++)
+            {
+                cudaMalloc((void **)&cuda_recombination_hotspot_parameters[gpu][row], 4 * sizeof(float));
+                cudaMemcpy(cuda_recombination_hotspot_parameters[gpu][row], recombination_hotspot_parameters[row], 4 * sizeof(float), cudaMemcpyHostToDevice);
+            }
+
+            for (int row = 0; row < tot_prob_selectivity[0]; row++)
+            {
+                cudaMalloc((void **)&cuda_recombination_Prob_matrix[gpu][row], 5 * sizeof(float));
+                cudaMemcpy(cuda_recombination_Prob_matrix[gpu][row], recombination_Prob_matrix[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+            }
+
+            for (int row = 0; row < tot_prob_selectivity[1]; row++)
+            {
+                cudaMalloc((void **)&cuda_recombination_Select_matrix[gpu][row], 5 * sizeof(float));
+                cudaMemcpy(cuda_recombination_Select_matrix[gpu][row], recombination_Select_matrix[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+            }
+        }
 
         cudaStreamCreate(&streams[gpu]);
     }
+
+    cout << "Loaded " << num_of_Sequences_current << " sequence(s) and all pre-requisites to the GPU(s)\nInitiating GPU(s) execution\n";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        // cuda_Parent_configuration<<<tot_Blocks_array[gpu], tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu]);
+    }
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaStreamSynchronize(streams[gpu]);
+    }
+
+    cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
 }
 
 vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
