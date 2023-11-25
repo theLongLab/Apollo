@@ -513,6 +513,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 recombination_select_Stride,
                                                                 recombination_Prob_matrix,
                                                                 recombination_Select_matrix,
+                                                                progeny_distribution_parameters_Array,
                                                                 gen);
             }
         }
@@ -1543,7 +1544,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
         }
         else
         {
-            //num_effect_Segregating_sites[0] = 0;
+            // num_effect_Segregating_sites[0] = 0;
             num_effect_Segregating_sites[2] = 0;
         }
 
@@ -1844,45 +1845,51 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
 
         progeny_distribution_Model = Parameters.get_STRING(found_Parameters[5]);
         transform(progeny_distribution_Model.begin(), progeny_distribution_Model.end(), progeny_distribution_Model.begin(), ::toupper);
+        progeny_distribution_parameters_Array = (float *)malloc(sizeof(float) * 3);
 
         vector<string> progeny_distribution_Parameters;
 
         if (progeny_distribution_Model == "NEGATIVE BINOMIAL")
         {
+            progeny_distribution_parameters_Array[0] = 0;
             parameters_List = {"\"Progeny Negative Binomial sucesses\"",
                                "\"Progeny Negative Binomial probability\""};
 
             progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
 
-            this->progeny_NB_sucesses = Parameters.get_INT(progeny_distribution_Parameters[0]);
-            this->progeny_NB_probability = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
+            progeny_distribution_parameters_Array[1] = Parameters.get_INT(progeny_distribution_Parameters[0]);
+            progeny_distribution_parameters_Array[2] = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
 
             cout << "\nProgeny generation via a Negative Binomial disribution\n";
-            cout << "Negative Binomial sucesses: " << progeny_NB_sucesses
-                 << "\nNegative Binomial probability: " << progeny_NB_probability << endl;
+            cout << "Negative Binomial sucesses: " << progeny_distribution_parameters_Array[1]
+                 << "\nNegative Binomial probability: " << progeny_distribution_parameters_Array[2] << endl;
         }
         else if (progeny_distribution_Model == "GAMMA")
         {
+            progeny_distribution_parameters_Array[0] = 1;
             parameters_List = {"\"Progeny Gamma shape\"",
                                "\"Progeny Gamma scale\""};
 
             progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
-            this->progeny_Gamma_shape = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
-            this->progeny_Gamma_scale = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
+            progeny_distribution_parameters_Array[1] = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
+            progeny_distribution_parameters_Array[2] = Parameters.get_FLOAT(progeny_distribution_Parameters[1]);
 
             cout << "\nProgeny generation via a Gamma disribution\n";
-            cout << "Gamma shape: " << progeny_Gamma_shape
-                 << "\nGamma scale: " << progeny_Gamma_scale << endl;
+            cout << "Gamma shape: " << progeny_distribution_parameters_Array[1]
+                 << "\nGamma scale: " << progeny_distribution_parameters_Array[2] << endl;
         }
         else if (progeny_distribution_Model == "POISSON")
         {
+            progeny_distribution_parameters_Array[0] = 2;
+            progeny_distribution_parameters_Array[2] = -1;
+
             parameters_List = {"\"Progeny Poisson mean\""};
 
             progeny_distribution_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
-            this->progeny_Poisson_mean = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
+            progeny_distribution_parameters_Array[1] = Parameters.get_FLOAT(progeny_distribution_Parameters[0]);
 
             cout << "\nProgeny generation via a Poisson disribution\n";
-            cout << "Poisson mean: " << progeny_Poisson_mean << endl;
+            cout << "Poisson mean: " << progeny_distribution_parameters_Array[1] << endl;
         }
         else
         {
@@ -1890,6 +1897,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             exit(-1);
         }
         progeny_distribution_Parameters.clear();
+
+        // exit(-1);
 
         // Configure tissue profile read
         vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");

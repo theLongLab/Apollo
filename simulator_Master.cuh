@@ -118,13 +118,15 @@ private:
 
     string progeny_distribution_Model = "NA";
 
-    int progeny_NB_sucesses = 0;
-    float progeny_NB_probability = 0;
+    float *progeny_distribution_parameters_Array;
 
-    float progeny_Poisson_mean = 0;
+    // int progeny_NB_sucesses = 0;
+    // float progeny_NB_probability = 0;
 
-    float progeny_Gamma_shape = 0;
-    float progeny_Gamma_scale = 0;
+    // float progeny_Poisson_mean = 0;
+
+    // float progeny_Gamma_shape = 0;
+    // float progeny_Gamma_scale = 0;
 
     int number_of_node_Profiles = 0;
     string node_Profile_folder_Location = "";

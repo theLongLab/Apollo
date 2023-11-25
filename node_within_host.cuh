@@ -160,6 +160,7 @@ public:
                                    int *recombination_select_Stride,
                                    float **recombination_Prob_matrix,
                                    float **recombination_Select_matrix,
+                                   float *progeny_distribution_parameters_Array,
                                    mt19937 &gen);
 
     void process_Sequences_get_Configuration(functions_library &functions,
@@ -176,6 +177,7 @@ public:
                                              int *recombination_select_Stride,
                                              float **recombination_Prob_matrix,
                                              float **recombination_Select_matrix,
+                                             float *progeny_distribution_parameters_Array,
                                              int **parent_Sequences,
                                              float **sequence_Configuration_standard,
                                              int &start_Index);
