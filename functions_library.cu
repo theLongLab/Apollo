@@ -1967,6 +1967,7 @@ int **functions_library::Fill_2D_array_CUDA(int rows, int columns, int fill_Valu
 
 int **functions_library::create_Fill_2D_array(int rows, int columns, int fill_Value)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     int **array_2D = create_INT_2D_arrays(rows, (columns + 1));
     int **cuda_Array_2D;
 
@@ -2059,6 +2060,7 @@ int **functions_library::int_2D_Array_load_to_CUDA(int **host_Array, int rows, i
 
 float **functions_library::create_Fill_2D_array_FLOAT(int rows, int columns, float fill_Value)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     float **array_2D = create_FLOAT_2D_arrays(rows, (columns + 1));
     float **cuda_Array_2D;
 
@@ -5449,6 +5451,7 @@ void functions_library::process_Cells(string &multi_READ, int &generation_Curren
 
 int **functions_library::create_CUDA_2D_int(int rows, int columns)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     int **CUDA_array;
 
     cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(int));
@@ -5471,6 +5474,7 @@ int **functions_library::create_CUDA_2D_int(int rows, int columns)
 
 float **functions_library::create_CUDA_2D_FLOAT(int rows, int columns)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     float **CUDA_array;
 
     cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(float));
@@ -5494,6 +5498,7 @@ float **functions_library::create_CUDA_2D_FLOAT(int rows, int columns)
 
 float **functions_library::load_to_Host_FLOAT(float **cuda_2D_Array, int rows, int columns)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     float **Array_host_2D = create_FLOAT_2D_arrays(rows, columns);
 
     for (int row = 0; row < rows; row++)
@@ -5506,6 +5511,7 @@ float **functions_library::load_to_Host_FLOAT(float **cuda_2D_Array, int rows, i
 
 int **functions_library::load_to_Host(int **cuda_2D_Array, int rows, int columns)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     int **Array_host_2D = create_INT_2D_arrays(rows, columns);
 
     for (int row = 0; row < rows; row++)

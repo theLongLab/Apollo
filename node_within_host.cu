@@ -655,6 +655,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     //     sequence_Configuration_recombination = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 * recombination_Hotspots);
     // }
 
+    // ! clear 1d array
     int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
 
     // cout << progeny_distribution_parameters_Array[0] << endl;
@@ -673,7 +674,6 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
             parent_IDs[parent] = parents_in_Tissue[start_Stop_cells[start_Cell] + parent];
         }
 
-        int valid_Sequences = 0;
         vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
 
         if (collected_Sequences.size() == sequence_List.size())
@@ -735,10 +735,144 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         cout << endl;
     }
 
-    // for (size_t i = 0; i < Total_seqeunces_to_Process; i++)
-    // {
-    //     cout << parent_IDs[i] << endl;
-    // }
+    cout << "\nAll parent sequences configured\n";
+    // ! clear 1d array
+    float *totals_Progeny_Selectivity = (float *)malloc(sizeof(float) * (1 + recombination_Hotspots));
+    ////  clear 1d array
+    int *progeny_Stride = (int *)malloc(sizeof(int) * (Total_seqeunces_to_Process + 1));
+    progeny_Stride[0] = 0;
+
+    for (int fill = 0; fill < (1 + recombination_Hotspots); fill++)
+    {
+        totals_Progeny_Selectivity[fill] = 0;
+    }
+
+    cout << "\nDetermining total progeny and configuring recombination hotspots\n";
+
+    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    {
+        // totals_Progeny_Selectivity[0] = totals_Progeny_Selectivity[0] + sequence_Configuration_standard[row][0];
+        progeny_Stride[row + 1] = progeny_Stride[row] + sequence_Configuration_standard[row][0];
+
+        for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+        {
+            totals_Progeny_Selectivity[hotspot + 1] = totals_Progeny_Selectivity[hotspot + 1] + sequence_Configuration_standard[row][(hotspot * 2) + 3];
+        }
+    }
+
+    totals_Progeny_Selectivity[0] = progeny_Stride[Total_seqeunces_to_Process];
+    cout << "Total progeny to be simulated: " << totals_Progeny_Selectivity[0] << endl;
+
+    cout << endl;
+    for (int fill = 0; fill < (1 + recombination_Hotspots); fill++)
+    {
+        cout << totals_Progeny_Selectivity[fill] << "\t";
+    }
+    cout << endl;
+
+    cout << "\nIntiating Progeny configurations\n";
+    cout << "Intializing GPU memory structures\n";
+
+    cudaSetDevice(CUDA_device_IDs[0]);
+
+    int **cuda_progeny_Configuration = functions.create_CUDA_2D_int((int)totals_Progeny_Selectivity[0], 1 + recombination_Hotspots);
+
+    int *cuda_progeny_Stride;
+    cudaMallocManaged(&cuda_progeny_Stride, (Total_seqeunces_to_Process + 1) * sizeof(int));
+    cudaMemcpy(cuda_progeny_Stride, progeny_Stride, (Total_seqeunces_to_Process + 1) * sizeof(int), cudaMemcpyHostToDevice);
+    free(progeny_Stride);
+
+    float **cuda_sequence_Configuration_standard = functions.float_2D_Array_load_to_CUDA(sequence_Configuration_standard, Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
+
+    for (int round = 0; round < start_stops.size(); round++)
+    {
+        cout << "\nParent sequence processing round " << round + 1 << " of " << start_stops.size() << endl;
+
+        progeny_Configurator(functions,
+                             cuda_sequence_Configuration_standard, recombination_Hotspots,
+                             start_stops[round].first, start_stops[round].second - start_stops[round].first,
+                             cuda_progeny_Configuration, cuda_progeny_Stride);
+    }
+
+    cout << "\nCopying test\n";
+    int **progeny_Configuration = functions.load_to_Host(cuda_progeny_Configuration, totals_Progeny_Selectivity[0], 1 + recombination_Hotspots);
+
+    for (int row = 0; row < totals_Progeny_Selectivity[0]; row++)
+    {
+        for (int col = 0; col < (1 + recombination_Hotspots); col++)
+        {
+            cout << progeny_Configuration[row][col] << "\t";
+        }
+        cout << endl;
+    }
+
+    cudaFree(cuda_progeny_Stride);
+}
+
+__global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
+                                          float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
+                                          int **cuda_progeny_Configuration, int *cuda_progeny_Stride)
+{
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+    while (tid < num_Parents_to_Process)
+    {
+        int parent_Index = tid + start_Index;
+        int progeny_Fill_start = cuda_progeny_Stride[parent_Index];
+        int progeny_Fill_end = cuda_progeny_Stride[parent_Index + 1];
+
+        for (int progeny = 0; progeny < cuda_sequence_Configuration_standard[parent_Index][0]; progeny++)
+        {
+            cuda_progeny_Configuration[progeny_Fill_start + progeny][0] = parent_Index;
+
+            for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+            {
+                if (progeny < cuda_sequence_Configuration_standard[parent_Index][(hotspot * 2) + 2])
+                {
+                    cuda_progeny_Configuration[progeny_Fill_start + progeny][hotspot + 1] = parent_Index;
+                }
+                else
+                {
+                    cuda_progeny_Configuration[progeny_Fill_start + progeny][hotspot + 1] = -1;
+                }
+            }
+        }
+
+        for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+        {
+            if (cuda_sequence_Configuration_standard[parent_Index][(hotspot * 2) + 2] > 0)
+            {
+                if (cuda_sequence_Configuration_standard[parent_Index][(hotspot * 2) + 2] != cuda_sequence_Configuration_standard[parent_Index][0])
+                {
+                    curandState state;
+                    curand_init(clock64(), tid, 0, &state);
+                    for (int i = progeny_Fill_start; i < progeny_Fill_end - 1; i++)
+                    {
+
+                        int j = curand(&state) % (progeny_Fill_end - i) + i;
+
+                        int temp = cuda_progeny_Configuration[i][hotspot + 1];
+                        cuda_progeny_Configuration[i][hotspot + 1] = cuda_progeny_Configuration[j][hotspot + 1];
+                        cuda_progeny_Configuration[j][hotspot + 1] = temp;
+                    }
+                }
+            }
+        }
+
+        tid += blockDim.x * gridDim.x;
+    }
+}
+
+void node_within_host::progeny_Configurator(functions_library &functions,
+                                            float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
+                                            int start_Index, int num_Parents_to_Process,
+                                            int **cuda_progeny_Configuration, int *cuda_progeny_Stride)
+{
+    cout << "Configuring " << num_Parents_to_Process << " parents' progeny\n";
+    cuda_Progeny_Configurator<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(num_Parents_to_Process, start_Index,
+                                                                                                         cuda_sequence_Configuration_standard, recombination_Hotspots,
+                                                                                                         cuda_progeny_Configuration, cuda_progeny_Stride);
+    cudaDeviceSynchronize();
 }
 
 __device__ float generateExponential(curandState *state, float lambda)
@@ -894,8 +1028,8 @@ __global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT,
         {
             for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
             {
-                int index_Probability = (hotspot * 2) + 2;
-                int index_Selectivity = index_Probability + 1;
+                int index_Progeny = (hotspot * 2) + 2;
+                int index_Selectivity = index_Progeny + 1;
 
                 float probability = cuda_recombination_hotspot_parameters[hotspot][2];
                 float selectivity = cuda_recombination_hotspot_parameters[hotspot][3];
@@ -948,7 +1082,18 @@ __global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT,
                 {
                     probability = 1;
                 }
-                cuda_sequence_Configuration_standard[tid][index_Probability] = probability;
+
+                int hotspot_Progeny = 0;
+
+                for (int trial = 0; trial < cuda_sequence_Configuration_standard[tid][0]; trial++)
+                {
+                    if (curand_uniform(&localState) < probability)
+                    {
+                        hotspot_Progeny++;
+                    }
+                }
+
+                cuda_sequence_Configuration_standard[tid][index_Progeny] = hotspot_Progeny;
 
                 cuda_sequence_Configuration_standard[tid][index_Selectivity] = selectivity;
             }

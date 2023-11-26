@@ -182,4 +182,9 @@ public:
                                              int **parent_Sequences,
                                              float **sequence_Configuration_standard,
                                              int &start_Index);
+
+    void progeny_Configurator(functions_library &functions,
+                              float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
+                              int start_Index, int num_Parents_to_Process,
+                              int **cuda_progeny_Configuration, int *cuda_progeny_Stride);
 };
