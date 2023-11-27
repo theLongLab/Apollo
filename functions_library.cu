@@ -1986,14 +1986,14 @@ int **functions_library::create_Fill_2D_array(int rows, int columns, int fill_Va
 
     cuda_Fill_2D_array<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
-    cudaError_t err = cudaGetLastError();
+    // cudaError_t err = cudaGetLastError();
 
-    if (err != cudaSuccess)
-    {
-        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+    // if (err != cudaSuccess)
+    // {
+    //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
 
-        // Possibly: exit(-1) if program cannot continue....
-    }
+    //     // Possibly: exit(-1) if program cannot continue....
+    // }
     cudaDeviceSynchronize();
     //  cout << "run" << endl;
 
@@ -2079,14 +2079,14 @@ float **functions_library::create_Fill_2D_array_FLOAT(int rows, int columns, flo
 
     cuda_Fill_2D_array_Float<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
-    cudaError_t err = cudaGetLastError();
+    // cudaError_t err = cudaGetLastError();
 
-    if (err != cudaSuccess)
-    {
-        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+    // if (err != cudaSuccess)
+    // {
+    //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
 
-        // Possibly: exit(-1) if program cannot continue....
-    }
+    //     // Possibly: exit(-1) if program cannot continue....
+    // }
     cudaDeviceSynchronize();
     //  cout << "run" << endl;
 
@@ -3593,6 +3593,7 @@ void functions_library::hard_Load_progeny(int generation, string &parent_Sequenc
 
 void functions_library::clear_Array_INT(int **CUDA_2D_array, int rows)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     for (int i = 0; i < rows; i++)
     {
         cudaFree(CUDA_2D_array[i]);
@@ -3602,6 +3603,7 @@ void functions_library::clear_Array_INT(int **CUDA_2D_array, int rows)
 
 void functions_library::clear_Array_FLOAT(float **CUDA_2D_array, int rows)
 {
+    cudaSetDevice(CUDA_device_IDs[0]);
     for (int i = 0; i < rows; i++)
     {
         cudaFree(CUDA_2D_array[i]);

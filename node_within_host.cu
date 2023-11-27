@@ -433,7 +433,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 {
                     if (real_Particle_count_per_Tissue[tissue] > 0)
                     {
-                        //  real_Particle_count_per_Tissue[tissue] = 123;
+                        // real_Particle_count_per_Tissue[tissue] = 123;
 
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
@@ -476,8 +476,8 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             }
                         }
 
-                        int *parents_in_Tissue = (int *)malloc(sizeof(int) * real_Particle_count_per_Tissue[tissue]);
-                        // int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
+                        // int *parents_in_Tissue = (int *)malloc(sizeof(int) * real_Particle_count_per_Tissue[tissue]);
+                        int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
 
                         // test
                         // check_to_Remove.insert(0);
@@ -496,19 +496,19 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                         cout << "Total number of cell(s) infected: " << start_Stop_cells.size() - 1 << endl;
 
-                        // if (start_Stop_cells.size() - 1 > 0)
-                        // {
-                        //     for (int i = 0; i < start_Stop_cells.size() - 1; i++)
-                        //     {
-                        //         // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
-                        //         for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
-                        //         {
-                        //             // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
-                        //             cout << parents_in_Tissue[particle] << ",";
-                        //         }
-                        //         cout << endl;
-                        //     }
-                        // }
+                        if (start_Stop_cells.size() - 1 > 0)
+                        {
+                            for (int i = 0; i < start_Stop_cells.size() - 1; i++)
+                            {
+                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                                for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
+                                {
+                                    // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
+                                    cout << parents_in_Tissue[1][particle] << "_" << parents_in_Tissue[0][particle] << ", ";
+                                }
+                                cout << endl;
+                            }
+                        }
 
                         vector<pair<int, int>> cells_Rounds_start_stop;
 
@@ -568,8 +568,8 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                                       gen);
                         }
 
-                        // functions.clear_Array_int_CPU(parents_in_Tissue, 2);
-                        free(parents_in_Tissue);
+                        functions.clear_Array_int_CPU(parents_in_Tissue, 2);
+                        // free(parents_in_Tissue);
                         exit(-1);
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
@@ -594,7 +594,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
 void node_within_host::simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
                                                  int &genome_Length,
-                                                 int &tissue, int *parents_in_Tissue,
+                                                 int &tissue, int **parents_in_Tissue,
                                                  vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
                                                  int &Total_seqeunces_to_Process,
                                                  int &sequence_Count,
@@ -655,13 +655,20 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     //     sequence_Configuration_recombination = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 * recombination_Hotspots);
     // }
 
-    // ! clear 1d array
-    int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
+    // ! clear 2d array
+    // int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
+    int **parent_IDs = functions.create_INT_2D_arrays(2, Total_seqeunces_to_Process);
 
     // cout << progeny_distribution_parameters_Array[0] << endl;
     // cout << progeny_distribution_parameters_Array[1] << endl;
     // cout << progeny_distribution_parameters_Array[2] << endl;
     // exit(-1);
+
+    int cell_ID = 0;
+    int *cell_Index = (int *)malloc(sizeof(int) * num_Cells + 1);
+    cell_Index[0] = 0;
+
+    int check_Cell = -1;
 
     for (int round = 0; round < start_stops.size(); round++)
     {
@@ -670,8 +677,32 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         vector<int> sequence_List;
         for (int parent = start_stops[round].first; parent < start_stops[round].second; parent++)
         {
-            sequence_List.push_back(parents_in_Tissue[start_Stop_cells[start_Cell] + parent]);
-            parent_IDs[parent] = parents_in_Tissue[start_Stop_cells[start_Cell] + parent];
+            sequence_List.push_back(parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent]);
+            parent_IDs[0][parent] = parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent];
+            int current_Cell = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
+            // parent_IDs[1][parent] = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
+
+            if (parent != 0)
+            {
+                if (check_Cell != current_Cell)
+                {
+                    cell_ID++;
+                    cell_Index[cell_ID] = parent;
+                    check_Cell = current_Cell;
+                }
+                parent_IDs[1][parent] = cell_ID;
+            }
+            else
+            {
+                parent_IDs[1][parent] = cell_ID;
+                check_Cell = current_Cell;
+            }
+
+            if (parent + 1 == start_stops[round].second)
+            {
+                cell_ID++;
+                cell_Index[cell_ID] = parent + 1;
+            }
         }
 
         vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
@@ -713,6 +744,17 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         cout << endl;
     }
 
+    // for (int i = 0; i < num_Cells; i++)
+    // {
+    //     for (int parent = cell_Index[i]; parent < cell_Index[i + 1]; parent++)
+    //     {
+    //         cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
+    //     }
+    //     cout << endl;
+    // }
+
+    // exit(-1);
+
     cout << endl;
 
     for (int row = 0; row < Total_seqeunces_to_Process; row++)
@@ -736,47 +778,70 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     }
 
     cout << "\nAll parent sequences configured\n";
+    int total_Progeny = 0;
     // ! clear 1d array
-    float *totals_Progeny_Selectivity = (float *)malloc(sizeof(float) * (1 + recombination_Hotspots));
+    // float *totals_Progeny_Selectivity = (float *)malloc(sizeof(float) * (1 + recombination_Hotspots));
+    float **totals_Progeny_Selectivity = functions.create_Fill_2D_array_FLOAT(num_Cells, recombination_Hotspots, 0);
     ////  clear 1d array
     int *progeny_Stride = (int *)malloc(sizeof(int) * (Total_seqeunces_to_Process + 1));
     progeny_Stride[0] = 0;
 
-    for (int fill = 0; fill < (1 + recombination_Hotspots); fill++)
-    {
-        totals_Progeny_Selectivity[fill] = 0;
-    }
+    // for (int fill = 0; fill < (1 + recombination_Hotspots); fill++)
+    // {
+    //     totals_Progeny_Selectivity[fill] = 0;
+    // }
 
     cout << "\nDetermining total progeny and configuring recombination hotspots\n";
 
-    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    for (int cell = 0; cell < num_Cells; cell++)
     {
-        // totals_Progeny_Selectivity[0] = totals_Progeny_Selectivity[0] + sequence_Configuration_standard[row][0];
-        progeny_Stride[row + 1] = progeny_Stride[row] + sequence_Configuration_standard[row][0];
+        for (int parent = cell_Index[cell]; parent < cell_Index[cell + 1]; parent++)
+        {
+            // cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
+            progeny_Stride[parent + 1] = progeny_Stride[parent] + sequence_Configuration_standard[parent][0];
 
+            for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+            {
+                totals_Progeny_Selectivity[cell][hotspot] = totals_Progeny_Selectivity[cell][hotspot] + sequence_Configuration_standard[parent][(hotspot * 2) + 3];
+            }
+        }
+        cout << endl;
+    }
+
+    // for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    // {
+    //     // totals_Progeny_Selectivity[0] = totals_Progeny_Selectivity[0] + sequence_Configuration_standard[row][0];
+    //     progeny_Stride[row + 1] = progeny_Stride[row] + sequence_Configuration_standard[row][0];
+
+    //     for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
+    //     {
+    //         totals_Progeny_Selectivity[hotspot + 1] = totals_Progeny_Selectivity[hotspot + 1] + sequence_Configuration_standard[row][(hotspot * 2) + 3];
+    //     }
+    // }
+
+    total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
+    cout << "Total progeny to be simulated: " << total_Progeny << endl;
+
+    cout << endl;
+    for (int i = 0; i < num_Cells; i++)
+    {
         for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
         {
-            totals_Progeny_Selectivity[hotspot + 1] = totals_Progeny_Selectivity[hotspot + 1] + sequence_Configuration_standard[row][(hotspot * 2) + 3];
+            cout << totals_Progeny_Selectivity[i][hotspot] << "\t";
         }
+        cout << endl;
     }
-
-    totals_Progeny_Selectivity[0] = progeny_Stride[Total_seqeunces_to_Process];
-    cout << "Total progeny to be simulated: " << totals_Progeny_Selectivity[0] << endl;
-
-    cout << endl;
-    for (int fill = 0; fill < (1 + recombination_Hotspots); fill++)
-    {
-        cout << totals_Progeny_Selectivity[fill] << "\t";
-    }
-    cout << endl;
 
     cout << "\nIntiating Progeny configurations\n";
     cout << "Intializing GPU memory structures\n";
 
     cudaSetDevice(CUDA_device_IDs[0]);
 
-    int **cuda_progeny_Configuration = functions.create_CUDA_2D_int((int)totals_Progeny_Selectivity[0], 1 + recombination_Hotspots);
+    // !clear array
+    // int **cuda_progeny_Configuration = functions.create_CUDA_2D_int(total_Progeny, 1 + recombination_Hotspots);
+    int **progeny_Configuration = functions.create_INT_2D_arrays(total_Progeny, 1 + recombination_Hotspots);
 
+    //// clear array
     int *cuda_progeny_Stride;
     cudaMallocManaged(&cuda_progeny_Stride, (Total_seqeunces_to_Process + 1) * sizeof(int));
     cudaMemcpy(cuda_progeny_Stride, progeny_Stride, (Total_seqeunces_to_Process + 1) * sizeof(int), cudaMemcpyHostToDevice);
@@ -791,13 +856,13 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         progeny_Configurator(functions,
                              cuda_sequence_Configuration_standard, recombination_Hotspots,
                              start_stops[round].first, start_stops[round].second - start_stops[round].first,
-                             cuda_progeny_Configuration, cuda_progeny_Stride);
+                             progeny_Configuration, cuda_progeny_Stride, cuda_progeny_Stride[start_stops[round].second] - cuda_progeny_Stride[start_stops[round].first], cuda_progeny_Stride[start_stops[round].first]);
     }
 
     cout << "\nCopying test\n";
-    int **progeny_Configuration = functions.load_to_Host(cuda_progeny_Configuration, totals_Progeny_Selectivity[0], 1 + recombination_Hotspots);
+    // int **progeny_Configuration = functions.load_to_Host(cuda_progeny_Configuration, total_Progeny, 1 + recombination_Hotspots);
 
-    for (int row = 0; row < totals_Progeny_Selectivity[0]; row++)
+    for (int row = 0; row < total_Progeny; row++)
     {
         for (int col = 0; col < (1 + recombination_Hotspots); col++)
         {
@@ -806,20 +871,21 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         cout << endl;
     }
 
+    // functions.clear_Array_INT(cuda_progeny_Configuration, total_Progeny);
     cudaFree(cuda_progeny_Stride);
 }
 
 __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
                                           float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
-                                          int **cuda_progeny_Configuration, int *cuda_progeny_Stride)
+                                          int **cuda_progeny_Configuration, int *cuda_progeny_Stride, int remove_Back)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
     while (tid < num_Parents_to_Process)
     {
         int parent_Index = tid + start_Index;
-        int progeny_Fill_start = cuda_progeny_Stride[parent_Index];
-        int progeny_Fill_end = cuda_progeny_Stride[parent_Index + 1];
+        int progeny_Fill_start = cuda_progeny_Stride[parent_Index] - remove_Back;
+        int progeny_Fill_end = cuda_progeny_Stride[parent_Index + 1] - remove_Back;
 
         for (int progeny = 0; progeny < cuda_sequence_Configuration_standard[parent_Index][0]; progeny++)
         {
@@ -866,13 +932,23 @@ __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_
 void node_within_host::progeny_Configurator(functions_library &functions,
                                             float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
                                             int start_Index, int num_Parents_to_Process,
-                                            int **cuda_progeny_Configuration, int *cuda_progeny_Stride)
+                                            int **progeny_Configuration, int *cuda_progeny_Stride, int progeny_Total, int remove_Back)
 {
-    cout << "Configuring " << num_Parents_to_Process << " parents' progeny\n";
+    cout << "Configuring " << num_Parents_to_Process << " parents' " << progeny_Total << " progeny\n";
+
+    int **cuda_progeny_Configuration = functions.create_CUDA_2D_int(progeny_Total, 1 + recombination_Hotspots);
+
     cuda_Progeny_Configurator<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(num_Parents_to_Process, start_Index,
                                                                                                          cuda_sequence_Configuration_standard, recombination_Hotspots,
-                                                                                                         cuda_progeny_Configuration, cuda_progeny_Stride);
+                                                                                                         cuda_progeny_Configuration, cuda_progeny_Stride, remove_Back);
     cudaDeviceSynchronize();
+
+    for (int row = 0; row < progeny_Total; row++)
+    {
+        cudaMemcpy(progeny_Configuration[row + remove_Back], cuda_progeny_Configuration[row], (recombination_Hotspots + 1) * sizeof(cuda_progeny_Configuration[0][0]), cudaMemcpyDeviceToHost);
+    }
+
+    functions.clear_Array_INT(cuda_progeny_Configuration, progeny_Total);
 }
 
 __device__ float generateExponential(curandState *state, float lambda)
@@ -1378,7 +1454,7 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
     cout << "Completed\n";
 }
 
-vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
+vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int num_Viral_particles, int &tissue,
                                            int distribution_Type, float &parameter_1, float &parameter_2,
                                            set<int> &check_to_Remove,
                                            mt19937 &gen)
@@ -1387,7 +1463,7 @@ vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral
 
     vector<int> start_Stop_cells;
 
-    // int cells_Assigned = 0;
+    int cells_Assigned = 0;
     int particles_Assigned = 0;
 
     start_Stop_cells.push_back(0);
@@ -1427,7 +1503,7 @@ vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral
         {
             for (int cell = 0; cell < num_Particles_in_Cell; cell++)
             {
-                // parents_in_Tissue[1][particles_Assigned] = cells_Assigned;
+                parents_in_Tissue[1][particles_Assigned] = cells_Assigned;
                 //// Account for dead
                 if (index_Track_removed < removals.size())
                 {
@@ -1438,7 +1514,7 @@ vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral
                     }
                 }
 
-                parents_in_Tissue[particles_Assigned] = particle_ID;
+                parents_in_Tissue[0][particles_Assigned] = particle_ID;
 
                 particle_ID++;
                 particles_Assigned++;
@@ -1450,14 +1526,14 @@ vector<int> node_within_host::assign_Cells(int *parents_in_Tissue, int num_Viral
             }
 
             start_Stop_cells.push_back(particles_Assigned);
-            // cells_Assigned++;
+            cells_Assigned++;
         }
 
     } while (particles_Assigned < num_Viral_particles);
 
     // cout << cells_Assigned - 1 << endl;
-
-    random_shuffle(&parents_in_Tissue[0], &parents_in_Tissue[num_Viral_particles]);
+    srand(time(0));
+    random_shuffle(parents_in_Tissue[0], parents_in_Tissue[0] + num_Viral_particles);
 
     if ((start_Stop_cells.size() - 1) > cell_Limit[tissue])
     {

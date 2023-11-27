@@ -131,14 +131,14 @@ public:
                         float *progeny_distribution_parameters_Array,
                         mt19937 &gen);
 
-    vector<int> assign_Cells(int *parents_in_Tissue, int num_Viral_particles, int &tissue,
+    vector<int> assign_Cells(int **parents_in_Tissue, int num_Viral_particles, int &tissue,
                              int distribution_Type, float &parameter_1, float &parameter_2,
                              set<int> &check_to_Remove,
                              mt19937 &gen);
 
     void simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
                                    int &genome_Length,
-                                   int &tissue, int *parents_in_Tissue,
+                                   int &tissue, int **parents_in_Tissue,
                                    vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
                                    int &Total_seqeunces_to_Process,
                                    int &sequence_Count,
@@ -186,5 +186,5 @@ public:
     void progeny_Configurator(functions_library &functions,
                               float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
                               int start_Index, int num_Parents_to_Process,
-                              int **cuda_progeny_Configuration, int *cuda_progeny_Stride);
+                              int **progeny_Configuration, int *cuda_progeny_Stride, int progeny_Total, int remove_Back);
 };
