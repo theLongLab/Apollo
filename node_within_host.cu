@@ -995,10 +995,6 @@ void node_within_host::progeny_Completion(functions_library &functions,
                                           int recombination_Hotspots,
                                           float **recombination_hotspot_parameters,
                                           int *tot_prob_selectivity,
-                                          int *recombination_prob_Stride,
-                                          int *recombination_select_Stride,
-                                          float **recombination_Prob_matrix,
-                                          float **recombination_Select_matrix,
                                           int &mutation_Hotspots,
                                           float **A_0_mutation,
                                           float **T_1_mutation,
@@ -1032,15 +1028,28 @@ void node_within_host::progeny_Completion(functions_library &functions,
     cudaDeviceProp deviceProp;
 
     float *cuda_Reference_fitness_survivability_proof_reading[num_Cuda_devices];
-    
+
+    float **cuda_sequence_Survivability_changes[num_Cuda_devices];
+
     int *cuda_num_effect_Segregating_sites[num_Cuda_devices];
 
     float **cuda_recombination_hotspot_parameters[num_Cuda_devices];
     int *cuda_tot_prob_selectivity[num_Cuda_devices];
-    int *cuda_recombination_prob_Stride[num_Cuda_devices];
-    int *cuda_recombination_select_Stride[num_Cuda_devices];
-    float **cuda_recombination_Prob_matrix[num_Cuda_devices];
-    float **cuda_recombination_Select_matrix[num_Cuda_devices];
+
+    float **cuda_A_0_mutation[num_Cuda_devices];
+    float **cuda_T_1_mutation[num_Cuda_devices];
+    float **cuda_G_2_mutation[num_Cuda_devices];
+    float **cuda_C_3_mutation[num_Cuda_devices];
+
+    float **cuda_mutation_hotspot_parameters[num_Cuda_devices];
+
+    int **cuda_parent_Sequences[num_Cuda_devices];
+    float **cuda_sequence_Configuration_standard[num_Cuda_devices];
+
+    int *cuda_cell_Index[num_Cuda_devices];
+
+    int **cuda_progeny_Configuration[num_Cuda_devices];
+    int **cuda_totals_Progeny_Selectivity[num_Cuda_devices];
 }
 
 __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
