@@ -52,6 +52,8 @@ private:
 
     int *dead_Particle_count;
 
+    int parents_Prev_generation = 0;
+
     // Remember to clear after getting the indexes in th current tissue;
 
 public:
@@ -107,6 +109,7 @@ public:
     void run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
                         string source_sequence_Data_folder,
                         vector<string> &tissue_Names,
+                        int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride,
                         int terminal_tissues, int *terminal_array,
                         int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
                         float *Reference_fitness_survivability_proof_reading,
@@ -131,9 +134,13 @@ public:
                         float *progeny_distribution_parameters_Array,
                         mt19937 &gen);
 
-    vector<int> assign_Cells(int **parents_in_Tissue, int num_Viral_particles, int &tissue,
+    int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,
+                             float &variable_1, float &variable_2);
+
+    vector<int> assign_Cells(functions_library &functions, int **parents_in_Tissue, int num_Viral_particles, int &tissue,
                              int distribution_Type, float &parameter_1, float &parameter_2,
                              set<int> &check_to_Remove,
+                             int &gen_Phase, float &variable_1, float &variable_2,
                              mt19937 &gen);
 
     void simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
@@ -187,4 +194,27 @@ public:
                               float **cuda_sequence_Configuration_standard, int recombination_Hotspots,
                               int start_Index, int num_Parents_to_Process,
                               int **progeny_Configuration, int *cuda_progeny_Stride, int progeny_Total, int remove_Back);
+
+    void progeny_Completion(functions_library &functions,
+                            int *CUDA_device_IDs, int &num_Cuda_devices,
+                            int &genome_Length, float *Reference_fitness_survivability_proof_reading, int *mutation_recombination_proof_Reading_availability,
+                            int *num_effect_Segregating_sites,
+                            float **sequence_Survivability_changes,
+                            int recombination_Hotspots,
+                            float **recombination_hotspot_parameters,
+                            int *tot_prob_selectivity,
+                            int *recombination_prob_Stride,
+                            int *recombination_select_Stride,
+                            float **recombination_Prob_matrix,
+                            float **recombination_Select_matrix,
+                            int &mutation_Hotspots,
+                            float **A_0_mutation,
+                            float **T_1_mutation,
+                            float **G_2_mutation,
+                            float **C_3_mutation,
+                            float **mutation_hotspot_parameters,
+                            int **parent_Sequences, float **sequence_Configuration_standard, int **parent_IDs, int *cell_Index,
+                            int **progeny_Configuration, int num_Progeny_being_Processed,
+                            int **totals_Progeny_Selectivity,
+                            int start_Progeny, int stop_Progeny, int &progeny_Count, string write_Progeny_Folder);
 };

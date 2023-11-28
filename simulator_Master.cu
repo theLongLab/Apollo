@@ -492,6 +492,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 Hosts[infected_Population[host]].run_Generation(functions, this->multi_Read, this->max_Cells_at_a_time, this->gpu_Limit, CUDA_device_IDs, this->num_Cuda_devices, this->genome_Length,
                                                                 intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),
                                                                 tissue_Names,
+                                                                num_replication_phases, tissue_replication_data, tissue_param_profile_Stride,
                                                                 terminal_tissues, terminal_array,
                                                                 cell_Distribution_Type, ALL_profiles_Tissue_cell_disribution[Hosts[infected_Population[host]].get_Profile()],
                                                                 Reference_fitness_survivability_proof_reading,
@@ -2081,7 +2082,6 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         {
             cout << number_of_node_Profiles << " node profiles present" << endl;
 
-            int *tissue_param_profile_Stride;
             vector<vector<int>> replication_phases_Profile_tissues;
 
             vector<float> time_Ratios;

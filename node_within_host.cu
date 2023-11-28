@@ -378,9 +378,55 @@ string node_within_host::transfer_Infection(functions_library &functions, string
     return status;
 }
 
+int node_within_host::get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,
+                                           float &variable_1, float &variable_2)
+{
+    cout << "Getting generation phase\n";
+    int gen_Phase = -1;
+
+    int num_Phases = num_replication_phases[(profile_ID * num_Tissues) + tissue];
+
+    int num_phases_per_tissue = 0;
+    int tissue_Check = 0;
+
+    for (int param_Index = tissue_param_profile_Stride[profile_ID]; param_Index < tissue_param_profile_Stride[profile_ID + 1]; param_Index++)
+    {
+        if (tissue_Check == tissue)
+        {
+            float time_Check = 0;
+            float current_Generation_Ratio = (float)generation / (float)num_Generation;
+            for (int phases = param_Index; phases < (param_Index + num_Phases); phases++)
+            {
+                time_Check = time_Check + tissue_replication_data[phases][0];
+                if (current_Generation_Ratio < time_Check)
+                {
+                    variable_1 = tissue_replication_data[phases][2];
+                    variable_2 = tissue_replication_data[phases][3];
+                    gen_Phase = tissue_replication_data[phases][1];
+                    return gen_Phase;
+                    // break;
+                }
+            }
+
+            //   break;
+        }
+
+        num_phases_per_tissue++;
+
+        if (num_phases_per_tissue == num_replication_phases[(profile_ID * num_Tissues) + tissue_Check])
+        {
+            num_phases_per_tissue = 0;
+            tissue_Check++;
+        }
+    }
+
+    return gen_Phase;
+}
+
 void node_within_host::run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
                                       string source_sequence_Data_folder,
                                       vector<string> &tissue_Names,
+                                      int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride,
                                       int terminal_tissues, int *terminal_array,
                                       int **cell_Distribution_Type, vector<pair<float, float>> &viral_distribution_per_Tissue_param,
                                       float *Reference_fitness_survivability_proof_reading,
@@ -438,6 +484,18 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
 
+                        // cout << profile_ID << endl;
+
+                        // for (int generation = current_Generation; generation < num_Generation; generation++)
+                        // {
+                        //     float variable_1, variable_2;
+                        //     int gen_Phase = get_generation_Phase(generation, num_replication_phases, tissue_replication_data, tissue_param_profile_Stride, tissue,
+                        //                                          variable_1, variable_2);
+                        //     cout << "Gen phase " << generation << ": " << gen_Phase << endl;
+                        //     cout << variable_1 << "\t" << variable_2 << endl;
+                        // }
+                        // exit(-1);
+
                         cout << "Identifying indexes to remove\n";
                         set<int> check_to_Remove;
                         //// Account for dead file
@@ -484,10 +542,24 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         // check_to_Remove.insert(1);
                         // check_to_Remove.insert(5);
                         // check_to_Remove.insert(99);
+                        // cout << profile_ID << endl;
+                        // for (int generation = current_Generation; generation < num_Generation; generation++)
+                        //{
 
-                        vector<int> start_Stop_cells = assign_Cells(parents_in_Tissue, real_Particle_count_per_Tissue[tissue], tissue,
+                        float variable_1, variable_2;
+                        int gen_Phase = get_generation_Phase(current_Generation, num_replication_phases, tissue_replication_data, tissue_param_profile_Stride, tissue,
+                                                             variable_1, variable_2);
+
+                        // cout << "Gen phase " << generation << ": " << gen_Phase << endl;
+                        // cout << variable_1 << "\t" << variable_2 << endl;
+
+                        // cout << "Gen phase " << generation << ": " << gen_Phase << endl;
+                        // cout << variable_1 << "\t" << variable_2 << endl;
+
+                        vector<int> start_Stop_cells = assign_Cells(functions, parents_in_Tissue, real_Particle_count_per_Tissue[tissue], tissue,
                                                                     cell_Distribution_Type[profile_ID][tissue], viral_distribution_per_Tissue_param[tissue].first, viral_distribution_per_Tissue_param[tissue].second,
                                                                     check_to_Remove,
+                                                                    gen_Phase, variable_1, variable_2,
                                                                     gen);
 
                         check_to_Remove.clear();
@@ -509,68 +581,85 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                 cout << endl;
                             }
                         }
-
-                        vector<pair<int, int>> cells_Rounds_start_stop;
-
-                        int full_Rounds = (start_Stop_cells.size() - 1) / max_Cells_at_a_time;
-                        int partial_Rounds = (start_Stop_cells.size() - 1) % max_Cells_at_a_time;
-
-                        for (int full = 0; full < full_Rounds; full++)
+                        // }
+                        // exit(-1);
+                        // vector<int> start_Stop_cells;
+                        if (start_Stop_cells.size() - 1 > 0)
                         {
-                            int start = full * max_Cells_at_a_time;
-                            int stop = start + max_Cells_at_a_time;
-                            cells_Rounds_start_stop.push_back(make_pair(start, stop));
+                            for (int i = 0; i < start_Stop_cells.size() - 1; i++)
+                            {
+                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                                for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
+                                {
+                                    // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
+                                    cout << parents_in_Tissue[1][particle] << "_" << parents_in_Tissue[0][particle] << ", ";
+                                }
+                                cout << endl;
+                            }
+
+                            // exit(-1);
+
+                            vector<pair<int, int>> cells_Rounds_start_stop;
+
+                            int full_Rounds = (start_Stop_cells.size() - 1) / max_Cells_at_a_time;
+                            int partial_Rounds = (start_Stop_cells.size() - 1) % max_Cells_at_a_time;
+
+                            for (int full = 0; full < full_Rounds; full++)
+                            {
+                                int start = full * max_Cells_at_a_time;
+                                int stop = start + max_Cells_at_a_time;
+                                cells_Rounds_start_stop.push_back(make_pair(start, stop));
+                            }
+
+                            if (partial_Rounds != 0)
+                            {
+                                int start = (start_Stop_cells.size() - 1) - partial_Rounds;
+                                cells_Rounds_start_stop.push_back(make_pair(start, (start_Stop_cells.size() - 1)));
+                            }
+
+                            int sequence_Count = 0;
+                            // size_t arraySize = sizeof(parents_in_Tissue) / sizeof(parents_in_Tissue[0]);
+
+                            for (int cell_Round = 0; cell_Round < cells_Rounds_start_stop.size(); cell_Round++)
+                            {
+                                int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
+                                cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
+
+                                int seqeunces_to_Process = start_Stop_cells[cells_Rounds_start_stop[cell_Round].second] - start_Stop_cells[cells_Rounds_start_stop[cell_Round].first];
+                                cout << "Processing " << seqeunces_to_Process << " sequence(s) in total\n";
+
+                                simulate_Cell_replication(functions, multi_Read, gpu_Limit, CUDA_device_IDs, num_Cuda_devices, source_sequence_Data_folder, indexed_Source_Folders[tissue],
+                                                          genome_Length,
+                                                          tissue, parents_in_Tissue,
+                                                          start_Stop_cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second, num_of_Cells,
+                                                          seqeunces_to_Process,
+                                                          sequence_Count,
+                                                          Reference_fitness_survivability_proof_reading,
+                                                          mutation_recombination_proof_Reading_availability,
+                                                          num_effect_Segregating_sites,
+                                                          sequence_Fitness_changes,
+                                                          sequence_Survivability_changes,
+                                                          sequence_Proof_reading_changes,
+                                                          mutation_Hotspots,
+                                                          mutation_hotspot_parameters,
+                                                          A_0_mutation,
+                                                          T_1_mutation,
+                                                          G_2_mutation,
+                                                          C_3_mutation,
+                                                          recombination_Hotspots,
+                                                          recombination_hotspot_parameters,
+                                                          tot_prob_selectivity,
+                                                          recombination_prob_Stride,
+                                                          recombination_select_Stride,
+                                                          recombination_Prob_matrix,
+                                                          recombination_Select_matrix,
+                                                          progeny_distribution_parameters_Array,
+                                                          gen);
+                            }
+                            // free(parents_in_Tissue);
+                            exit(-1);
                         }
-
-                        if (partial_Rounds != 0)
-                        {
-                            int start = (start_Stop_cells.size() - 1) - partial_Rounds;
-                            cells_Rounds_start_stop.push_back(make_pair(start, (start_Stop_cells.size() - 1)));
-                        }
-
-                        int sequence_Count = 0;
-                        // size_t arraySize = sizeof(parents_in_Tissue) / sizeof(parents_in_Tissue[0]);
-
-                        for (int cell_Round = 0; cell_Round < cells_Rounds_start_stop.size(); cell_Round++)
-                        {
-                            int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
-                            cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
-
-                            int seqeunces_to_Process = start_Stop_cells[cells_Rounds_start_stop[cell_Round].second] - start_Stop_cells[cells_Rounds_start_stop[cell_Round].first];
-                            cout << "Processing " << seqeunces_to_Process << " sequence(s) in total\n";
-
-                            simulate_Cell_replication(functions, multi_Read, gpu_Limit, CUDA_device_IDs, num_Cuda_devices, source_sequence_Data_folder, indexed_Source_Folders[tissue],
-                                                      genome_Length,
-                                                      tissue, parents_in_Tissue,
-                                                      start_Stop_cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second, num_of_Cells,
-                                                      seqeunces_to_Process,
-                                                      sequence_Count,
-                                                      Reference_fitness_survivability_proof_reading,
-                                                      mutation_recombination_proof_Reading_availability,
-                                                      num_effect_Segregating_sites,
-                                                      sequence_Fitness_changes,
-                                                      sequence_Survivability_changes,
-                                                      sequence_Proof_reading_changes,
-                                                      mutation_Hotspots,
-                                                      mutation_hotspot_parameters,
-                                                      A_0_mutation,
-                                                      T_1_mutation,
-                                                      G_2_mutation,
-                                                      C_3_mutation,
-                                                      recombination_Hotspots,
-                                                      recombination_hotspot_parameters,
-                                                      tot_prob_selectivity,
-                                                      recombination_prob_Stride,
-                                                      recombination_select_Stride,
-                                                      recombination_Prob_matrix,
-                                                      recombination_Select_matrix,
-                                                      progeny_distribution_parameters_Array,
-                                                      gen);
-                        }
-
                         functions.clear_Array_int_CPU(parents_in_Tissue, 2);
-                        // free(parents_in_Tissue);
-                        exit(-1);
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
 
@@ -873,6 +962,85 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // functions.clear_Array_INT(cuda_progeny_Configuration, total_Progeny);
     cudaFree(cuda_progeny_Stride);
+
+    // create and save sequence
+    start_stops.clear();
+
+    full_Rounds = total_Progeny / gpu_Limit;
+    partial_Rounds = total_Progeny % gpu_Limit;
+
+    for (int full = 0; full < full_Rounds; full++)
+    {
+        int start = full * gpu_Limit;
+        int stop = start + gpu_Limit;
+        start_stops.push_back(make_pair(start, stop));
+    }
+
+    if (partial_Rounds != 0)
+    {
+        int start = total_Progeny - partial_Rounds;
+        start_stops.push_back(make_pair(start, total_Progeny));
+    }
+
+    for (int round = 0; round < start_stops.size(); round++)
+    {
+    }
+}
+
+void node_within_host::progeny_Completion(functions_library &functions,
+                                          int *CUDA_device_IDs, int &num_Cuda_devices,
+                                          int &genome_Length, float *Reference_fitness_survivability_proof_reading, int *mutation_recombination_proof_Reading_availability,
+                                          int *num_effect_Segregating_sites,
+                                          float **sequence_Survivability_changes,
+                                          int recombination_Hotspots,
+                                          float **recombination_hotspot_parameters,
+                                          int *tot_prob_selectivity,
+                                          int *recombination_prob_Stride,
+                                          int *recombination_select_Stride,
+                                          float **recombination_Prob_matrix,
+                                          float **recombination_Select_matrix,
+                                          int &mutation_Hotspots,
+                                          float **A_0_mutation,
+                                          float **T_1_mutation,
+                                          float **G_2_mutation,
+                                          float **C_3_mutation,
+                                          float **mutation_hotspot_parameters,
+                                          int **parent_Sequences, float **sequence_Configuration_standard, int **parent_IDs, int *cell_Index,
+                                          int **progeny_Configuration, int num_Progeny_being_Processed,
+                                          int **totals_Progeny_Selectivity,
+                                          int start_Progeny, int stop_Progeny, int &progeny_Count, string write_Progeny_Folder)
+{
+    int num_of_Sequences_current = num_Progeny_being_Processed;
+    cout << "\nConfiguring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+
+    int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
+    int remainder = num_of_Sequences_current % num_Cuda_devices;
+
+    vector<pair<int, int>> start_stop_Per_GPU;
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        int start = gpu * standard_num_per_GPU;
+        int stop = start + standard_num_per_GPU;
+
+        start_stop_Per_GPU.push_back(make_pair(start, stop));
+    }
+
+    start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+
+    cudaStream_t streams[num_Cuda_devices];
+    cudaDeviceProp deviceProp;
+
+    float *cuda_Reference_fitness_survivability_proof_reading[num_Cuda_devices];
+    
+    int *cuda_num_effect_Segregating_sites[num_Cuda_devices];
+
+    float **cuda_recombination_hotspot_parameters[num_Cuda_devices];
+    int *cuda_tot_prob_selectivity[num_Cuda_devices];
+    int *cuda_recombination_prob_Stride[num_Cuda_devices];
+    int *cuda_recombination_select_Stride[num_Cuda_devices];
+    float **cuda_recombination_Prob_matrix[num_Cuda_devices];
+    float **cuda_recombination_Select_matrix[num_Cuda_devices];
 }
 
 __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
@@ -1454,12 +1622,18 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
     cout << "Completed\n";
 }
 
-vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int num_Viral_particles, int &tissue,
+vector<int> node_within_host::assign_Cells(functions_library &functions, int **parents_in_Tissue, int num_Viral_particles, int &tissue,
                                            int distribution_Type, float &parameter_1, float &parameter_2,
                                            set<int> &check_to_Remove,
+                                           int &gen_Phase, float &variable_1, float &variable_2,
                                            mt19937 &gen)
 {
     cout << "\nAssigning cell(s) their virulant particle(s)\n";
+
+    // if (parents_Prev_generation != 0)
+    // {
+    //     num_Viral_particles = parents_Prev_generation;
+    // }
 
     vector<int> start_Stop_cells;
 
@@ -1535,6 +1709,98 @@ vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int num_Vira
     srand(time(0));
     random_shuffle(parents_in_Tissue[0], parents_in_Tissue[0] + num_Viral_particles);
 
+    if (gen_Phase == 1 || gen_Phase == 2)
+    {
+        int new_Parent_Count = -1;
+
+        if (gen_Phase == 1)
+        {
+            cout << "Stationary phase\n";
+            if (num_Viral_particles >= parents_Prev_generation)
+            {
+                normal_distribution<float> distribution(parents_Prev_generation, variable_1);
+                new_Parent_Count = distribution(gen);
+                // cout << "parents_Prev_generation: " << parents_Prev_generation << endl;
+                // cout << new_Parent_Count << endl;
+                if (new_Parent_Count < num_Viral_particles && new_Parent_Count >= 0)
+                {
+                    cout << "Parent population maintained at: " << new_Parent_Count << endl;
+                }
+                else
+                {
+                    new_Parent_Count = -1;
+                }
+            }
+        }
+        else if (gen_Phase == 2)
+        {
+            cout << "Depriciation phase\n";
+            if (num_Viral_particles >= parents_Prev_generation)
+            {
+                new_Parent_Count = functions.beta_Distribution(variable_1, variable_2, gen) * parents_Prev_generation;
+                new_Parent_Count = parents_Prev_generation - new_Parent_Count;
+                cout << "Parent population reduced to: " << new_Parent_Count << endl;
+            }
+        }
+        if (new_Parent_Count != -1)
+        {
+            int **temp = functions.create_INT_2D_arrays(2, new_Parent_Count);
+
+            for (int parent = 0; parent < new_Parent_Count; parent++)
+            {
+                temp[0][parent] = parents_in_Tissue[0][parent];
+                temp[1][parent] = parents_in_Tissue[1][parent];
+            }
+
+            functions.clear_Array_int_CPU(parents_in_Tissue, 2);
+
+            parents_in_Tissue = functions.create_INT_2D_arrays(2, new_Parent_Count);
+
+            for (int parent = 0; parent < new_Parent_Count; parent++)
+            {
+                parents_in_Tissue[0][parent] = temp[0][parent];
+                parents_in_Tissue[1][parent] = temp[1][parent];
+            }
+
+            functions.clear_Array_int_CPU(temp, 2);
+
+            cout << "Resizing parent cell array\n";
+
+            vector<int> temp_Cells;
+            if (new_Parent_Count > 0)
+            {
+                cout << "Configuring cell index\n";
+                for (int cell = 0; cell < parents_in_Tissue[1][new_Parent_Count - 1] + 1; cell++)
+                {
+                    temp_Cells.push_back(start_Stop_cells[cell]);
+                }
+
+                if (temp_Cells[temp_Cells.size() - 1] > new_Parent_Count)
+                {
+                    temp_Cells[temp_Cells.size() - 1] = new_Parent_Count;
+                }
+            }
+            else
+            {
+                temp_Cells.push_back(0);
+            }
+
+            start_Stop_cells.clear();
+            start_Stop_cells = temp_Cells;
+
+            parents_Prev_generation = new_Parent_Count;
+        }
+        else
+        {
+            parents_Prev_generation = num_Viral_particles;
+        }
+    }
+    else
+    {
+        cout << "Neutral phase, all particles are viable\n";
+        parents_Prev_generation = num_Viral_particles;
+    }
+
     if ((start_Stop_cells.size() - 1) > cell_Limit[tissue])
     {
         vector<int> temp;
@@ -1544,6 +1810,7 @@ vector<int> node_within_host::assign_Cells(int **parents_in_Tissue, int num_Vira
         }
         start_Stop_cells.clear();
         start_Stop_cells = temp;
+        parents_Prev_generation = start_Stop_cells[start_Stop_cells.size() - 1];
     }
 
     return start_Stop_cells;

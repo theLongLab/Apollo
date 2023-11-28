@@ -179,6 +179,7 @@ private:
     vector<vector<pair<float, float>>> ALL_profiles_Tissue_cell_disribution;
 
     int *num_replication_phases;
+    int *tissue_param_profile_Stride;
     float **tissue_replication_data;
 
     string parent_Sequence_Folder;
