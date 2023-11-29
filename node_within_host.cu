@@ -1133,12 +1133,36 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
                         for (int mutation = 0; mutation < num_Mutations; mutation++)
                         {
                             int position = (int)(curand_uniform(&localState) * ((cuda_mutation_hotspot_parameters[hotspot][1] - 1) - (cuda_mutation_hotspot_parameters[hotspot][0] - 1) + 1)) + (cuda_mutation_hotspot_parameters[hotspot][0] - 1);
-                            
+
+                            float rand_num = curand_uniform(&localState);
+                            float cumulative_prob = 0.0f;
+
+                            int original_BASE = cuda_progeny_Sequences[tid][position];
+                            int new_Base = 0;
+
+                            for (int base = 0; base < 4; base++)
+                            {
+                                cumulative_prob += (original_BASE == 0)   ? CUDA_A_0_mutation[mutation_Hotspot][base]
+                                                   : (original_BASE == 1) ? CUDA_T_1_mutation[mutation_Hotspot][base]
+                                                   : (original_BASE == 2) ? CUDA_G_2_mutation[mutation_Hotspot][base]
+                                                   : (original_BASE == 3) ? CUDA_C_3_mutation[mutation_Hotspot][base]
+                                                                          : 0.0f;
+
+                                if (rand_num < cumulative_prob)
+                                {
+                                    new_Base = base;
+                                    break;
+                                }
+                            }
+
+                            cuda_progeny_Sequences[tid][position] = new_Base;
                         }
                     }
                 }
             }
         }
+
+        // Determine survivability
 
         tid += blockDim.x * gridDim.x;
     }
