@@ -1142,10 +1142,10 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
 
                             for (int base = 0; base < 4; base++)
                             {
-                                cumulative_prob += (original_BASE == 0)   ? CUDA_A_0_mutation[mutation_Hotspot][base]
-                                                   : (original_BASE == 1) ? CUDA_T_1_mutation[mutation_Hotspot][base]
-                                                   : (original_BASE == 2) ? CUDA_G_2_mutation[mutation_Hotspot][base]
-                                                   : (original_BASE == 3) ? CUDA_C_3_mutation[mutation_Hotspot][base]
+                                cumulative_prob += (original_BASE == 0)   ? CUDA_A_0_mutation[hotspot][base]
+                                                   : (original_BASE == 1) ? CUDA_T_1_mutation[hotspot][base]
+                                                   : (original_BASE == 2) ? CUDA_G_2_mutation[hotspot][base]
+                                                   : (original_BASE == 3) ? CUDA_C_3_mutation[hotspot][base]
                                                                           : 0.0f;
 
                                 if (rand_num < cumulative_prob)
@@ -1162,7 +1162,42 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
             }
         }
 
+        // TEST BLOCK 4
         // Determine survivability
+        float survivability = cuda_Reference_fitness_survivability_proof_reading[1];
+
+        for (int pos = 0; pos < cuda_num_effect_Segregating_sites[1]; pos++)
+        {
+            if (cuda_progeny_Sequences[tid][(int)cuda_sequence_Survivability_changes[pos][0] - 1] == 0)
+            {
+                survivability = survivability + cuda_sequence_Survivability_changes[pos][1];
+            }
+            else if (cuda_progeny_Sequences[tid][(int)cuda_sequence_Survivability_changes[pos][0] - 1] == 1)
+            {
+                survivability = survivability + cuda_sequence_Survivability_changes[pos][2];
+            }
+            else if (cuda_progeny_Sequences[tid][(int)cuda_sequence_Survivability_changes[pos][0] - 1] == 2)
+            {
+                survivability = survivability + cuda_sequence_Survivability_changes[pos][3];
+            }
+            else if (cuda_progeny_Sequences[tid][(int)cuda_sequence_Survivability_changes[pos][0] - 1] == 3)
+            {
+                survivability = survivability + cuda_sequence_Survivability_changes[pos][4];
+            }
+        }
+
+        if (survivability > 1)
+        {
+            survivability = 1;
+        }
+        else if (survivability < 0)
+        {
+            survivability = 0;
+        }
+
+        float survivability_Check = curand_uniform(&localState);
+
+        cuda_Dead_or_Alive = (survivability_Check < survivability) ? 1 : 0;
 
         tid += blockDim.x * gridDim.x;
     }
