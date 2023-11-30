@@ -1436,8 +1436,8 @@ void node_within_host::progeny_Completion(functions_library &functions,
 
     cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
 
-    int **progeny_Configuration_Filled = functions.create_CUDA_2D_int(num_Progeny_being_Processed, (1 + recombination_Hotspots));
-    int **progeny_Sequences = functions.create_CUDA_2D_int(num_Progeny_being_Processed, genome_Length);
+    int **progeny_Configuration_Filled = functions.create_INT_2D_arrays(num_Progeny_being_Processed, (1 + recombination_Hotspots));
+    int **progeny_Sequences = functions.create_INT_2D_arrays(num_Progeny_being_Processed, genome_Length);
     int *Dead_or_Alive = (int *)malloc(sizeof(int) * num_Progeny_being_Processed);
 
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -1527,6 +1527,32 @@ void node_within_host::progeny_Completion(functions_library &functions,
         cudaStreamDestroy(streams[gpu]);
     }
     cout << "Completed\n";
+
+    for (int test = 0; test < num_Progeny_being_Processed; test++)
+    {
+        for (size_t i = 0; i < recombination_Hotspots + 1; i++)
+        {
+            cout << progeny_Configuration_Filled[test][i] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+    for (int test = 0; test < 1; test++)
+    {
+        for (size_t i = 0; i < genome_Length; i++)
+        {
+            cout << progeny_Sequences[test][i];
+        }
+        cout << endl;
+    }
+    cout << endl;
+    for (int test = 0; test < num_Progeny_being_Processed; test++)
+    {
+        cout << Dead_or_Alive[test] << endl;
+    }
+
+    //test when more than one sequence in cell
 }
 
 __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
