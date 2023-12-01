@@ -490,7 +490,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             {
                 // string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
                 Hosts[infected_Population[host]].run_Generation(functions, this->multi_Read, this->max_Cells_at_a_time, this->gpu_Limit, CUDA_device_IDs, this->num_Cuda_devices, this->genome_Length,
-                                                                intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),
+                                                                intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()),output_Node_location,
                                                                 tissue_Names,
                                                                 num_replication_phases, tissue_replication_data, tissue_param_profile_Stride,
                                                                 terminal_tissues, terminal_array,

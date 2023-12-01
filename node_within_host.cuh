@@ -35,6 +35,9 @@ using namespace std;
 class node_within_host
 {
 private:
+    shared_mutex g_mutex;
+    mutex gi_mutex;
+
     int host_Index, cave_ID, host_ID, profile_ID;
     int num_Generation;
 
@@ -55,6 +58,8 @@ private:
     int parents_Prev_generation = 0;
 
     // Remember to clear after getting the indexes in th current tissue;
+    vector<pair<string, string>> to_write_Sequence_Store;
+    vector<string> converted_Sequences;
 
 public:
     node_within_host();
@@ -107,7 +112,7 @@ public:
     void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions);
 
     void run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
-                        string source_sequence_Data_folder,
+                        string source_sequence_Data_folder, string &output_Node_location,
                         vector<string> &tissue_Names,
                         int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride,
                         int terminal_tissues, int *terminal_array,
@@ -209,8 +214,23 @@ public:
                             float **G_2_mutation,
                             float **C_3_mutation,
                             float **mutation_hotspot_parameters,
-                            int **parent_Sequences, int num_Parent_sequence, float **sequence_Configuration_standard, int **parent_IDs, int num_Cells, int *cell_Index,
+                            int **parent_Sequences, int num_Parent_sequence, float **sequence_Configuration_standard, int **parent_IDs, int num_Cells, int *cell_Index, int &start_Cell,
                             int **progeny_Configuration, int num_Progeny_being_Processed,
                             float **totals_Progeny_Selectivity,
                             int start_Progeny, int stop_Progeny, int &progeny_Count, string write_Progeny_Folder);
+
+    void write_Full_Sequences_Progeny(functions_library &functions,
+                                      int &CPU_cores,
+                                      string &tissue_Name,
+                                      int &num_Progeny_being_Processed,
+                                      int &genome_Length, int &recombination_Hotspots,
+                                      int &sequence_Count,
+                                      int &index_Last_Written,
+                                      int **parent_IDs,
+                                      int **progeny_Sequences, int *Dead_or_Alive, int **progeny_Configuration_Filled,
+                                      string intermediary_Tissue_folder, string dead_List, string sequence_Profiles, string sequence_parent_Progeny_relationships,
+                                      int &max_sequences_per_File, int &last_index_Seq_Written,
+                                      vector<string> &to_write_Sequence_Store);
+
+    void thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length);
 };
