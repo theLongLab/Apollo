@@ -5975,6 +5975,7 @@ void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store
             cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
             exit(-1);
         }
+        sequence_Write_Store_All.clear();
     }
 }
 
@@ -6101,6 +6102,7 @@ void functions_library::partial_Write_Check_transfer(vector<string> &sequence_Wr
             cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
             exit(-1);
         }
+        sequence_Write_Store_All.clear();
     }
 }
 
@@ -6222,6 +6224,7 @@ void functions_library::partial_Write_Check(vector<string> &sequence_Write_Store
             cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
             exit(-1);
         }
+        sequence_Write_Store_All.clear();
     }
 }
 

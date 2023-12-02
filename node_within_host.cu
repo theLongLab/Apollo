@@ -424,6 +424,7 @@ int node_within_host::get_generation_Phase(int generation, int *num_replication_
 }
 
 void node_within_host::run_Generation(functions_library &functions, string &multi_Read, int &max_Cells_at_a_time, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, int &genome_Length,
+                                      int &CPU_cores, int &max_sequences_per_File,
                                       string source_sequence_Data_folder, string &output_Node_location,
                                       vector<string> &tissue_Names,
                                       int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride,
@@ -568,19 +569,19 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                         cout << "Total number of cell(s) infected: " << start_Stop_cells.size() - 1 << endl;
 
-                        if (start_Stop_cells.size() - 1 > 0)
-                        {
-                            for (int i = 0; i < start_Stop_cells.size() - 1; i++)
-                            {
-                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
-                                for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
-                                {
-                                    // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
-                                    cout << parents_in_Tissue[1][particle] << "_" << parents_in_Tissue[0][particle] << ", ";
-                                }
-                                cout << endl;
-                            }
-                        }
+                        // if (start_Stop_cells.size() - 1 > 0)
+                        // {
+                        //     for (int i = 0; i < start_Stop_cells.size() - 1; i++)
+                        //     {
+                        //         // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                        //         for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
+                        //         {
+                        //             // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
+                        //             cout << parents_in_Tissue[1][particle] << "_" << parents_in_Tissue[0][particle] << ", ";
+                        //         }
+                        //         cout << endl;
+                        //     }
+                        // }
                         // }
                         // exit(-1);
                         // vector<int> start_Stop_cells;
@@ -620,10 +621,12 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             int sequence_Count = 0;
                             int index_Last_Written = 0;
 
-                            string intermediary_Tissue_folder = source_sequence_Data_folder + "/" + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation + 1);
+                            // source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation + 1),
+
+                            string intermediary_Tissue_folder = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation + 1);
                             string dead_List = intermediary_Tissue_folder + "/dead_List.txt";
 
-                            if (filesystem::exists(intermediary_Tissue_folder))
+                            if (!filesystem::exists(intermediary_Tissue_folder))
                             {
                                 functions.config_Folder(intermediary_Tissue_folder, to_string(current_Generation + 1) + " generation Tissue " + tissue_Names[tissue] + " sequences");
                             }
@@ -635,12 +638,16 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                             string sequence_Profiles = output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv";
                             string sequence_parent_Progeny_relationships = output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv";
+                            string cells_of_parents_location = output_Node_location + "/" + get_Name() + "/cells_of_Parents.csv";
+                            string cells_of_progeny_location = output_Node_location + "/" + get_Name() + "/cells_of_Progeny.csv";
 
                             if (!filesystem::exists(output_Node_location + "/" + get_Name()))
                             {
                                 functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
                                 functions.create_File(sequence_Profiles, "Sequence_ID\tHost\tTissue");
                                 functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
+                                functions.create_File(cells_of_parents_location, "Sequence_ID\tParent_Cell_ID");
+                                functions.create_File(cells_of_progeny_location, "Sequence_ID\tProgeny_Cell_ID");
                             }
                             // size_t arraySize = sizeof(parents_in_Tissue) / sizeof(parents_in_Tissue[0]);
 
@@ -653,8 +660,9 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                 cout << "Processing " << seqeunces_to_Process << " sequence(s) in total\n";
 
                                 simulate_Cell_replication(functions, multi_Read, gpu_Limit, CUDA_device_IDs, num_Cuda_devices, source_sequence_Data_folder, indexed_Source_Folders[tissue],
+                                                          CPU_cores, max_sequences_per_File,
                                                           genome_Length,
-                                                          tissue, parents_in_Tissue,
+                                                          tissue, parents_in_Tissue, tissue_Names[tissue],
                                                           start_Stop_cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second, num_of_Cells,
                                                           seqeunces_to_Process,
                                                           sequence_Count,
@@ -678,9 +686,18 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                                           recombination_Prob_matrix,
                                                           recombination_Select_matrix,
                                                           progeny_distribution_parameters_Array,
+                                                          cells_of_parents_location,
+                                                          dead_List, sequence_Profiles, sequence_parent_Progeny_relationships, cells_of_progeny_location,
+                                                          index_Last_Written,
                                                           gen);
                             }
                             // free(parents_in_Tissue);
+
+                            write_Partial_Sequence_Progeny(functions,
+                                                           intermediary_Tissue_folder,
+                                                           dead_List,
+                                                           index_Last_Written);
+
                             exit(-1);
                         }
                         functions.clear_Array_int_CPU(parents_in_Tissue, 2);
@@ -711,25 +728,30 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
                                                     int &num_Progeny_being_Processed,
                                                     int &genome_Length, int &recombination_Hotspots,
                                                     int &sequence_Count,
-                                                    int &index_Last_Written,
                                                     int **parent_IDs,
                                                     int **progeny_Sequences, int *Dead_or_Alive, int **progeny_Configuration_Filled,
-                                                    string intermediary_Tissue_folder, string dead_List, string sequence_Profiles, string sequence_parent_Progeny_relationships,
+                                                    string intermediary_Tissue_folder,
+                                                    string &dead_List, string &sequence_Profiles, string &sequence_parent_Progeny_relationships,
+                                                    string &cells_of_progeny_location, int &start_Cell,
                                                     int &max_sequences_per_File, int &last_index_Seq_Written)
 {
-    cout << "Writing sequence profiles and parent progeny_Relationships\n";
+    cout << "\nWriting parent progeny_Relationships\n";
+
+    // exit(-1);
 
     fstream sequence_Profile_File;
     sequence_Profile_File.open(sequence_Profiles, ios::app);
     fstream parent_Progeny_Relationships_File;
     parent_Progeny_Relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
+    fstream cells_of_progeny_File;
+    cells_of_progeny_File.open(cells_of_progeny_location, ios::app);
 
     string viral_prefix_Progeny = get_Name() + "_" + tissue_Name + "_" + to_string(current_Generation + 1) + "_";
     string viral_prefix_Parent = get_Name() + "_" + tissue_Name + "_" + to_string(current_Generation) + "_";
 
-    // Cells of parent and progeny
+    //// Cells of parent and progeny
 
-    if (sequence_Profile_File.is_open() && parent_Progeny_Relationships_File.is_open())
+    if (sequence_Profile_File.is_open() && parent_Progeny_Relationships_File.is_open() && cells_of_progeny_File.is_open())
     {
         for (int progeny = 0; progeny < num_Progeny_being_Processed; progeny++)
         {
@@ -741,6 +763,9 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
             parent_Progeny_Relationships_File << viral_prefix_Parent << to_string(parent_IDs[0][progeny_Configuration_Filled[progeny][0]])
                                               << "\t" << viral_prefix_Progeny << to_string(sequence_Count)
                                               << "\tprimary_parent" << endl;
+
+            cells_of_progeny_File << viral_prefix_Progeny << to_string(sequence_Count)
+                                  << "\t" << get_Name() << "_" << tissue_Name << "_" << to_string(current_Generation) << "_" << to_string(parent_IDs[1][progeny_Configuration_Filled[progeny][0]] + start_Cell) << endl;
 
             for (int hotspot_parent = 1; hotspot_parent < (1 + recombination_Hotspots); hotspot_parent++)
             {
@@ -757,26 +782,33 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
 
         sequence_Profile_File.close();
         parent_Progeny_Relationships_File.close();
+        cells_of_progeny_File.close();
     }
     else
     {
-        cout << "ERROR IN OPENING BOTH OR EITHER ONE OF THE FOLLOWING PROGENY SEQUENCE INORMATION FILES.\n";
+        cout << "ERROR IN OPENING EITHER ONE OF THE FOLLOWING PROGENY SEQUENCE INORMATION FILES.\n";
         cout << "SEQUENCE PROFILE FILE:  " << sequence_Profiles << endl;
         cout << "SEQUENCE PROGENY PARENT RELATIONSHIPS FILE:  " << sequence_parent_Progeny_relationships << endl;
+        cout << "SEQUENCE PROGENY CELL TRACK FILE: " << cells_of_progeny_location << endl;
         exit(-1);
     }
+
+    cout << "Converting sequences to nFASTA\n";
 
     int num_per_Core = num_Progeny_being_Processed / CPU_cores;
     int remainder = num_Progeny_being_Processed % CPU_cores;
 
     vector<thread> threads_vec;
 
+    shared_mutex g_mutex;
+    // mutex gi_mutex;
+
     for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
     {
         int start_Node = core_ID * num_per_Core;
         int stop_Node = start_Node + num_per_Core;
 
-        threads_vec.push_back(thread{&node_within_host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length});
+        threads_vec.push_back(thread{&node_within_host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length, ref(g_mutex)});
     }
 
     if (remainder != 0)
@@ -784,7 +816,7 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
         int start_Node = num_Progeny_being_Processed - remainder;
         int stop_Node = num_Progeny_being_Processed;
 
-        threads_vec.push_back(thread{&node_within_host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length});
+        threads_vec.push_back(thread{&node_within_host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length, ref(g_mutex)});
     }
 
     for (thread &t : threads_vec)
@@ -810,6 +842,7 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
 
     if (to_write_Sequence_Store.size() >= max_sequences_per_File)
     {
+        cout << "Writing nFASTA sequences: " << intermediary_Tissue_folder << endl;
         int full_Write_Count = to_write_Sequence_Store.size() / max_sequences_per_File;
 
         for (int full = 0; full < full_Write_Count; full++)
@@ -826,7 +859,7 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
                 for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
                 {
                     fasta_File << ">" << last_index_Seq_Written << "_";
-                    if (to_write_Sequence_Store[write_Seq].first == 0)
+                    if (to_write_Sequence_Store[write_Seq].first == "0")
                     {
                         fasta_File << "D";
                         dead_List_File << last_index_Seq_Written << endl;
@@ -836,7 +869,7 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
                         fasta_File << "A";
                     }
                     fasta_File << endl;
-                    fasta_File << c[write_Seq].second << endl;
+                    fasta_File << to_write_Sequence_Store[write_Seq].second << endl;
 
                     last_index_Seq_Written++;
                 }
@@ -852,7 +885,7 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
         }
 
         vector<pair<string, string>> to_write_Sequence_Store_temp;
-        for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
+        for (int fill = full_Write_Count * max_sequences_per_File; fill < to_write_Sequence_Store.size(); fill++)
         {
             to_write_Sequence_Store_temp.push_back(make_pair(to_write_Sequence_Store[fill].first, to_write_Sequence_Store[fill].second));
         }
@@ -861,10 +894,59 @@ void node_within_host::write_Full_Sequences_Progeny(functions_library &functions
         to_write_Sequence_Store = to_write_Sequence_Store_temp;
     }
 
-    // CREATE A FUNCTION FOR PARTIAL
+    // TODO: CREATE A FUNCTION FOR PARTIAL WRITE remainders
 }
 
-void node_within_host::thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length)
+void node_within_host::write_Partial_Sequence_Progeny(functions_library &functions,
+                                                      string &intermediary_Tissue_folder,
+                                                      string &dead_List,
+                                                      int &last_index_Seq_Written)
+{
+    if (to_write_Sequence_Store.size() > 0)
+    {
+        cout << "Partial writing nFASTA sequences: " << intermediary_Tissue_folder << endl;
+        string fasta_file_Location = intermediary_Tissue_folder + "/" + to_string(last_index_Seq_Written) + "_" + to_string(last_index_Seq_Written + to_write_Sequence_Store.size() - 1) + ".nfasta";
+        fstream fasta_File;
+        fasta_File.open(fasta_file_Location, ios::out);
+
+        fstream dead_List_File;
+        dead_List_File.open(dead_List, ios::app);
+
+        if (fasta_File.is_open() && dead_List_File.is_open())
+        {
+            for (int write_Seq = 0; write_Seq < to_write_Sequence_Store.size(); write_Seq++)
+            {
+                fasta_File << ">" << last_index_Seq_Written << "_";
+                if (to_write_Sequence_Store[write_Seq].first == "0")
+                {
+                    fasta_File << "D";
+                    dead_List_File << last_index_Seq_Written << endl;
+                }
+                else
+                {
+                    fasta_File << "A";
+                }
+                fasta_File << endl;
+                fasta_File << to_write_Sequence_Store[write_Seq].second << endl;
+
+                last_index_Seq_Written++;
+            }
+
+            fasta_File.close();
+            dead_List_File.close();
+        }
+        else
+        {
+            cout << "PARTIAL WRITE ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+            cout << "OR DEAD LIST FILE COULD NOT BE OPENED: " << dead_List << endl;
+            exit(-1);
+        }
+
+        to_write_Sequence_Store.clear();
+    }
+}
+
+void node_within_host::thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length, shared_mutex &g_mutex)
 {
     vector<string> converted_Sequences_Store;
 
@@ -888,8 +970,9 @@ void node_within_host::thread_Sequence_to_String(int start, int stop, int **prog
 }
 
 void node_within_host::simulate_Cell_replication(functions_library &functions, string &multi_Read, int &gpu_Limit, int *CUDA_device_IDs, int &num_Cuda_devices, string &source_sequence_Data_folder, vector<pair<int, int>> &indexed_Tissue_Folder,
+                                                 int &CPU_cores, int &max_sequences_per_File,
                                                  int &genome_Length,
-                                                 int &tissue, int **parents_in_Tissue,
+                                                 int &tissue, int **parents_in_Tissue, string &tissue_Name,
                                                  vector<int> &start_Stop_cells, int &start_Cell, int &stop_Cell, int &num_Cells,
                                                  int &Total_seqeunces_to_Process,
                                                  int &sequence_Count,
@@ -913,6 +996,9 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
                                                  float **recombination_Prob_matrix,
                                                  float **recombination_Select_matrix,
                                                  float *progeny_distribution_parameters_Array,
+                                                 string &cells_of_parents_location,
+                                                 string &dead_List, string &sequence_Profiles, string &sequence_parent_Progeny_relationships, string &cells_of_progeny_location,
+                                                 int &index_Last_Written,
                                                  mt19937 &gen)
 {
     // gpu_Limit = 5;
@@ -965,78 +1051,95 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     int check_Cell = -1;
 
-    for (int round = 0; round < start_stops.size(); round++)
+    fstream cells_of_parents_File;
+    cells_of_parents_File.open(cells_of_parents_location, ios::app);
+
+    if (cells_of_parents_File.is_open())
     {
-        cout << "\nParent sequence processing round " << round + 1 << " of " << start_stops.size() << endl;
 
-        vector<int> sequence_List;
-        for (int parent = start_stops[round].first; parent < start_stops[round].second; parent++)
+        for (int round = 0; round < start_stops.size(); round++)
         {
-            sequence_List.push_back(parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent]);
-            parent_IDs[0][parent] = parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent];
-            int current_Cell = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
-            // parent_IDs[1][parent] = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
+            cout << "\nParent sequence processing round " << round + 1 << " of " << start_stops.size() << endl;
 
-            if (parent != 0)
+            vector<int> sequence_List;
+            for (int parent = start_stops[round].first; parent < start_stops[round].second; parent++)
             {
-                if (check_Cell != current_Cell)
+                sequence_List.push_back(parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent]);
+                parent_IDs[0][parent] = parents_in_Tissue[0][start_Stop_cells[start_Cell] + parent];
+                int current_Cell = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
+                // parent_IDs[1][parent] = parents_in_Tissue[1][start_Stop_cells[start_Cell] + parent];
+
+                cells_of_parents_File << get_Name() + "_" + tissue_Name + "_" + to_string(current_Generation) + "_" + to_string(parent_IDs[0][parent])
+                                      << "\t" << get_Name() << "_" << tissue_Name << "_" << to_string(current_Generation) << "_" << to_string(current_Cell) << endl;
+
+                if (parent != 0)
                 {
-                    cell_ID++;
-                    cell_Index[cell_ID] = parent;
+                    if (check_Cell != current_Cell)
+                    {
+                        cell_ID++;
+                        cell_Index[cell_ID] = parent;
+                        check_Cell = current_Cell;
+                    }
+                    parent_IDs[1][parent] = cell_ID;
+                }
+                else
+                {
+                    parent_IDs[1][parent] = cell_ID;
                     check_Cell = current_Cell;
                 }
-                parent_IDs[1][parent] = cell_ID;
+
+                if (parent + 1 == start_stops[round].second)
+                {
+                    cell_ID++;
+                    cell_Index[cell_ID] = parent + 1;
+                }
+            }
+
+            vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
+
+            if (collected_Sequences.size() == sequence_List.size())
+            {
+                sequence_List.clear();
+                // for (int test = 0; test < collected_Sequences.size(); test++)
+                // {
+                //     cout << collected_Sequences[test] << endl;
+                // }
+                // cout << endl;
+
+                process_Sequences_get_Configuration(functions,
+                                                    collected_Sequences, CUDA_device_IDs, num_Cuda_devices, genome_Length,
+                                                    Reference_fitness_survivability_proof_reading,
+                                                    mutation_recombination_proof_Reading_availability,
+                                                    num_effect_Segregating_sites,
+                                                    sequence_Fitness_changes,
+                                                    sequence_Proof_reading_changes,
+                                                    recombination_Hotspots,
+                                                    recombination_hotspot_parameters,
+                                                    tot_prob_selectivity,
+                                                    recombination_prob_Stride,
+                                                    recombination_select_Stride,
+                                                    recombination_Prob_matrix,
+                                                    recombination_Select_matrix,
+                                                    progeny_distribution_parameters_Array,
+                                                    parent_Sequences,
+                                                    sequence_Configuration_standard,
+                                                    start_stops[round].first);
             }
             else
             {
-                parent_IDs[1][parent] = cell_ID;
-                check_Cell = current_Cell;
+                cout << "ERROR: WAS UNABLE TO FIND ALL REQUIRED SEQUENCES.\n";
+                exit(-1);
             }
 
-            if (parent + 1 == start_stops[round].second)
-            {
-                cell_ID++;
-                cell_Index[cell_ID] = parent + 1;
-            }
+            cout << endl;
         }
 
-        vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, sequence_List, tissue, indexed_Tissue_Folder, current_Generation);
-
-        if (collected_Sequences.size() == sequence_List.size())
-        {
-            sequence_List.clear();
-            // for (int test = 0; test < collected_Sequences.size(); test++)
-            // {
-            //     cout << collected_Sequences[test] << endl;
-            // }
-            // cout << endl;
-
-            process_Sequences_get_Configuration(functions,
-                                                collected_Sequences, CUDA_device_IDs, num_Cuda_devices, genome_Length,
-                                                Reference_fitness_survivability_proof_reading,
-                                                mutation_recombination_proof_Reading_availability,
-                                                num_effect_Segregating_sites,
-                                                sequence_Fitness_changes,
-                                                sequence_Proof_reading_changes,
-                                                recombination_Hotspots,
-                                                recombination_hotspot_parameters,
-                                                tot_prob_selectivity,
-                                                recombination_prob_Stride,
-                                                recombination_select_Stride,
-                                                recombination_Prob_matrix,
-                                                recombination_Select_matrix,
-                                                progeny_distribution_parameters_Array,
-                                                parent_Sequences,
-                                                sequence_Configuration_standard,
-                                                start_stops[round].first);
-        }
-        else
-        {
-            cout << "ERROR: WAS UNABLE TO FIND ALL REQUIRED SEQUENCES.\n";
-            exit(-1);
-        }
-
-        cout << endl;
+        cells_of_parents_File.close();
+    }
+    else
+    {
+        cout << "ERROR: UNABLE TO PARENT CELLS TRACK FILE: " << cells_of_parents_location << endl;
+        exit(-1);
     }
 
     // for (int i = 0; i < num_Cells; i++)
@@ -1192,6 +1295,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     {
         progeny_Completion(functions,
                            CUDA_device_IDs, num_Cuda_devices,
+                           CPU_cores, max_sequences_per_File,
                            genome_Length, Reference_fitness_survivability_proof_reading, mutation_recombination_proof_Reading_availability,
                            num_effect_Segregating_sites,
                            sequence_Survivability_changes,
@@ -1207,7 +1311,10 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
                            parent_Sequences, Total_seqeunces_to_Process, sequence_Configuration_standard, parent_IDs, num_Cells, cell_Index, start_Cell,
                            progeny_Configuration, start_stops[round].second - start_stops[round].first,
                            totals_Progeny_Selectivity,
-                           start_stops[round].first, start_stops[round].second, sequence_Count, source_sequence_Data_folder);
+                           start_stops[round].first, start_stops[round].second, sequence_Count, source_sequence_Data_folder,
+                           tissue, tissue_Name,
+                           dead_List, sequence_Profiles, sequence_parent_Progeny_relationships, cells_of_progeny_location,
+                           index_Last_Written);
     }
 }
 
@@ -1430,6 +1537,7 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
 
 void node_within_host::progeny_Completion(functions_library &functions,
                                           int *CUDA_device_IDs, int &num_Cuda_devices,
+                                          int &CPU_cores, int &max_sequences_per_File,
                                           int genome_Length, float *Reference_fitness_survivability_proof_reading, int *mutation_recombination_proof_Reading_availability,
                                           int *num_effect_Segregating_sites,
                                           float **sequence_Survivability_changes,
@@ -1445,7 +1553,10 @@ void node_within_host::progeny_Completion(functions_library &functions,
                                           int **parent_Sequences, int num_Parent_sequence, float **sequence_Configuration_standard, int **parent_IDs, int num_Cells, int *cell_Index, int &start_Cell,
                                           int **progeny_Configuration, int num_Progeny_being_Processed,
                                           float **totals_Progeny_Selectivity,
-                                          int start_Progeny, int stop_Progeny, int &progeny_Count, string write_Progeny_Folder)
+                                          int start_Progeny, int stop_Progeny, int &sequence_Count, string source_sequence_Data_folder,
+                                          int &tissue, string &tissue_Name,
+                                          string &dead_List, string &sequence_Profiles, string &sequence_parent_Progeny_relationships, string &cells_of_progeny_location,
+                                          int &index_Last_Written)
 {
     int num_of_Sequences_current = num_Progeny_being_Processed;
     cout << "\nConfiguring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
@@ -1760,6 +1871,18 @@ void node_within_host::progeny_Completion(functions_library &functions,
 
     // test when more than one sequence in cell
     // get_Name() << "_" << tissue_Names[entry_array[tissue]] << "_" << current_Generation << "_" << to_string(indexes_Written[transfers])
+    write_Full_Sequences_Progeny(functions,
+                                 CPU_cores,
+                                 tissue_Name,
+                                 num_Progeny_being_Processed,
+                                 genome_Length, recombination_Hotspots,
+                                 sequence_Count,
+                                 parent_IDs,
+                                 progeny_Sequences, Dead_or_Alive, progeny_Configuration_Filled,
+                                 source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation + 1),
+                                 dead_List, sequence_Profiles, sequence_parent_Progeny_relationships,
+                                 cells_of_progeny_location, start_Cell,
+                                 max_sequences_per_File, index_Last_Written);
 }
 
 __global__ void cuda_Progeny_Configurator(int num_Parents_to_Process, int start_Index,
