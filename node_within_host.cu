@@ -451,6 +451,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                       float **recombination_Select_matrix,
                                       float *progeny_distribution_parameters_Array,
                                       string &viral_Migration,
+                                      float **viral_Migration_Values,
                                       mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
@@ -477,6 +478,22 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 // cout << profile_ID << endl;
 
                 vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, current_Generation, multi_Read);
+
+                string sequence_Profiles = output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv";
+                string sequence_parent_Progeny_relationships = output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv";
+
+                if (!filesystem::exists(output_Node_location + "/" + get_Name()))
+                {
+                    functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
+                }
+                if (!filesystem::exists(sequence_Profiles))
+                {
+                    functions.create_File(sequence_Profiles, "Sequence_ID\tHost\tTissue");
+                }
+                if (!filesystem::exists(sequence_parent_Progeny_relationships))
+                {
+                    functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
+                }
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
@@ -640,23 +657,9 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                 functions.create_File(dead_List);
                             }
 
-                            string sequence_Profiles = output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv";
-                            string sequence_parent_Progeny_relationships = output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv";
                             string cells_of_parents_location = output_Node_location + "/" + get_Name() + "/cells_of_Parents.csv";
                             string cells_of_progeny_location = output_Node_location + "/" + get_Name() + "/cells_of_Progeny.csv";
 
-                            if (!filesystem::exists(output_Node_location + "/" + get_Name()))
-                            {
-                                functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
-                            }
-                            if (!filesystem::exists(sequence_Profiles))
-                            {
-                                functions.create_File(sequence_Profiles, "Sequence_ID\tHost\tTissue");
-                            }
-                            if (!filesystem::exists(sequence_parent_Progeny_relationships))
-                            {
-                                functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
-                            }
                             if (!filesystem::exists(cells_of_parents_location))
                             {
                                 functions.create_File(cells_of_parents_location, "Sequence_ID\tParent_Cell_ID");
@@ -745,6 +748,12 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 // }
                 if (viral_Migration == "YES")
                 {
+                    particle_Migration_between_Tissues(functions,
+                                                       viral_Migration_Values,
+                                                       source_sequence_Data_folder,
+                                                       tissue_Names,
+                                                       sequence_parent_Progeny_relationships, sequence_Profiles,
+                                                       gen);
                 }
 
                 exit(-1);
@@ -771,7 +780,7 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
                                                           string &sequence_parent_Progeny_relationships, string &sequence_Profiles,
                                                           mt19937 &gen)
 {
-    cout << "\nIntializing viral migration\n\n";
+    cout << "\nIntializing viral migration\n";
 
     for (int migration_Check = 0; migration_Check < (num_Tissues * (num_Tissues - 1)); migration_Check++)
     {
@@ -789,7 +798,7 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
 
             if (tissue_Particle_Check > 0)
             {
-                cout << "Viral particle(s) migrating from " << tissue_Names[source] << " tissue to " << tissue_Names[destination] << " tissue" << endl;
+                cout << "\nViral particle(s) migrating from " << tissue_Names[source] << " tissue to " << tissue_Names[destination] << " tissue" << endl;
 
                 binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
 
@@ -837,7 +846,7 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
 
                     if (valid_Sequences > 0)
                     {
-                        cout << "Transferring " << valid_Sequences << " sequence(s)";
+                        cout << "Transferring " << valid_Sequences << " sequence(s)\n";
                         string destination_Path = source_sequence_Data_folder + "/" + to_string(destination) + "/generation_" + to_string(current_Generation);
                         if (!filesystem::exists(destination_Path))
                         {
@@ -849,31 +858,39 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
                         fstream sequence_Profiles_File;
                         sequence_Profiles_File.open(sequence_Profiles, ios::app);
 
-                        if (sequence_parent_Progeny_relationships_File.is_open())
+                        if (sequence_parent_Progeny_relationships_File.is_open() && sequence_Profiles_File.is_open())
                         {
                             fstream transfer_nFasta_File;
-                            transfer_nFasta_File.open(destination_Path + "/" + to_string(current_Viral_load_per_Tissue[destination]) + "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1), ios::out);
+                            transfer_nFasta_File.open(destination_Path + "/" + to_string(current_Viral_load_per_Tissue[destination]) + "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) + ".nfasta", ios::out);
 
-                            string viral_prefix_Progeny = get_Name() + "_" + tissue_Names[destination] + "_" + to_string(current_Generation) + "_";
-                            string viral_prefix_Parent = get_Name() + "_" + tissue_Names[source] + "_" + to_string(current_Generation) + "_";
-
-                            for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
+                            if (transfer_nFasta_File.is_open())
                             {
-                                if (collected_Sequences[sequence] != "")
+                                string viral_prefix_Progeny = get_Name() + "_" + tissue_Names[destination] + "_" + to_string(current_Generation) + "_";
+                                string viral_prefix_Parent = get_Name() + "_" + tissue_Names[source] + "_" + to_string(current_Generation) + "_";
+
+                                for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
                                 {
-                                    transfer_nFasta_File << ">" << current_Viral_load_per_Tissue[destination] << "_A\n";
-                                    transfer_nFasta_File << collected_Sequences[sequence] << endl;
+                                    if (collected_Sequences[sequence] != "")
+                                    {
+                                        transfer_nFasta_File << ">" << current_Viral_load_per_Tissue[destination] << "_A\n";
+                                        transfer_nFasta_File << collected_Sequences[sequence] << endl;
 
-                                    sequence_Profiles_File << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
-                                                           << "\t" << get_Name()
-                                                           << "\t" << tissue_Names[destination] << endl;
+                                        sequence_Profiles_File << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
+                                                               << "\t" << get_Name()
+                                                               << "\t" << tissue_Names[destination] << endl;
 
-                                    sequence_parent_Progeny_relationships_File << viral_prefix_Parent << to_string(indexes_of_Seq_write[sequence])
-                                                                               << "\t" << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
-                                                                               << "\tTransmission\n";
+                                        sequence_parent_Progeny_relationships_File << viral_prefix_Parent << to_string(indexes_of_Seq_write[sequence])
+                                                                                   << "\t" << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
+                                                                                   << "\tTransmission\n";
 
-                                    current_Viral_load_per_Tissue[destination]++;
+                                        current_Viral_load_per_Tissue[destination]++;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                cout << "ERROR: UNABLE TO OPEN NFASTA FILE: " << destination_Path << "/" << to_string(current_Viral_load_per_Tissue[destination]) << "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) << ".nfasta" << endl;
+                                exit(-1);
                             }
                             sequence_parent_Progeny_relationships_File.close();
                             sequence_Profiles_File.close();
@@ -881,7 +898,9 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
                         }
                         else
                         {
-                            cout << "ERROR: UNABLE TO OPEN FILE: " << sequence_parent_Progeny_relationships << endl;
+                            cout << "ERROR: UNABLE TO OPEN ONE OF THE FOLLOWING FILE:\n"
+                                 << sequence_parent_Progeny_relationships << endl
+                                 << sequence_Profiles << endl;
                             exit(-1);
                         }
                     }

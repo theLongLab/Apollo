@@ -139,6 +139,7 @@ public:
                         float **recombination_Select_matrix,
                         float *progeny_distribution_parameters_Array,
                         string &viral_Migration,
+                        float **viral_Migration_Values,
                         mt19937 &gen);
 
     int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,
