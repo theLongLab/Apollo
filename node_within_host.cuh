@@ -138,6 +138,7 @@ public:
                         float **recombination_Prob_matrix,
                         float **recombination_Select_matrix,
                         float *progeny_distribution_parameters_Array,
+                        string &viral_Migration,
                         mt19937 &gen);
 
     int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,
@@ -239,12 +240,21 @@ public:
                                       string intermediary_Tissue_folder,
                                       string &dead_List, string &sequence_Profiles, string &sequence_parent_Progeny_relationships,
                                       string &cells_of_progeny_location, int &start_Cell,
-                                      int &max_sequences_per_File, int &last_index_Seq_Written);
+                                      int &max_sequences_per_File, int &last_index_Seq_Written,
+                                      int &tissue);
 
     void thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length, shared_mutex &g_mutex);
 
     void write_Partial_Sequence_Progeny(functions_library &functions,
                                         string &intermediary_Tissue_folder,
                                         string &dead_List,
-                                        int &last_index_Seq_Written);
+                                        int &last_index_Seq_Written,
+                                        int &tissue);
+
+    void particle_Migration_between_Tissues(functions_library &functions,
+                                            float **viral_Migration_Values,
+                                            string &source_sequence_Data_folder,
+                                            vector<string> &tissue_Names,
+                                            string &sequence_parent_Progeny_relationships, string &sequence_Profiles,
+                                            mt19937 &gen);
 };

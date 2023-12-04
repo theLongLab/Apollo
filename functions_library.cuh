@@ -286,6 +286,8 @@ public:
     vector<vector<pair<int, int>>> index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read);
     void thread_Index_sequence_Folders(int start, int stop, string source_Target_file_Location, int current_Generation);
 
+    vector<pair<int, int>> index_Source_folder(string &source_Target_file_Location, int &tissue_Index, int &current_Generation);
+
     vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, int &valid_Sequences);
     vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation);
     void thread_find_Files(int start, int stop, vector<int> sequence_List, vector<pair<int, int>> indexed_Tissue_Folder);

@@ -516,6 +516,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 recombination_Prob_matrix,
                                                                 recombination_Select_matrix,
                                                                 progeny_distribution_parameters_Array,
+                                                                viral_Migration,
                                                                 gen);
             }
         }
