@@ -6254,9 +6254,7 @@ vector<pair<int, int>> functions_library::index_Source_folder(string &source_Tar
         {
             if (entry.path().extension() == ".nfasta")
             {
-                // filesystem::path file_Name = entry.path().filename().stem().string();
                 string trim_Extension = entry.path().filename().stem().string();
-                // cout << trim_Extension << endl;
                 vector<string> split_Data;
                 split(split_Data, trim_Extension, '_');
                 indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
@@ -6275,7 +6273,7 @@ vector<pair<int, int>> functions_library::index_Source_folder(string &source_Tar
 
 vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read)
 {
-    cout << "Initiating indexing folder\t: " << source_Target_file_Location << endl;
+    cout << "Initiating indexing folder: " << source_Target_file_Location << endl;
 
     if (multi_Read == "NO")
     {
@@ -6288,12 +6286,15 @@ vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string 
             {
                 for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
                 {
-                    // filesystem::path file_Name = entry.path().filename().stem().string();
-                    string trim_Extension = entry.path().filename().stem().string();
-                    // cout << trim_Extension << endl;
-                    vector<string> split_Data;
-                    split(split_Data, trim_Extension, '_');
-                    indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+                    if (entry.path().extension() == ".nfasta")
+                    {
+                        // filesystem::path file_Name = entry.path().filename().stem().string();
+                        string trim_Extension = entry.path().filename().stem().string();
+                        // cout << trim_Extension << endl;
+                        vector<string> split_Data;
+                        split(split_Data, trim_Extension, '_');
+                        indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+                    }
                 }
                 sort(indexed_tissue_Folders.begin(), indexed_tissue_Folders.end());
             }
@@ -6359,12 +6360,15 @@ void functions_library::thread_Index_sequence_Folders(int start, int stop, strin
         {
             for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
             {
-                // filesystem::path file_Name = entry.path().filename().stem().string();
-                string trim_Extension = entry.path().filename().stem().string();
-                // cout << trim_Extension << endl;
-                vector<string> split_Data;
-                split(split_Data, trim_Extension, '_');
-                indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+                if (entry.path().extension() == ".nfasta")
+                {
+                    // filesystem::path file_Name = entry.path().filename().stem().string();
+                    string trim_Extension = entry.path().filename().stem().string();
+                    // cout << trim_Extension << endl;
+                    vector<string> split_Data;
+                    split(split_Data, trim_Extension, '_');
+                    indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+                }
             }
             sort(indexed_tissue_Folders.begin(), indexed_tissue_Folders.end());
         }

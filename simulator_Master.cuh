@@ -105,6 +105,8 @@ private:
     float scale_days_in_Host = 0;
 
     int trials_Sampling = -1;
+    string sampled_sequences_Folder;
+    // 1 equals active
     int resampling = -1;
     float sampling_trials = 0;
     float sampling_probability = 0;
@@ -115,6 +117,7 @@ private:
     float *per_Node_sampling;
 
     int limit_Sampled = -1;
+    int count_Sampling_instances = 0;
 
     string progeny_distribution_Model = "NA";
 
@@ -154,6 +157,9 @@ private:
 
     int exit_tissues = 0;
     int *exit_array;
+
+    int sampling_tissues = 0;
+    int *sampling_array;
 
     // rows = profiles
     // columns

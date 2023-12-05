@@ -349,134 +349,156 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "\nNew host to host infections";
             for (int host = 0; host < infectious_Population.size(); host++)
             {
-                cout << "\nNode: " << Hosts[infectious_Population[host]].get_Name() << " is infecting new nodes\n";
-                int node_Profile = Hosts[infectious_Population[host]].get_Profile();
+                float infection_probability = Hosts[infectious_Population[host]].get_infection_probability();
+                int go_for_Infection = 0;
 
-                vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
-                Node_search(host_Connections);
-
-                cout << "Checking index search\n";
-                vector<int> possible_Infections;
-
-                vector<int> new_Hosts_Indexes;
-
-                if (reinfection_Availability == 0)
+                if (infection_probability == 1)
                 {
-                    cout << "Preventing reinfection of infeceted hosts\n";
-                    // index and position in host_Connections
-
-                    for (int host = 0; host < host_Connections.size(); host++)
-                    {
-                        if (search_Indexes[host] == -1)
-                        {
-                            cout << "ERROR: ID MISSING\n";
-                            exit(-1);
-                        }
-                        else
-                        {
-                            if (Hosts[search_Indexes[host]].get_Status() == "Susceptible")
-                            {
-                                possible_Infections.push_back(search_Indexes[host]);
-                            }
-                        }
-                    }
-                    search_Indexes.clear();
-                    overall_Found = 0;
-                    if (possible_Infections.size() > 0)
-                    {
-                        new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
-                    }
-                    else
-                    {
-                        cout << "No new infection from node as all surrounding nodes have already been infected.\n";
-                    }
+                    go_for_Infection = 1;
                 }
-                else
+                else if (infection_probability > 0)
                 {
-                    cout << "Reinfection of infected hosts can occur\n";
-                    // vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
-                    // Node_search(host_Connections);
+                    bernoulli_distribution infection_draw(infection_probability);
+                    bool result = infection_draw(gen);
 
-                    // cout << "Checking index search\n";
-                    // vector<int> possible_Infections;
-                    for (int host = 0; host < host_Connections.size(); host++)
+                    if (result)
                     {
-                        if (search_Indexes[host] == -1)
-                        {
-                            cout << "ERROR: ID MISSING\n";
-                            exit(-1);
-                        }
-                        else
-                        {
-                            if (Hosts[search_Indexes[host]].get_Status() != "Dead" && Hosts[search_Indexes[host]].get_Status() != "Removed")
-                            {
-                                possible_Infections.push_back(search_Indexes[host]);
-                            }
-                        }
-                    }
-
-                    search_Indexes.clear();
-                    overall_Found = 0;
-
-                    if (possible_Infections.size() > 0)
-                    {
-                        new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
-                    }
-                    else
-                    {
-                        cout << "No new infection from node as all surrounding nodes are dead or removed.\n";
+                        go_for_Infection = 1;
                     }
                 }
 
-                if (new_Hosts_Indexes.size() > 0)
+                if (go_for_Infection == 1)
                 {
-                    cout << "\nNovel host(s) recognised\n\n";
 
-                    //// DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
-                    int num_viruses_to_transfer = (int)transmission_parameters[1];
+                    cout << "\nNode: " << Hosts[infectious_Population[host]].get_Name() << " is infecting new nodes\n";
+                    int node_Profile = Hosts[infectious_Population[host]].get_Profile();
 
-                    string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
-                    int source_Index = Hosts[infectious_Population[host]].get_host_Index();
-                    int source_Generation = Hosts[infectious_Population[host]].get_Generation();
-                    string source_Name = Hosts[infectious_Population[host]].get_Name();
+                    vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
+                    Node_search(host_Connections);
 
-                    //// INDEX FOLDER of Source HOST
-                    vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_Target_file_Location, num_tissues_per_Node, source_Generation, multi_Read);
-                    // for (int test = 0; test < num_tissues_per_Node; test++)
-                    // {
-                    //     cout << "tissue: " << test << endl;
-                    //     for (size_t i = 0; i < indexed_Source_Folders[test].size(); i++)
-                    //     {
-                    //         cout << indexed_Source_Folders[test][i].first << "_" << indexed_Source_Folders[test][i].second << endl;
-                    //     }
-                    //     cout << endl;
-                    // }
+                    cout << "Checking index search\n";
+                    vector<int> possible_Infections;
 
-                    // exit(-1);
+                    vector<int> new_Hosts_Indexes;
 
-                    for (int target_Host = 0; target_Host < new_Hosts_Indexes.size(); target_Host++)
+                    if (reinfection_Availability == 0)
                     {
-                        if (transmission_parameters[0] == 1)
+                        cout << "Preventing reinfection of infeceted hosts\n";
+                        // index and position in host_Connections
+
+                        for (int host = 0; host < host_Connections.size(); host++)
                         {
-                            binomial_distribution<int> viruses_to_transfer_distribution(transmission_parameters[1], transmission_parameters[2]);
-                            num_viruses_to_transfer = viruses_to_transfer_distribution(gen);
+                            if (search_Indexes[host] == -1)
+                            {
+                                cout << "ERROR: ID MISSING\n";
+                                exit(-1);
+                            }
+                            else
+                            {
+                                if (Hosts[search_Indexes[host]].get_Status() == "Susceptible")
+                                {
+                                    possible_Infections.push_back(search_Indexes[host]);
+                                }
+                            }
+                        }
+                        search_Indexes.clear();
+                        overall_Found = 0;
+                        if (possible_Infections.size() > 0)
+                        {
+                            new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
+                        }
+                        else
+                        {
+                            cout << "No new infection from node as all surrounding nodes have already been infected.\n";
+                        }
+                    }
+                    else
+                    {
+                        cout << "Reinfection of infected hosts can occur\n";
+                        // vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
+                        // Node_search(host_Connections);
+
+                        // cout << "Checking index search\n";
+                        // vector<int> possible_Infections;
+                        for (int host = 0; host < host_Connections.size(); host++)
+                        {
+                            if (search_Indexes[host] == -1)
+                            {
+                                cout << "ERROR: ID MISSING\n";
+                                exit(-1);
+                            }
+                            else
+                            {
+                                if (Hosts[search_Indexes[host]].get_Status() != "Dead" && Hosts[search_Indexes[host]].get_Status() != "Removed")
+                                {
+                                    possible_Infections.push_back(search_Indexes[host]);
+                                }
+                            }
                         }
 
-                        string status = Hosts[new_Hosts_Indexes[target_Host]].transfer_Infection(functions, intermediary_Sequence_location, source_Target_file_Location,
-                                                                                                 source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
-                                                                                                 num_viruses_to_transfer,
-                                                                                                 entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
-                                                                                                 Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
-                                                                                                 max_sequences_per_File,
-                                                                                                 indexed_Source_Folders,
-                                                                                                 Host_source_target_network_location,
-                                                                                                 output_Node_location, tissue_Names,
-                                                                                                 gen);
+                        search_Indexes.clear();
+                        overall_Found = 0;
+
+                        if (possible_Infections.size() > 0)
+                        {
+                            new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
+                        }
+                        else
+                        {
+                            cout << "No new infection from node as all surrounding nodes are dead or removed.\n";
+                        }
+                    }
+
+                    if (new_Hosts_Indexes.size() > 0)
+                    {
+                        cout << "\nNovel host(s) recognised\n\n";
+
+                        //// DO: 1 Make document to host to target, then sequence/ sequences of infection, TEST above code
+                        int num_viruses_to_transfer = (int)transmission_parameters[1];
+
+                        string source_Target_file_Location = intermediary_Sequence_location + "/" + to_string(Hosts[infectious_Population[host]].get_host_Index());
+                        int source_Index = Hosts[infectious_Population[host]].get_host_Index();
+                        int source_Generation = Hosts[infectious_Population[host]].get_Generation();
+                        string source_Name = Hosts[infectious_Population[host]].get_Name();
+
+                        //// INDEX FOLDER of Source HOST
+                        vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_Target_file_Location, num_tissues_per_Node, source_Generation, multi_Read);
+                        // for (int test = 0; test < num_tissues_per_Node; test++)
+                        // {
+                        //     cout << "tissue: " << test << endl;
+                        //     for (size_t i = 0; i < indexed_Source_Folders[test].size(); i++)
+                        //     {
+                        //         cout << indexed_Source_Folders[test][i].first << "_" << indexed_Source_Folders[test][i].second << endl;
+                        //     }
+                        //     cout << endl;
+                        // }
+
                         // exit(-1);
 
-                        if (status == "Infected")
+                        for (int target_Host = 0; target_Host < new_Hosts_Indexes.size(); target_Host++)
                         {
-                            infected_Population.push_back(new_Hosts_Indexes[target_Host]);
+                            if (transmission_parameters[0] == 1)
+                            {
+                                binomial_distribution<int> viruses_to_transfer_distribution(transmission_parameters[1], transmission_parameters[2]);
+                                num_viruses_to_transfer = viruses_to_transfer_distribution(gen);
+                            }
+
+                            string status = Hosts[new_Hosts_Indexes[target_Host]].transfer_Infection(functions, intermediary_Sequence_location, source_Target_file_Location,
+                                                                                                     source_Index, source_Generation, source_Name, Hosts[infectious_Population[host]].get_current_Viral_load_per_Tissue(),
+                                                                                                     num_viruses_to_transfer,
+                                                                                                     entry_tissues, entry_array, Hosts[infectious_Population[host]].get_Load(exit_tissues, exit_array), exit_tissues, exit_array,
+                                                                                                     Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
+                                                                                                     max_sequences_per_File,
+                                                                                                     indexed_Source_Folders,
+                                                                                                     Host_source_target_network_location,
+                                                                                                     output_Node_location, tissue_Names,
+                                                                                                     gen);
+                            // exit(-1);
+
+                            if (status == "Infected")
+                            {
+                                infected_Population.push_back(new_Hosts_Indexes[target_Host]);
+                            }
                         }
                     }
                 }
@@ -520,6 +542,61 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 viral_Migration_Values,
                                                                 gen);
             }
+
+            if (trials_Sampling != -1)
+            {
+                cout << "\nSampling infected hosts\n";
+                binomial_distribution<int> sequences_to_Sample(sampling_trials, sampling_probability);
+                int num_Nodes_to_Sample = sequences_to_Sample(gen);
+
+                uniform_int_distribution<> distribution_Indexes(0, infected_Population.size() - 1);
+                set<int> nodes_Indexes;
+
+                for (int host = 0; host < num_Nodes_to_Sample; host++)
+                {
+                    nodes_Indexes.insert(distribution_Indexes(gen));
+                }
+
+                vector<int> indexes_of_Sampling_Nodes(nodes_Indexes.begin(), nodes_Indexes.end());
+                nodes_Indexes.clear();
+
+                cout << "Attempting to sample " << indexes_of_Sampling_Nodes.size() << " hosts\n";
+
+                int num_Samples = per_Node_sampling[1];
+
+                int success_Sampling = 0;
+
+                for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
+                {
+                    cout << "\nSampling host " << Hosts[indexes_of_Sampling_Nodes[host]].get_Name() << endl;
+                    for (int tissue = 0; tissue < sampling_tissues; tissue++)
+                    {
+                        cout << "Attempting to sample " << tissue_Names[tissue] << " tissue\n";
+                        if (per_Node_sampling[0] == 1)
+                        {
+                            binomial_distribution<int> num_samples_Obtained(per_Node_sampling[1], per_Node_sampling[2]);
+                            num_Samples = num_samples_Obtained(gen);
+                        }
+
+                        if (num_Samples > 0)
+                        {
+                        }
+                    }
+                }
+
+                if (success_Sampling == 1)
+                {
+                    count_Sampling_instances++;
+                }
+
+                if (limit_Sampled != -1)
+                {
+                    if (count_Sampling_instances < limit_Sampled)
+                    {
+                        stop = 3;
+                    }
+                }
+            }
         }
         else
         {
@@ -540,6 +617,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     else if (stop == 2)
     {
         cout << "No infected population remaining\n";
+    }
+    else if (stop == 3)
+    {
+        cout << "Maximum sucessfull sequencing instances " << limit_Sampled << " have been reached\n";
     }
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
@@ -1776,6 +1857,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             // cout << "Effect of sampling: " << sampling_effect << endl;
 
             trials_Sampling = 1;
+            sampled_sequences_Folder = output_Network_location + "/sampled_Sequences";
+            functions.config_Folder(sampled_sequences_Folder, "Sampled sequences");
             sampling_trials = Parameters.get_INT(sampling_Parameters[0]);
             sampling_probability = Parameters.get_FLOAT(sampling_Parameters[1]);
 
@@ -1936,6 +2019,11 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         string viral_Infectious = Parameters.get_STRING(Tissue_profiles_block_Data, "Infectious load tissues");
         string viral_Terminal = Parameters.get_STRING(Tissue_profiles_block_Data, "Terminal load tissues");
         string viral_Exit = Parameters.get_STRING(Tissue_profiles_block_Data, "Viral exit tissues");
+        string sampling_Tissues;
+        if (trials_Sampling != -1)
+        {
+            sampling_Tissues = Parameters.get_STRING(Tissue_profiles_block_Data, "Sampling tissues");
+        }
 
         vector<string> viral_tissue_Split;
 
@@ -2012,6 +2100,28 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             else
             {
                 cout << endl;
+            }
+        }
+
+        if (trials_Sampling != -1)
+        {
+            functions.split(viral_tissue_Split, sampling_Tissues, ',');
+            this->sampling_tissues = viral_tissue_Split.size();
+            this->sampling_array = (int *)malloc(sampling_tissues * sizeof(int));
+            cout << this->sampling_tissues << " tissue(s) available for host sampling: ";
+            for (size_t i = 0; i < sampling_tissues; i++)
+            {
+                sampling_array[i] = stoi(viral_tissue_Split[i]) - 1;
+                cout << tissue_Names[sampling_array[i]];
+
+                if ((i + 1) != sampling_tissues)
+                {
+                    cout << ", ";
+                }
+                else
+                {
+                    cout << endl;
+                }
             }
         }
 

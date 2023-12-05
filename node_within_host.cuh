@@ -43,7 +43,12 @@ private:
 
     int infectious_Load;
     int terminal_Load;
+
+    float infection_probability = 1;
     float sampling_Effect;
+    // 0=unsampled
+    // 1= sampled
+    int sampled_status = 0;
 
     int num_Tissues;
     int *cell_Limit;
@@ -77,6 +82,7 @@ public:
     int get_Profile();
     int get_Generation();
     int *get_current_Viral_load_per_Tissue();
+    float get_infection_probability();
 
     void set_Infected();
     void set_Infectious();
@@ -258,4 +264,9 @@ public:
                                             vector<string> &tissue_Names,
                                             string &sequence_parent_Progeny_relationships, string &sequence_Profiles,
                                             mt19937 &gen);
+
+    int sample_Host(functions_library &functions,
+                    string &source_sequence_Data_folder, int &tissue, int &num_Samples, int &effect_of_Sampling, int &resampling_Status, int &count_Sampling_instances,
+                    string &sampled_sequences_Folder,
+                    mt19937 &gen);
 };

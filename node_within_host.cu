@@ -748,6 +748,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 // }
                 if (viral_Migration == "YES")
                 {
+                    // TEST SOME more
                     particle_Migration_between_Tissues(functions,
                                                        viral_Migration_Values,
                                                        source_sequence_Data_folder,
@@ -771,6 +772,62 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
     }
 
     // get each tissues generational phase
+}
+
+int node_within_host::sample_Host(functions_library &functions,
+                                  string &source_sequence_Data_folder, int &tissue, int &num_Samples, int &effect_of_Sampling, int &resampling_Status, int &count_Sampling_instances,
+                                  string &sampled_sequences_Folder,
+                                  mt19937 &gen)
+{
+    // set_Removed if effect of sampling is to remove
+
+    int success_Sampling = 0;
+
+    int tissue_Particle_Check = current_Viral_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size();
+
+    if (tissue_Particle_Check > 0)
+    {
+        if (num_Samples > tissue_Particle_Check)
+        {
+            num_Samples = tissue_Particle_Check;
+        }
+
+        success_Sampling = 1;
+
+        uniform_int_distribution<> sample_Indexes_draw(0, current_Viral_load_per_Tissue[tissue] - 1);
+        set<int> sequences_to_Sample;
+
+        cout << "Identifying " << num_Samples << " sequences\n";
+
+        do
+        {
+            int potential_Sequence = sample_Indexes_draw(gen);
+
+            auto it = removed_by_Transfer_Indexes[tissue].find(potential_Sequence);
+
+            if (it == removed_by_Transfer_Indexes[tissue].end())
+            {
+                sequences_to_Sample.insert(potential_Sequence);
+            }
+
+        } while (sequences_to_Sample.size() < num_Samples);
+
+        cout << "Collecting sequences\n";
+        vector<pair<int, int>> indexed_Source_Folder = functions.index_Source_folder(source_sequence_Data_folder, tissue, current_Generation);
+
+        vector<int> indexes_of_Seq_write(sequences_to_Sample.begin(), sequences_to_Sample.end());
+        sequences_to_Sample.clear();
+
+        vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, indexes_of_Seq_write, tissue, indexed_Source_Folder, current_Generation);
+
+        // Write collected sequences to a Folder
+    }
+    else
+    {
+        cout << "No sequences in tissue to sample\n";
+    }
+
+    return success_Sampling;
 }
 
 void node_within_host::particle_Migration_between_Tissues(functions_library &functions,
@@ -2950,6 +3007,11 @@ int node_within_host::get_Generation()
 int *node_within_host::get_current_Viral_load_per_Tissue()
 {
     return current_Viral_load_per_Tissue;
+}
+
+float node_within_host::get_infection_probability()
+{
+    return infection_probability;
 }
 
 void node_within_host::set_Infected()
