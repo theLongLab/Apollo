@@ -108,6 +108,7 @@ private:
     string sampled_sequences_Folder;
     // 1 equals active
     int resampling = -1;
+    set<int>sampled_Nodes;
     float sampling_trials = 0;
     float sampling_probability = 0;
 

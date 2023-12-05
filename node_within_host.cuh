@@ -48,7 +48,7 @@ private:
     float sampling_Effect;
     // 0=unsampled
     // 1= sampled
-    int sampled_status = 0;
+    // int sampled_status = 0;
 
     int num_Tissues;
     int *cell_Limit;

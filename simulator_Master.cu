@@ -554,7 +554,22 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 for (int host = 0; host < num_Nodes_to_Sample; host++)
                 {
-                    nodes_Indexes.insert(distribution_Indexes(gen));
+                    int node_Index = distribution_Indexes(gen);
+
+                    if (resampling == -1)
+                    {
+                        auto it = sampled_Nodes.find(infected_Population[node_Index]);
+
+                        if (it == sampled_Nodes.end())
+                        {
+                            nodes_Indexes.insert(node_Index);
+                            sampled_Nodes.insert(infected_Population[node_Index]);
+                        }
+                    }
+                    else
+                    {
+                        nodes_Indexes.insert(node_Index);
+                    }
                 }
 
                 vector<int> indexes_of_Sampling_Nodes(nodes_Indexes.begin(), nodes_Indexes.end());
@@ -568,7 +583,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
                 {
-                    cout << "\nSampling host " << Hosts[indexes_of_Sampling_Nodes[host]].get_Name() << endl;
+                    cout << "\nSampling host " << Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Name() << endl;
                     for (int tissue = 0; tissue < sampling_tissues; tissue++)
                     {
                         cout << "Attempting to sample " << tissue_Names[tissue] << " tissue\n";
@@ -604,6 +619,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         }
 
         stop = 1;
+
     } while (stop == 0);
 
     cout << "\nSimulation has concluded: ";
@@ -620,7 +636,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     }
     else if (stop == 3)
     {
-        cout << "Maximum sucessfull sequencing instances " << limit_Sampled << " have been reached\n";
+        cout << "Maximum sucessfull sequencing instances of " << limit_Sampled << " have been reached\n";
     }
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);

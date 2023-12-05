@@ -794,6 +794,12 @@ int node_within_host::sample_Host(functions_library &functions,
 
         success_Sampling = 1;
 
+        infection_probability = 1 * sampling_Effect;
+        if (infection_probability <= 0)
+        {
+            set_Removed();
+        }
+
         uniform_int_distribution<> sample_Indexes_draw(0, current_Viral_load_per_Tissue[tissue] - 1);
         set<int> sequences_to_Sample;
 
