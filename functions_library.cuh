@@ -291,4 +291,7 @@ public:
     vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, int &valid_Sequences);
     vector<string> find_Sequences_Master(string &source_Target_file_Location, vector<int> &sequence_List, int &tissue, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation);
     void thread_find_Files(int start, int stop, vector<int> sequence_List, vector<pair<int, int>> indexed_Tissue_Folder);
+
+    float date_to_Decimal(int year, int month, int day);
+    void decimal_to_Date(float decimal_Date, int &year, int &month, int &day);
 };

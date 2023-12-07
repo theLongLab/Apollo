@@ -6676,3 +6676,37 @@ void functions_library::thread_find_Files(int start, int stop, vector<int> seque
         //   index++;
     }
 }
+
+float functions_library::date_to_Decimal(int year, int month, int day)
+{
+    cout << "Converting date (yyyy-mm-dd) to decimal\n";
+    int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))
+    {
+        daysInMonth[1] = 29; // Adjust for leap year
+    }
+
+    float decimalDate = year + (month - 1 + (day - 1) / static_cast<float>(daysInMonth[month - 1])) / 12.0;
+
+    return decimalDate;
+}
+
+void functions_library::decimal_to_Date(float decimal_Date, int &year, int &month, int &day)
+{
+    cout << "Converting decimal to date (yyyy-mm-dd)\n";
+    year = static_cast<int>(decimal_Date); // Extract the year
+
+    // Extract the month (fractional part multiplied by 12, add 1 to convert to 1-based index)
+    double fractionalPart = decimal_Date - year;
+    month = static_cast<int>(std::round(fractionalPart * 12)) + 1;
+
+    // Extract the day (fractional part multiplied by the number of days in the month, add 1)
+    fractionalPart = fractionalPart * 12 - (month - 1);
+    int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))
+    {
+        daysInMonth[1] = 29; // Adjust for leap year
+    }
+    day = static_cast<int>(std::round(fractionalPart * daysInMonth[month - 1] + 1));
+}

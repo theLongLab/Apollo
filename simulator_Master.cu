@@ -18,7 +18,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Nodes master profile\"",
         "\"Sequence master profile\"",
         "\"Intermediate Sequences per file\"",
-        "\"Process cell rate\""};
+        "\"Process cell rate\"",
+        "\"Start date\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -28,6 +29,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[3]);
     max_sequences_per_File = Parameters.get_INT(found_Parameters[9]);
     max_Cells_at_a_time = Parameters.get_INT(found_Parameters[10]);
+    start_Date = Parameters.get_STRING(found_Parameters[11]);
 
     if (max_sequences_per_File <= 0)
     {
@@ -278,6 +280,27 @@ void simulator_Master::ingress()
 
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
+    // TODO: host infection times
+
+    cout << "Configuring infection start date: " << start_Date << endl;
+    vector<string> split_Date;
+    functions.split(split_Date, start_Date, '-');
+
+    float decimal_Date = functions.date_to_Decimal(stoi(split_Date[0]), stoi(split_Date[1]), stoi(split_Date[2]));
+    float date_Increment = generation_Time / (float)365.25;
+
+    cout << "Decimal date: " << decimal_Date << endl;
+    cout << "Date incerement by generation: " << date_Increment << endl;
+    // cout << "Decimal date: " << (decimal_Date + date_Increment) << endl;
+    // int year, month, day;
+    // functions.decimal_to_Date(decimal_Date + date_Increment, year, month, day);
+    // cout << "Conversion check:\n"
+    //      << year << endl
+    //      << month << endl
+    //      << day << endl;
+
+    // exit(-1);
+
     cout << "Configuring susceptible population\n\n";
 
     vector<int> susceptible_Population;
@@ -543,6 +566,8 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 gen);
             }
 
+            decimal_Date = decimal_Date + date_Increment;
+
             if (trials_Sampling != -1)
             {
                 cout << "\nSampling infected hosts\n";
@@ -572,36 +597,45 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
 
-                vector<int> indexes_of_Sampling_Nodes(nodes_Indexes.begin(), nodes_Indexes.end());
-                nodes_Indexes.clear();
-
-                cout << "Attempting to sample " << indexes_of_Sampling_Nodes.size() << " hosts\n";
-
-                int num_Samples = per_Node_sampling[1];
-
-                int success_Sampling = 0;
-
-                for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
+                if (nodes_Indexes.size() > 0)
                 {
-                    cout << "\nSampling host " << Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Name() << endl;
-                    for (int tissue = 0; tissue < sampling_tissues; tissue++)
+                    vector<int> indexes_of_Sampling_Nodes(nodes_Indexes.begin(), nodes_Indexes.end());
+                    nodes_Indexes.clear();
+
+                    cout << "Attempting to sample " << indexes_of_Sampling_Nodes.size() << " hosts\n";
+
+                    int num_Samples = per_Node_sampling[1];
+
+                    int success_Sampling = 0;
+
+                    for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
                     {
-                        cout << "Attempting to sample " << tissue_Names[tissue] << " tissue\n";
-                        if (per_Node_sampling[0] == 1)
+                        cout << "\nSampling host " << Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Name() << endl;
+                        for (int tissue = 0; tissue < sampling_tissues; tissue++)
                         {
-                            binomial_distribution<int> num_samples_Obtained(per_Node_sampling[1], per_Node_sampling[2]);
-                            num_Samples = num_samples_Obtained(gen);
-                        }
+                            cout << "Attempting to sample " << tissue_Names[sampling_array[tissue]] << " tissue\n";
+                            if (per_Node_sampling[0] == 1)
+                            {
+                                binomial_distribution<int> num_samples_Obtained(per_Node_sampling[1], per_Node_sampling[2]);
+                                num_Samples = num_samples_Obtained(gen);
+                            }
 
-                        if (num_Samples > 0)
-                        {
+                            if (num_Samples > 0)
+                            {
+                                Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].sample_Host(functions, decimal_Date,
+                                                                                                        tissue_Names,
+                                                                                                        intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), sampling_array[tissue], num_Samples,
+                                                                                                        sampled_sequences_Folder,
+                                                                                                        gen);
+                            }
                         }
+                        exit(-1);
                     }
-                }
 
-                if (success_Sampling == 1)
-                {
-                    count_Sampling_instances++;
+                    if (success_Sampling == 1)
+                    {
+                        count_Sampling_instances++;
+                    }
                 }
 
                 if (limit_Sampled != -1)
@@ -612,6 +646,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
             }
+            exit(-1);
         }
         else
         {
@@ -1875,6 +1910,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             trials_Sampling = 1;
             sampled_sequences_Folder = output_Network_location + "/sampled_Sequences";
             functions.config_Folder(sampled_sequences_Folder, "Sampled sequences");
+            functions.create_File(sampled_sequences_Folder + "/sampled_Sequences_FASTA.nfasta");
+            functions.create_File(sampled_sequences_Folder + "/sampled_Sequences_summary.csv", "Host_ID\tTissue\tSequence_ID\tSampling_time\t_Sampling_date");
             sampling_trials = Parameters.get_INT(sampling_Parameters[0]);
             sampling_probability = Parameters.get_FLOAT(sampling_Parameters[1]);
 

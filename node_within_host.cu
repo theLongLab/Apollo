@@ -757,7 +757,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                                        gen);
                 }
 
-                exit(-1);
+                // exit(-1);
             }
         }
         else
@@ -774,8 +774,9 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
     // get each tissues generational phase
 }
 
-int node_within_host::sample_Host(functions_library &functions,
-                                  string &source_sequence_Data_folder, int &tissue, int &num_Samples, int &effect_of_Sampling, int &resampling_Status, int &count_Sampling_instances,
+int node_within_host::sample_Host(functions_library &functions, float &decimal_Date,
+                                  vector<string> &tissue_Names,
+                                  string source_sequence_Data_folder, int &tissue, int &num_Samples,
                                   string &sampled_sequences_Folder,
                                   mt19937 &gen)
 {
@@ -826,7 +827,45 @@ int node_within_host::sample_Host(functions_library &functions,
 
         vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, indexes_of_Seq_write, tissue, indexed_Source_Folder, current_Generation);
 
+        cout << "Writing sequences to folder: " << sampled_sequences_Folder << "\n";
+
+        fstream nFASTA_file;
+        nFASTA_file.open(sampled_sequences_Folder + "/sampled_Sequences_FASTA.nfasta", ios::app);
+        fstream sequence_summary_File;
+        sequence_summary_File.open(sampled_sequences_Folder + "/sampled_Sequences_summary.csv", ios::app);
+        //"Host_ID\tTissue\tSequence_ID\tSampling_time\t_Sampling_date"
+
+        if (nFASTA_file.is_open() && sequence_summary_File.is_open())
+        {
+            int year, month, day;
+            functions.decimal_to_Date(decimal_Date, year, month, day);
+
+            for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
+            {
+                nFASTA_file << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
+                            << "_collection_date_" << to_string(decimal_Date) << "_" << to_string(year) << "-" << to_string(month) << "-" << to_string(day) << endl;
+                nFASTA_file << collected_Sequences[sequence] << endl;
+
+                sequence_summary_File << get_Name()
+                                      << "\t" << tissue_Names[tissue]
+                                      << "\t" << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
+                                      << "\t" << to_string(decimal_Date)
+                                      << "\t" << to_string(year) << "-" << to_string(month) << "-" << to_string(day) << endl;
+            }
+
+            nFASTA_file.close();
+            sequence_summary_File.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN ONE OF THE FOLLOWING FILES\nNFASTA SAMPLE FILE: " << sampled_sequences_Folder << "/sampled_Sequences_FASTA.nfasta\n";
+            cout << "SEQUENCE SUMARY FILE: " << sampled_sequences_Folder << "/sampled_Sequences_summary.csv\n";
+            exit(-1);
+        }
+
         // Write collected sequences to a Folder
+
+        // get_Name() + "_" + tissue_Names[destination] + "_" + to_string(current_Generation) + "_";
     }
     else
     {
@@ -2954,7 +2993,7 @@ int node_within_host::get_Load(int &num_tissues_Calc, int *tissue_array)
 
     for (int tissue = 0; tissue < num_tissues_Calc; tissue++)
     {
-        sum = sum + current_Viral_load_per_Tissue[tissue_array[tissue]];
+        sum = sum + (current_Viral_load_per_Tissue[tissue_array[tissue]] - dead_Particle_count[tissue_array[tissue]] - removed_by_Transfer_Indexes[tissue_array[tissue]].size());
     }
 
     return sum;

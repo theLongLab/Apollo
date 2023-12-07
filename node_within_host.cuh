@@ -265,8 +265,9 @@ public:
                                             string &sequence_parent_Progeny_relationships, string &sequence_Profiles,
                                             mt19937 &gen);
 
-    int sample_Host(functions_library &functions,
-                    string &source_sequence_Data_folder, int &tissue, int &num_Samples, int &effect_of_Sampling, int &resampling_Status, int &count_Sampling_instances,
+    int sample_Host(functions_library &functions, float &decimal_Date,
+                    vector<string> &tissue_Names,
+                    string source_sequence_Data_folder, int &tissue, int &num_Samples,
                     string &sampled_sequences_Folder,
                     mt19937 &gen);
 };

@@ -66,6 +66,8 @@ private:
 
     string multi_Read;
 
+    string start_Date;
+
     string network_Model = "NA";
     int Total_number_of_Nodes = 0;
 
@@ -108,7 +110,7 @@ private:
     string sampled_sequences_Folder;
     // 1 equals active
     int resampling = -1;
-    set<int>sampled_Nodes;
+    set<int> sampled_Nodes;
     float sampling_trials = 0;
     float sampling_probability = 0;
 
