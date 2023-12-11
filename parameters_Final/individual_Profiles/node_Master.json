@@ -13,7 +13,7 @@
   "Resampling of nodes":"Yes",
 
   "Sampling rate Binomial trials":2,
-  "Sampling rate Binomial probability":"0.5",
+  "Sampling rate Binomial probability":"0.75",
 
   "Distribution per node sequences sampled":"FIXED",
   "Per node sampling rate Binomial trials":2,

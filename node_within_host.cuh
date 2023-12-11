@@ -92,7 +92,7 @@ public:
     int get_Load(int &num_tissues_Calc, int *tissue_array);
 
     int infectious_status(int &num_tissues_Calc, int *tissue_array);
-    int terminal_status(int &num_tissues_Calc, int *tissue_array);
+    int terminal_status(int &num_tissues_Calc, int *tissue_array, string &intermediary_Sequence_location);
 
     void print_All();
 
@@ -110,6 +110,7 @@ public:
                               vector<set<int>> &source_removed_by_Transfer_Indexes,
                               int &max_sequences_per_File,
                               vector<vector<pair<int, int>>> &indexed_Source_Folders,
+                              float &decimal_Date,
                               string &Host_source_target_network_location,
                               string &output_Node_location,
                               vector<string> &tissue_Names,
@@ -270,4 +271,6 @@ public:
                     string source_sequence_Data_folder, int &tissue, int &num_Samples,
                     string &sampled_sequences_Folder,
                     mt19937 &gen);
+
+    void compress_Folder(string path);
 };

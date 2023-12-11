@@ -53,7 +53,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     network_File_location = output_Network_location + "/node_node_Relationships.csv";
     function.create_File(network_File_location, "Source\tTarget");
     Host_source_target_network_location = output_Network_location + "/hosts_source_target_Relationships.csv";
-    function.create_File(Host_source_target_network_location, "Source\tTarget");
+    function.create_File(Host_source_target_network_location, "Source\tTarget\tTime_Infection\tDate_Infection");
 
     cout << "\nConfiguring node master profiles:\n";
     node_Master_location = Parameters.get_STRING(found_Parameters[7]);
@@ -281,6 +281,12 @@ void simulator_Master::ingress()
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
     // TODO: host infection times
+    // TODO: create an overall generational summary
+    // TODO: Per individual generational summary
+
+    // Source\tTarget\tInfection_time
+    // Generation_Network\tGeneration_time_decimal\tDate\tSusceptible_population\tInfected\tInfectious\tDead\tRemoved
+    // Generation\tGeneration_time_decimal\tDate\tTissue\tParents\tParticles_produced\tDead\tTransferred\tRemaining
 
     cout << "Configuring infection start date: " << start_Date << endl;
     vector<string> split_Date;
@@ -347,7 +353,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         vector<int> infectious_Population;
         for (int host = 0; host < infected_Population.size(); host++)
         {
-            if (Hosts[infected_Population[host]].get_Status() == "Dead" || Hosts[infected_Population[host]].get_Status() == "Removed" || Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array) == 1)
+            if (Hosts[infected_Population[host]].get_Status() == "Dead" || Hosts[infected_Population[host]].get_Status() == "Removed" || Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location) == 1)
             {
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
                 // removed_Population.push_back(infected_Population[host]);
@@ -513,6 +519,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                                                      Hosts[infectious_Population[host]].removed_by_Transfer_Indexes,
                                                                                                      max_sequences_per_File,
                                                                                                      indexed_Source_Folders,
+                                                                                                     decimal_Date,
                                                                                                      Host_source_target_network_location,
                                                                                                      output_Node_location, tissue_Names,
                                                                                                      gen);
@@ -629,13 +636,18 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                                                         gen);
                             }
                         }
-                        exit(-1);
+                        // REMOVE
+                        // exit(-1);
                     }
 
                     if (success_Sampling == 1)
                     {
                         count_Sampling_instances++;
                     }
+                }
+                else
+                {
+                    cout << "No new hosts to sample\n";
                 }
 
                 if (limit_Sampled != -1)
@@ -646,6 +658,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
             }
+            // REMOVE
             exit(-1);
         }
         else

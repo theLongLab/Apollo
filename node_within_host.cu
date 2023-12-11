@@ -186,6 +186,7 @@ string node_within_host::transfer_Infection(functions_library &functions, string
                                             vector<set<int>> &source_removed_by_Transfer_Indexes,
                                             int &max_sequences_per_File,
                                             vector<vector<pair<int, int>>> &indexed_Source_Folders,
+                                            float &decimal_Date,
                                             string &Host_source_target_network_location,
                                             string &output_Node_location,
                                             vector<string> &tissue_Names,
@@ -203,6 +204,10 @@ string node_within_host::transfer_Infection(functions_library &functions, string
         if (num_viruses_to_transfer > 0)
         {
             string host_Folder = intermediary_Sequence_location + "/" + to_string(host_Index);
+
+            int year, month, day;
+            functions.decimal_to_Date(decimal_Date, year, month, day);
+            string date_String = to_string(year) + "-" + to_string(month) + "-" + to_string(day);
 
             if (current_Generation == -1)
             {
@@ -359,7 +364,7 @@ string node_within_host::transfer_Infection(functions_library &functions, string
                 if (write_source_Target.is_open())
                 {
                     cout << "Writing host's source target relationship\n";
-                    write_source_Target << source_Name << "\t" << this->get_Name() << endl;
+                    write_source_Target << source_Name << "\t" << this->get_Name() << "\t" << to_string(decimal_Date) << "\t" << date_String << endl;
                     write_source_Target.close();
                 }
                 else
@@ -472,7 +477,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
         if (sum_Check > 0)
         {
-            if (terminal_status(terminal_tissues, terminal_array) != 1)
+            if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder) != 1)
             {
                 cout << "\nIntiating simulation\n";
                 // cout << profile_ID << endl;
@@ -723,6 +728,8 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             // cout << "\nCount\n";
                             // cout << dead_Particle_count[tissue] << endl
                             //      << current_Viral_load_per_Tissue[tissue] << endl;
+                            // // TODO: COMPRESS THE PREVIOUS GENERAIONS (Current generations) SEQUENCES per tissue FOLDER
+                            compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation));
                         }
                         functions.clear_Array_int_CPU(parents_in_Tissue, 2);
                     }
@@ -731,14 +738,20 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         removed_by_Transfer_Indexes[tissue].clear();
                         dead_Particle_count[tissue] = 0;
                         current_Viral_load_per_Tissue[tissue] = 0;
+                        if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
+                        {
+                            compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation));
+                        }
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
 
                     // cout << "Distribution type: " << cell_Distribution_Type[profile_ID][tissue] << endl;
                     // cout << viral_distribution_per_Tissue_param[tissue].first << "\t" << viral_distribution_per_Tissue_param[tissue].second << endl;
                 }
+
                 // particle migration between tissues
                 current_Generation++;
+
                 // for (int tissue = 0; tissue < num_Tissues; tissue++)
                 // {
                 //     cout << "Tissue: " << tissue << endl;
@@ -763,15 +776,46 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
         else
         {
             set_Removed();
+            compress_Folder(source_sequence_Data_folder);
         }
         free(real_Particle_count_per_Tissue);
     }
     else
     {
         set_Removed();
+        compress_Folder(source_sequence_Data_folder);
     }
 
     // get each tissues generational phase
+}
+
+void node_within_host::compress_Folder(string path)
+{
+    if (filesystem::exists(path))
+    {
+        cout << "\nCompressing folder: " << path << endl;
+
+        string tar_Folder = path + ".tar.gz";
+
+        string command_Tar = "tar -czf " + tar_Folder + " " + path + " && rm -R " + path;
+
+        int result = system(command_Tar.c_str());
+
+        if (result == 0)
+        {
+            cout << "Compression successful" << endl;
+        }
+        else
+        {
+            cout << "Failed to compress the folder: " << path << endl;
+            exit(-1);
+        }
+    }
+    else
+    {
+        cout << "COMPRESSION ERROR: UNABLE TO FIND THE FOLDER: " << path << endl;
+        exit(-1);
+    }
 }
 
 int node_within_host::sample_Host(functions_library &functions, float &decimal_Date,
@@ -799,6 +843,7 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
         if (infection_probability <= 0)
         {
             set_Removed();
+            compress_Folder(source_sequence_Data_folder);
         }
 
         uniform_int_distribution<> sample_Indexes_draw(0, current_Viral_load_per_Tissue[tissue] - 1);
@@ -846,7 +891,7 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
                             << "_collection_date_" << to_string(decimal_Date) << "_" << to_string(year) << "-" << to_string(month) << "-" << to_string(day) << endl;
                 nFASTA_file << collected_Sequences[sequence] << endl;
 
-                sequence_summary_File << get_Name()
+                sequence_summary_File << ">" << get_Name()
                                       << "\t" << tissue_Names[tissue]
                                       << "\t" << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
                                       << "\t" << to_string(decimal_Date)
@@ -3011,11 +3056,12 @@ int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
         return 0;
     }
 }
-int node_within_host::terminal_status(int &num_tissues, int *tissue_array)
+int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string &intermediary_Sequence_location)
 {
     if (get_Load(num_tissues, tissue_array) >= terminal_Load)
     {
         set_Dead();
+        compress_Folder(intermediary_Sequence_location + "/" + to_string(this->host_Index));
         return 1;
     }
     else
@@ -3070,8 +3116,10 @@ void node_within_host::set_Infectious()
 void node_within_host::set_Removed()
 {
     this->status = "Removed";
+    // ! Compress the hosts intermediate folder
 }
 void node_within_host::set_Dead()
 {
     this->status = "Dead";
+    // ! Compress the hosts intermediate folder
 }
