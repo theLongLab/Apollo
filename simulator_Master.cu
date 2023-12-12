@@ -280,9 +280,11 @@ void simulator_Master::ingress()
 
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
-    // TODO: host infection times
-    // TODO: create an overall generational summary
+    // // TODO: host infection times
+    // // TODO: create an overall generational summary
     // TODO: Per individual generational summary
+
+    // TODO: SIRS
 
     // Source\tTarget\tInfection_time
     // Generation_Network\tGeneration_time_decimal\tDate\tSusceptible_population\tInfected\tInfectious\tDead\tRemoved
@@ -307,7 +309,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
     // exit(-1);
 
-    cout << "Configuring susceptible population\n\n";
+    cout << "\nConfiguring susceptible population\n\n";
 
     vector<int> susceptible_Population;
 
@@ -345,6 +347,13 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     random_device rd;
     mt19937 gen(rd());
 
+    int overall_Generations = 0;
+    int removed_Count = 0;
+    int dead_Count = 0;
+
+    string overall_Generational_Summary = output_Network_location + "/overall_generational_Summary.csv";
+    functions.create_File(overall_Generational_Summary, "overall_Generation\tdecimal_Date\tDate\tsusceptible_Population\tinfected_Population\tunfectious_Population\tremoved_Population\tdead_Population");
+
     do
     {
         // check dead and remove from infected
@@ -353,10 +362,21 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         vector<int> infectious_Population;
         for (int host = 0; host < infected_Population.size(); host++)
         {
-            if (Hosts[infected_Population[host]].get_Status() == "Dead" || Hosts[infected_Population[host]].get_Status() == "Removed" || Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location) == 1)
+            if (Hosts[infected_Population[host]].get_Status() == "Dead")
             {
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
+                dead_Count++;
                 // removed_Population.push_back(infected_Population[host]);
+            }
+            else if (Hosts[infected_Population[host]].get_Status() == "Removed")
+            {
+                cout << "Node " << Hosts[infected_Population[host]].get_Name() << " removed\n";
+                removed_Count++;
+            }
+            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location) == 1)
+            {
+                cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
+                dead_Count++;
             }
             else
             {
@@ -371,6 +391,32 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
         infected_Population = temp;
         temp.clear();
+
+        // // TODO WRITE to overall generational summary
+        fstream overall_Generational_summary_File;
+        overall_Generational_summary_File.open(overall_Generational_Summary, ios::app);
+        if (overall_Generational_summary_File.is_open())
+        {
+            cout << "Writing generation " << overall_Generations << " summary: " << overall_Generational_Summary << endl;
+
+            int year, month, day;
+            functions.decimal_to_Date(decimal_Date, year, month, day);
+
+            overall_Generational_summary_File << to_string(overall_Generations)
+                                              << "\t" << to_string(decimal_Date)
+                                              << "\t" << to_string(year) << "-" << to_string(month) << "-" << to_string(day)
+                                              << "\t" << to_string(susceptible_Population.size() - infected_Population.size() - infectious_Population.size() - removed_Count - dead_Count)
+                                              << "\t" << to_string(infected_Population.size())
+                                              << "\t" << to_string(infectious_Population.size())
+                                              << "\t" << to_string(removed_Count)
+                                              << "\t" << to_string(dead_Count) << endl;
+            overall_Generational_summary_File.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN overall_Generational_summary_File: " << overall_Generational_Summary << endl;
+            exit(-1);
+        }
 
         // infect
         if (infectious_Population.size() > 0)
@@ -570,10 +616,12 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 progeny_distribution_parameters_Array,
                                                                 viral_Migration,
                                                                 viral_Migration_Values,
+                                                                overall_Generations,
                                                                 gen);
             }
 
             decimal_Date = decimal_Date + date_Increment;
+            overall_Generations++;
 
             if (trials_Sampling != -1)
             {

@@ -60,7 +60,7 @@ private:
 
     int *dead_Particle_count;
 
-    int parents_Prev_generation = 0;
+    int *parents_Prev_generation;
 
     // Remember to clear after getting the indexes in th current tissue;
     vector<pair<string, string>> to_write_Sequence_Store;
@@ -147,6 +147,7 @@ public:
                         float *progeny_distribution_parameters_Array,
                         string &viral_Migration,
                         float **viral_Migration_Values,
+                        int &overall_Generations,
                         mt19937 &gen);
 
     int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,

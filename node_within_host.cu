@@ -457,6 +457,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                       float *progeny_distribution_parameters_Array,
                                       string &viral_Migration,
                                       float **viral_Migration_Values,
+                                      int &overall_Generations,
                                       mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
@@ -486,6 +487,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                 string sequence_Profiles = output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv";
                 string sequence_parent_Progeny_relationships = output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv";
+                string generational_Summary = output_Node_location + "/" + get_Name() + "/node_generational_Summary.csv";
 
                 if (!filesystem::exists(output_Node_location + "/" + get_Name()))
                 {
@@ -498,6 +500,10 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                 if (!filesystem::exists(sequence_parent_Progeny_relationships))
                 {
                     functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
+                }
+                if (!filesystem::exists(generational_Summary))
+                {
+                    functions.create_File(generational_Summary, "overall_Generation\tnode_Generation\tTissue\tnum_Parents\tnum_Progeny\tdead_Progeny");
                 }
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
@@ -747,6 +753,26 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                     // cout << "Distribution type: " << cell_Distribution_Type[profile_ID][tissue] << endl;
                     // cout << viral_distribution_per_Tissue_param[tissue].first << "\t" << viral_distribution_per_Tissue_param[tissue].second << endl;
+
+                    // TODO: Write per node generational summary
+                    fstream generational_Summary_File;
+                    generational_Summary_File.open(generational_Summary, ios::app);
+                    if (generational_Summary_File.is_open())
+                    {
+                        // overall_Generation\tnode_Generation\tTissue\tnum_Parents\tnum_Progeny\tdead_Progeny
+                        generational_Summary_File << to_string(overall_Generations)
+                                                  << "\t" << to_string(current_Generation)
+                                                  << "\t" << tissue_Names[tissue]
+                                                  << "\t" << to_string(parents_Prev_generation[tissue])
+                                                  << "\t" << to_string(current_Viral_load_per_Tissue[tissue])
+                                                  << "\t" << to_string(dead_Particle_count[tissue]) << endl;
+                        generational_Summary_File.close();
+                    }
+                    else
+                    {
+                        cout << "ERROR: UNABLE TO OPEN NODE GENERATIONAL SUMMARY FILE: " << generational_Summary << endl;
+                        exit(-1);
+                    }
                 }
 
                 // particle migration between tissues
@@ -882,6 +908,7 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
 
         if (nFASTA_file.is_open() && sequence_summary_File.is_open())
         {
+
             int year, month, day;
             functions.decimal_to_Date(decimal_Date, year, month, day);
 
@@ -2911,9 +2938,9 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
         if (gen_Phase == 1)
         {
             cout << "Stationary phase\n";
-            if (num_Viral_particles >= parents_Prev_generation)
+            if (num_Viral_particles >= parents_Prev_generation[tissue])
             {
-                normal_distribution<float> distribution(parents_Prev_generation, variable_1);
+                normal_distribution<float> distribution(parents_Prev_generation[tissue], variable_1);
                 new_Parent_Count = distribution(gen);
                 // cout << "parents_Prev_generation: " << parents_Prev_generation << endl;
                 // cout << new_Parent_Count << endl;
@@ -2930,10 +2957,10 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
         else if (gen_Phase == 2)
         {
             cout << "Depriciation phase\n";
-            if (num_Viral_particles >= parents_Prev_generation)
+            if (num_Viral_particles >= parents_Prev_generation[tissue])
             {
-                new_Parent_Count = functions.beta_Distribution(variable_1, variable_2, gen) * parents_Prev_generation;
-                new_Parent_Count = parents_Prev_generation - new_Parent_Count;
+                new_Parent_Count = functions.beta_Distribution(variable_1, variable_2, gen) * parents_Prev_generation[tissue];
+                new_Parent_Count = parents_Prev_generation[tissue] - new_Parent_Count;
                 cout << "Parent population reduced to: " << new_Parent_Count << endl;
             }
         }
@@ -2983,17 +3010,17 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
             start_Stop_cells.clear();
             start_Stop_cells = temp_Cells;
 
-            parents_Prev_generation = new_Parent_Count;
+            parents_Prev_generation[tissue] = new_Parent_Count;
         }
         else
         {
-            parents_Prev_generation = num_Viral_particles;
+            parents_Prev_generation[tissue] = num_Viral_particles;
         }
     }
     else
     {
         cout << "Neutral phase, all particles are viable\n";
-        parents_Prev_generation = num_Viral_particles;
+        parents_Prev_generation[tissue] = num_Viral_particles;
     }
 
     if ((start_Stop_cells.size() - 1) > cell_Limit[tissue])
@@ -3005,7 +3032,7 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
         }
         start_Stop_cells.clear();
         start_Stop_cells = temp;
-        parents_Prev_generation = start_Stop_cells[start_Stop_cells.size() - 1];
+        parents_Prev_generation[tissue] = start_Stop_cells[start_Stop_cells.size() - 1];
     }
 
     return start_Stop_cells;
@@ -3015,6 +3042,7 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
 {
     current_Viral_load_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
     dead_Particle_count = (int *)malloc(sizeof(int) * num_Tissues);
+    parents_Prev_generation = (int *)malloc(sizeof(int) * num_Tissues);
     current_Generation = 0;
 
     set<int> init_removed_by_Transfer_Indexes;
@@ -3027,6 +3055,8 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
         tissue_Sequences.push_back(tissue_Sequence);
         current_Viral_load_per_Tissue[tissue] = 0;
         dead_Particle_count[tissue] = 0;
+
+        parents_Prev_generation[tissue] = 0;
 
         removed_by_Transfer_Indexes.push_back(init_removed_by_Transfer_Indexes);
     }
