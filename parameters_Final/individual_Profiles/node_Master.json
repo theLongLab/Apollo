@@ -36,6 +36,9 @@
   "Progeny Gamma shape":"10",
   "Progeny Gamma scale":"0.5",
 
+  # Infected individuals can remain suceptible to infection if set to YES, else they will be removed if their viral load goes to zero
+  "Infected to Recovered":"No",
+
   "Number of node profiles":3,
   "Location of node profiles":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/all_Profiles",
 

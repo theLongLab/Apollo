@@ -19,7 +19,8 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Sequence master profile\"",
         "\"Intermediate Sequences per file\"",
         "\"Process cell rate\"",
-        "\"Start date\""};
+        "\"Start date\"",
+        "\"Stop after generations\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -30,6 +31,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     max_sequences_per_File = Parameters.get_INT(found_Parameters[9]);
     max_Cells_at_a_time = Parameters.get_INT(found_Parameters[10]);
     start_Date = Parameters.get_STRING(found_Parameters[11]);
+    stop_after_generations = function.to_Upper_Case(Parameters.get_STRING(found_Parameters[12]));
 
     if (max_sequences_per_File <= 0)
     {
@@ -60,6 +62,51 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
 
     cout << "\nConfiguring sequence master profiles:\n";
     sequence_Master_location = Parameters.get_STRING(found_Parameters[8]);
+
+    if (stop_after_generations == "YES")
+    {
+        cout << "\nConfiguring simulation termination by overall generations run\n";
+
+        vector<string> parameters_List_stop_Gen_Mode = {"\"Mode to stop\""};
+        vector<string> stop_Gen_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List_stop_Gen_Mode);
+
+        if (function.to_Upper_Case(Parameters.get_STRING(stop_Gen_Parameters[0])) == "GENERATIONS")
+        {
+            stop_gen_Mode = 0;
+            cout << "Stop after given number of generations: ";
+            parameters_List_stop_Gen_Mode.clear();
+            stop_Gen_Parameters.clear();
+
+            vector<string> parameters_List_stop_Gen_Mode = {"\"Number of generations\""};
+            vector<string> stop_Gen_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List_stop_Gen_Mode);
+
+            stop_generations_Count = Parameters.get_INT(stop_Gen_Parameters[0]);
+            cout << stop_generations_Count << endl;
+        }
+        else
+        {
+            cout << "Stop after given date: ";
+            stop_gen_Mode = 1;
+            parameters_List_stop_Gen_Mode.clear();
+            stop_Gen_Parameters.clear();
+
+            vector<string> parameters_List_stop_Gen_Mode = {"\"End date\""};
+            vector<string> stop_Gen_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List_stop_Gen_Mode);
+
+            string stop_Date_String = Parameters.get_STRING(stop_Gen_Parameters[0]);
+
+            cout << stop_Date_String << endl;
+            vector<string> split_Date;
+            function.split(split_Date, stop_Date_String, '-');
+
+            stop_Date = function.date_to_Decimal(stoi(split_Date[0]), stoi(split_Date[1]), stoi(split_Date[2]));
+            cout << "Decimal date: " << stop_Date << endl;
+        }
+    }
+    else
+    {
+        cout << "\nSimulation termination by overall generations run is deactivated\n";
+    }
 
     cout << "\nConfiguring hardware resources:\n\n";
     this->CPU_cores = Parameters.get_INT(found_Parameters[1]);
@@ -282,9 +329,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 {
     // // TODO: host infection times
     // // TODO: create an overall generational summary
-    // TODO: Per individual generational summary
-
-    // TODO: SIRS
+    // // TODO: Per individual generational summary
+    // // TODO: SIRS
+    // TODO: Terminate after given number of generations or time
+    // TODO: CHECK IF ALL ARRAYS ARE CLEARED
 
     // Source\tTarget\tInfection_time
     // Generation_Network\tGeneration_time_decimal\tDate\tSusceptible_population\tInfected\tInfectious\tDead\tRemoved
@@ -378,7 +426,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
                 dead_Count++;
             }
-            else
+            else if (Hosts[infected_Population[host]].get_Status() != "Susceptible")
             {
                 temp.push_back(infected_Population[host]);
                 if (Hosts[infected_Population[host]].get_Status() == "Infectious" || Hosts[infected_Population[host]].infectious_status(infectious_tissues, infectious_array) == 1)
@@ -414,7 +462,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         }
         else
         {
-            cout << "ERROR: UNABLE TO OPEN overall_Generational_summary_File: " << overall_Generational_Summary << endl;
+            cout << "ERROR: UNABLE TO OPEN OVERALL GENERATIONAL SUMMARY FILE: " << overall_Generational_Summary << endl;
             exit(-1);
         }
 
@@ -617,6 +665,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 viral_Migration,
                                                                 viral_Migration_Values,
                                                                 overall_Generations,
+                                                                infected_to_Recovered,
                                                                 gen);
             }
 
@@ -700,7 +749,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 if (limit_Sampled != -1)
                 {
-                    if (count_Sampling_instances < limit_Sampled)
+                    if (count_Sampling_instances >= limit_Sampled)
                     {
                         stop = 3;
                     }
@@ -712,6 +761,24 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         else
         {
             stop = 2;
+        }
+
+        if (stop_after_generations == "YES")
+        {
+            if (stop_gen_Mode == 0)
+            {
+                if (overall_Generations >= stop_generations_Count)
+                {
+                    stop = 4;
+                }
+            }
+            else
+            {
+                if (decimal_Date >= stop_Date)
+                {
+                    stop = 5;
+                }
+            }
         }
 
         stop = 1;
@@ -733,6 +800,14 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     else if (stop == 3)
     {
         cout << "Maximum sucessfull sequencing instances of " << limit_Sampled << " have been reached\n";
+    }
+    else if (stop == 4)
+    {
+        cout << "Maximum number of " << overall_Generations << " generations has been reached\n";
+    }
+    else if (stop == 5)
+    {
+        cout << "Maximum date of " << stop_Date << " has been reached\n";
     }
 
     // uniform_int_distribution<int> distribution(0, Total_number_of_Nodes - 1);
@@ -764,7 +839,7 @@ vector<int> simulator_Master::get_new_Hosts_Indexes(int &node_Profile, mt19937 &
     {
         int new_Hosts = 0;
         cout << num_New_hosts << endl;
-        // ! CHANGE so changes in infection rate can be accounted for, by sampleing effects
+        // // CHANGE so changes in infection rate can be accounted for, by sampleing effects
         uniform_int_distribution<> distribution_Hosts(0, possible_Infections.size() - 1);
         do
         {
@@ -1931,7 +2006,8 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         "\"Sampling present\"",
         "\"Progeny distribution type\"",
         "\"Number of node profiles\"",
-        "\"Location of node profiles\""};
+        "\"Location of node profiles\"",
+        "\"Infected to Recovered\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
     parameters_List.clear();
@@ -1950,6 +2026,13 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
         this->shape_days_in_Host = Parameters.get_FLOAT(found_Parameters[2]);
         this->scale_days_in_Host = Parameters.get_FLOAT(found_Parameters[3]);
         cout << "Days in host gamma distribution: Shape: " << this->shape_days_in_Host << " Scale: " << this->scale_days_in_Host << endl;
+
+        if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[8])) == "YES")
+        {
+            infected_to_Recovered = "YES";
+        }
+
+        cout << "SIRS status: " << infected_to_Recovered << endl;
 
         cout << "\nSampling status: ";
         if (functions.to_Upper_Case(Parameters.get_STRING(found_Parameters[4])) == "YES")

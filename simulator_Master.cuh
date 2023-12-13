@@ -257,6 +257,14 @@ private:
     // vector<string> raw_parent_Sequences;
     int genome_Length = 0;
 
+    string infected_to_Recovered = "NO";
+
+    string stop_after_generations = "NO";
+    // 0 = Generations 1 = Date
+    int stop_gen_Mode = 0;
+    int stop_generations_Count = 0;
+    float stop_Date = 0;
+
 public:
     simulator_Master(string parameter_Master_Location);
 

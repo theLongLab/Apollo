@@ -16,6 +16,12 @@
 
   "Start date":"2024-01-10",
 
+  "Stop after generations":"Yes",
+  # Generations or Date can be used to stop the simulation as well
+  "Mode to stop":"Generations",
+  "Number of generations":10,
+  "End date":"2024-01-12",
+
   # Network profile
   "Network profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/network_Profiles/network_test.json",
 

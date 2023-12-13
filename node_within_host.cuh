@@ -88,6 +88,7 @@ public:
     void set_Infectious();
     void set_Removed();
     void set_Dead();
+    void set_Susceptible();
 
     int get_Load(int &num_tissues_Calc, int *tissue_array);
 
@@ -148,6 +149,7 @@ public:
                         string &viral_Migration,
                         float **viral_Migration_Values,
                         int &overall_Generations,
+                        string &infected_to_Recovered,
                         mt19937 &gen);
 
     int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,

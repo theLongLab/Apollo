@@ -458,6 +458,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                       string &viral_Migration,
                                       float **viral_Migration_Values,
                                       int &overall_Generations,
+                                      string &infected_to_Recovered,
                                       mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
@@ -754,7 +755,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                     // cout << "Distribution type: " << cell_Distribution_Type[profile_ID][tissue] << endl;
                     // cout << viral_distribution_per_Tissue_param[tissue].first << "\t" << viral_distribution_per_Tissue_param[tissue].second << endl;
 
-                    // TODO: Write per node generational summary
+                    // // TODO: Write per node generational summary
                     fstream generational_Summary_File;
                     generational_Summary_File.open(generational_Summary, ios::app);
                     if (generational_Summary_File.is_open())
@@ -801,8 +802,15 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
         }
         else
         {
-            set_Removed();
-            compress_Folder(source_sequence_Data_folder);
+            if (infected_to_Recovered == "NO")
+            {
+                set_Removed();
+                compress_Folder(source_sequence_Data_folder);
+            }
+            else
+            {
+                set_Susceptible();
+            }
         }
         free(real_Particle_count_per_Tissue);
     }
@@ -3146,10 +3154,16 @@ void node_within_host::set_Infectious()
 void node_within_host::set_Removed()
 {
     this->status = "Removed";
-    // ! Compress the hosts intermediate folder
+    // // ! Compress the hosts intermediate folder
 }
 void node_within_host::set_Dead()
 {
     this->status = "Dead";
-    // ! Compress the hosts intermediate folder
+    // // ! Compress the hosts intermediate folder
+}
+
+void node_within_host::set_Susceptible()
+{
+    this->status = "Susceptible";
+    // // ! Compress the hosts intermediate folder
 }
