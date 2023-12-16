@@ -806,13 +806,16 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
             {
                 set_Removed();
                 compress_Folder(source_sequence_Data_folder);
+                clear_Arrays_end();
             }
             else
             {
                 set_Susceptible();
             }
         }
+
         free(real_Particle_count_per_Tissue);
+        
     }
     else
     {
@@ -2943,6 +2946,11 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
     {
         int new_Parent_Count = -1;
 
+        if (current_Generation == 0)
+        {
+            parents_Prev_generation[tissue] = num_Viral_particles;
+        }
+
         if (gen_Phase == 1)
         {
             cout << "Stationary phase\n";
@@ -3070,6 +3078,14 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
     }
 }
 
+void node_within_host::clear_Arrays_end()
+{
+    cout << "\nClearing all arrays for host" << get_Name() << endl;
+    free(current_Viral_load_per_Tissue);
+    free(dead_Particle_count);
+    free(parents_Prev_generation);
+}
+
 int node_within_host::get_Load(int &num_tissues_Calc, int *tissue_array)
 {
     int sum = 0;
@@ -3159,6 +3175,7 @@ void node_within_host::set_Removed()
 void node_within_host::set_Dead()
 {
     this->status = "Dead";
+    clear_Arrays_end();
     // // ! Compress the hosts intermediate folder
 }
 

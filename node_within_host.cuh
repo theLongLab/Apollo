@@ -276,4 +276,6 @@ public:
                     mt19937 &gen);
 
     void compress_Folder(string path);
+
+    void clear_Arrays_end();
 };

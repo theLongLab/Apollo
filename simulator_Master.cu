@@ -710,6 +710,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                     int num_Samples = per_Node_sampling[1];
 
+                    // // TODO: FIX
                     int success_Sampling = 0;
 
                     for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
@@ -726,11 +727,11 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                             if (num_Samples > 0)
                             {
-                                Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].sample_Host(functions, decimal_Date,
-                                                                                                        tissue_Names,
-                                                                                                        intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), sampling_array[tissue], num_Samples,
-                                                                                                        sampled_sequences_Folder,
-                                                                                                        gen);
+                                success_Sampling = Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].sample_Host(functions, decimal_Date,
+                                                                                                                           tissue_Names,
+                                                                                                                           intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), sampling_array[tissue], num_Samples,
+                                                                                                                           sampled_sequences_Folder,
+                                                                                                                           gen);
                             }
                         }
                         // REMOVE
