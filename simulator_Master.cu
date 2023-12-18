@@ -400,7 +400,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     int dead_Count = 0;
 
     string overall_Generational_Summary = output_Network_location + "/overall_generational_Summary.csv";
-    functions.create_File(overall_Generational_Summary, "overall_Generation\tdecimal_Date\tDate\tsusceptible_Population\tinfected_Population\tunfectious_Population\tremoved_Population\tdead_Population");
+    functions.create_File(overall_Generational_Summary, "overall_Generation\tdecimal_Date\tDate\tsusceptible_Population\tinfected_Population\tinfectious_Population\tremoved_Population\tdead_Population");
 
     do
     {
@@ -453,7 +453,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             overall_Generational_summary_File << to_string(overall_Generations)
                                               << "\t" << to_string(decimal_Date)
                                               << "\t" << to_string(year) << "-" << to_string(month) << "-" << to_string(day)
-                                              << "\t" << to_string(susceptible_Population.size() - infected_Population.size() - infectious_Population.size() - removed_Count - dead_Count)
+                                              << "\t" << to_string(susceptible_Population.size() - infected_Population.size() - removed_Count - dead_Count)
                                               << "\t" << to_string(infected_Population.size())
                                               << "\t" << to_string(infectious_Population.size())
                                               << "\t" << to_string(removed_Count)
@@ -465,6 +465,13 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "ERROR: UNABLE TO OPEN OVERALL GENERATIONAL SUMMARY FILE: " << overall_Generational_Summary << endl;
             exit(-1);
         }
+
+        // TEST BLOCKS
+        // if (overall_Generations == 1)
+        // {
+        //     cout << "\n******DONE UPTO HERE********\n";
+        //     exit(-1);
+        // }
 
         // infect
         if (infectious_Population.size() > 0)
@@ -627,6 +634,13 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
             }
+
+            // // TEST BLOCKS
+            // if (overall_Generations == 1)
+            // {
+            //     cout << "\n******DONE UPTO HERE********\n";
+            //     exit(-1);
+            // }
         }
 
         if (infected_Population.size() > 0)
@@ -673,6 +687,13 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             decimal_Date = decimal_Date + date_Increment;
             overall_Generations++;
             cout << "\nMoved generation foward\n";
+
+            // // TEST BLOCKS
+            // if (overall_Generations == 1)
+            // {
+            //     cout << "\n******DONE UPTO HERE********\n";
+            //     exit(-1);
+            // }
 
             if (trials_Sampling != -1)
             {
@@ -765,7 +786,14 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             }
 
             // REMOVE
-            exit(-1);
+            // exit(-1);
+
+            // TEST BLOCKS
+            // if (overall_Generations == 2)
+            // {
+            //     cout << "\n******DONE UPTO HERE********\n";
+            //     exit(-1);
+            // }
         }
         else
         {
@@ -790,7 +818,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             }
         }
 
-        stop = 1;
+        // stop = 1;
 
     } while (stop == 0);
 
