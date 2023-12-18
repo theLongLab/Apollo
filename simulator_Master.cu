@@ -669,8 +669,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 gen);
             }
 
+            cout << "\nCompleted simulating hosts\n";
             decimal_Date = decimal_Date + date_Increment;
             overall_Generations++;
+            cout << "\nMoved generation foward\n";
 
             if (trials_Sampling != -1)
             {
@@ -736,6 +738,11 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                         }
                         // REMOVE
                         // exit(-1);
+
+                        if (Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_infection_probability() <= 0)
+                        {
+                            Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].set_Infection_prob_Zero(intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()));
+                        }
                     }
 
                     if (success_Sampling == 1)
@@ -756,6 +763,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
             }
+
             // REMOVE
             exit(-1);
         }

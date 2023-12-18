@@ -278,4 +278,6 @@ public:
     void compress_Folder(string path);
 
     void clear_Arrays_end();
+
+    void set_Infection_prob_Zero(string source_sequence_Data_folder);
 };

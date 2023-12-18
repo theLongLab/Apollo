@@ -481,7 +481,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
         {
             if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder) != 1)
             {
-                cout << "\nIntiating simulation\n";
+                cout << "\nInitiating simulation\n";
                 // cout << profile_ID << endl;
 
                 vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, current_Generation, multi_Read);
@@ -815,7 +815,6 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
         }
 
         free(real_Particle_count_per_Tissue);
-        
     }
     else
     {
@@ -855,6 +854,13 @@ void node_within_host::compress_Folder(string path)
     }
 }
 
+void node_within_host::set_Infection_prob_Zero(string source_sequence_Data_folder)
+{
+    set_Removed();
+    clear_Arrays_end();
+    compress_Folder(source_sequence_Data_folder);
+}
+
 int node_within_host::sample_Host(functions_library &functions, float &decimal_Date,
                                   vector<string> &tissue_Names,
                                   string source_sequence_Data_folder, int &tissue, int &num_Samples,
@@ -877,11 +883,12 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
         success_Sampling = 1;
 
         infection_probability = 1 * sampling_Effect;
-        if (infection_probability <= 0)
-        {
-            set_Removed();
-            compress_Folder(source_sequence_Data_folder);
-        }
+        // if (infection_probability <= 0)
+        // {
+        //     set_Removed();
+        //     clear_Arrays_end();
+        //     compress_Folder(source_sequence_Data_folder);
+        // }
 
         uniform_int_distribution<> sample_Indexes_draw(0, current_Viral_load_per_Tissue[tissue] - 1);
         set<int> sequences_to_Sample;
@@ -3080,10 +3087,12 @@ void node_within_host::intialize_Tissues(string &host_Folder, vector<vector<stri
 
 void node_within_host::clear_Arrays_end()
 {
-    cout << "\nClearing all arrays for host" << get_Name() << endl;
+    cout << "\nClearing all arrays for host " << get_Name() << endl;
     free(current_Viral_load_per_Tissue);
     free(dead_Particle_count);
     free(parents_Prev_generation);
+
+    removed_by_Transfer_Indexes.clear();
 }
 
 int node_within_host::get_Load(int &num_tissues_Calc, int *tissue_array)
