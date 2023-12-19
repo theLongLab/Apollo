@@ -1,0 +1,5 @@
+overall_Generation	decimal_Date	Date	susceptible_Population	infected_Population	infectious_Population	removed_Population	dead_Population
+0	2024.024170	2024-1-10	227	1	0	0	0
+1	2024.025146	2024-1-10	227	1	1	0	0
+2	2024.026123	2024-1-11	225	3	3	0	0
+3	2024.027100	2024-1-11	220	8	8	0	0

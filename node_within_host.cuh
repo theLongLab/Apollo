@@ -93,7 +93,7 @@ public:
     int get_Load(int &num_tissues_Calc, int *tissue_array);
 
     int infectious_status(int &num_tissues_Calc, int *tissue_array);
-    int terminal_status(int &num_tissues_Calc, int *tissue_array, string &intermediary_Sequence_location);
+    int terminal_status(int &num_tissues_Calc, int *tissue_array, string source_sequence_Data_folder);
 
     void print_All();
 

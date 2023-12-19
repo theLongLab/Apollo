@@ -421,7 +421,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " removed\n";
                 removed_Count++;
             }
-            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location) == 1)
+            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index())) == 1)
             {
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
                 dead_Count++;
@@ -476,7 +476,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         // infect
         if (infectious_Population.size() > 0)
         {
-            cout << "\nNew host to host infections";
+            cout << "\nNew host to host infections\n";
             for (int host = 0; host < infectious_Population.size(); host++)
             {
                 float infection_probability = Hosts[infectious_Population[host]].get_infection_probability();
@@ -505,6 +505,23 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                     vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
                     Node_search(host_Connections);
+
+                    // test
+                    // cout << Hosts[infectious_Population[host]].get_Name() << endl
+                    //      << endl;
+                    // for (int test = 0; test < host_Connections.size(); test++)
+                    // {
+                    //     cout << host_Connections[test].first << "_" << host_Connections[test].second << endl;
+                    // }
+
+                    // cout << "\ncheck\n";
+
+                    // for (int test = 0; test < host_Connections.size(); test++)
+                    // {
+                    //     cout << Hosts[search_Indexes[test]].get_Name() << endl;
+                    // }
+
+                    // exit(-1);
 
                     cout << "Checking index search\n";
                     vector<int> possible_Infections;
@@ -686,7 +703,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             cout << "\nCompleted simulating hosts\n";
             decimal_Date = decimal_Date + date_Increment;
             overall_Generations++;
-            cout << "\nMoved generation foward\n";
+            cout << "\nMoved generation forward\n";
 
             // // TEST BLOCKS
             // if (overall_Generations == 1)
@@ -738,31 +755,34 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                     for (int host = 0; host < indexes_of_Sampling_Nodes.size(); host++)
                     {
-                        cout << "\nSampling host " << Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Name() << endl;
-                        for (int tissue = 0; tissue < sampling_tissues; tissue++)
+                        if (Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Status() != "Dead" && Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Status() != "Removed")
                         {
-                            cout << "Attempting to sample " << tissue_Names[sampling_array[tissue]] << " tissue\n";
-                            if (per_Node_sampling[0] == 1)
+                            cout << "\nSampling host " << Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_Name() << endl;
+                            for (int tissue = 0; tissue < sampling_tissues; tissue++)
                             {
-                                binomial_distribution<int> num_samples_Obtained(per_Node_sampling[1], per_Node_sampling[2]);
-                                num_Samples = num_samples_Obtained(gen);
-                            }
+                                cout << "Attempting to sample " << tissue_Names[sampling_array[tissue]] << " tissue\n";
+                                if (per_Node_sampling[0] == 1)
+                                {
+                                    binomial_distribution<int> num_samples_Obtained(per_Node_sampling[1], per_Node_sampling[2]);
+                                    num_Samples = num_samples_Obtained(gen);
+                                }
 
-                            if (num_Samples > 0)
+                                if (num_Samples > 0)
+                                {
+                                    success_Sampling = Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].sample_Host(functions, decimal_Date,
+                                                                                                                               tissue_Names,
+                                                                                                                               intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), sampling_array[tissue], num_Samples,
+                                                                                                                               sampled_sequences_Folder,
+                                                                                                                               gen);
+                                }
+                            }
+                            // REMOVE
+                            // exit(-1);
+
+                            if (Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_infection_probability() <= 0)
                             {
-                                success_Sampling = Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].sample_Host(functions, decimal_Date,
-                                                                                                                           tissue_Names,
-                                                                                                                           intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), sampling_array[tissue], num_Samples,
-                                                                                                                           sampled_sequences_Folder,
-                                                                                                                           gen);
+                                Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].set_Infection_prob_Zero(intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()));
                             }
-                        }
-                        // REMOVE
-                        // exit(-1);
-
-                        if (Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_infection_probability() <= 0)
-                        {
-                            Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].set_Infection_prob_Zero(intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()));
                         }
                     }
 
@@ -882,9 +902,9 @@ vector<int> simulator_Master::get_new_Hosts_Indexes(int &node_Profile, mt19937 &
         {
             int host_index = distribution_Hosts(gen);
 
-            if (find(new_Hosts_Indexes.begin(), new_Hosts_Indexes.end(), host_index) == new_Hosts_Indexes.end())
+            if (find(new_Hosts_Indexes.begin(), new_Hosts_Indexes.end(), possible_Infections[host_index]) == new_Hosts_Indexes.end())
             {
-                new_Hosts_Indexes.push_back(host_index);
+                new_Hosts_Indexes.push_back(possible_Infections[host_index]);
                 new_Hosts++;
             }
 

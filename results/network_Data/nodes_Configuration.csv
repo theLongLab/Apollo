@@ -1,205 +1,184 @@
 ID	Cave_Index	Profile_name	Generations_projected	Infectious_load	Terminal_load	Sampling_effect	Tissue_1_limit	Tissue_2_limit	Tissue_3_limit
-0_0	0	Children	14	1	100000	No Change	49765	Unlimited	Unlimited
-0_1	0	Adults Medicated	17	1	75023	No Change	49927	Unlimited	Unlimited
-0_2	0	Children	15	1	100000	No Change	50070	Unlimited	Unlimited
-0_3	0	Children	13	1	100000	No Change	50135	Unlimited	Unlimited
-0_4	0	Adults Normal	21	1	75009	0.419899	Unlimited	10046	Unlimited
-0_5	0	Adults Medicated	15	1	75196	No Change	50062	Unlimited	Unlimited
-0_6	0	Adults Medicated	17	1	75115	No Change	50061	Unlimited	Unlimited
-0_7	0	Children	16	1	100000	No Change	49989	Unlimited	Unlimited
-0_8	0	Adults Medicated	10	1	74878	No Change	50145	Unlimited	Unlimited
-0_9	0	Adults Medicated	9	1	75005	No Change	50172	Unlimited	Unlimited
-1_0	1	Adults Medicated	18	1	74749	No Change	50155	Unlimited	Unlimited
-1_1	1	Adults Medicated	15	1	74865	No Change	50092	Unlimited	Unlimited
-1_2	1	Adults Medicated	20	1	74761	No Change	49618	Unlimited	Unlimited
-1_3	1	Adults Medicated	12	1	74977	No Change	50059	Unlimited	Unlimited
-1_4	1	Adults Normal	22	1	74888	0.16363	Unlimited	10021	Unlimited
-1_5	1	Adults Normal	17	1	75010	0.532454	Unlimited	10029	Unlimited
-1_6	1	Adults Medicated	9	1	75304	No Change	50047	Unlimited	Unlimited
-1_7	1	Adults Medicated	19	1	74691	No Change	50054	Unlimited	Unlimited
-1_8	1	Adults Medicated	19	1	74794	No Change	49903	Unlimited	Unlimited
-1_9	1	Adults Medicated	23	1	74858	No Change	50142	Unlimited	Unlimited
-1_10	1	Adults Medicated	22	1	74962	No Change	50005	Unlimited	Unlimited
-1_11	1	Adults Medicated	23	1	74804	No Change	49903	Unlimited	Unlimited
-1_12	1	Adults Medicated	16	1	74955	No Change	49888	Unlimited	Unlimited
-1_13	1	Children	18	1	100000	No Change	49920	Unlimited	Unlimited
-2_0	2	Adults Medicated	20	1	75224	No Change	50217	Unlimited	Unlimited
-2_1	2	Adults Medicated	12	1	74990	No Change	49671	Unlimited	Unlimited
-2_2	2	Adults Medicated	18	1	74925	No Change	50065	Unlimited	Unlimited
-2_3	2	Adults Medicated	16	1	75072	No Change	50025	Unlimited	Unlimited
-2_4	2	Adults Normal	13	1	74996	0.353291	Unlimited	10020	Unlimited
-2_5	2	Adults Medicated	10	1	75035	No Change	50044	Unlimited	Unlimited
-2_6	2	Adults Medicated	12	1	75206	No Change	49801	Unlimited	Unlimited
-2_7	2	Children	29	1	100000	No Change	49981	Unlimited	Unlimited
-2_8	2	Adults Medicated	21	1	75196	No Change	49887	Unlimited	Unlimited
-2_9	2	Adults Medicated	10	1	75111	No Change	50044	Unlimited	Unlimited
-2_10	2	Adults Medicated	12	1	74964	No Change	49918	Unlimited	Unlimited
-2_11	2	Adults Medicated	14	1	74835	No Change	49733	Unlimited	Unlimited
-2_12	2	Adults Medicated	23	1	74866	No Change	49973	Unlimited	Unlimited
-3_0	3	Adults Normal	14	1	74983	0.324946	Unlimited	10067	Unlimited
-3_1	3	Adults Medicated	12	1	74706	No Change	49974	Unlimited	Unlimited
-3_2	3	Children	24	1	100000	No Change	49740	Unlimited	Unlimited
-3_3	3	Adults Medicated	15	1	75039	No Change	49969	Unlimited	Unlimited
-3_4	3	Children	19	1	100000	No Change	50229	Unlimited	Unlimited
-4_0	4	Adults Medicated	16	1	75196	No Change	50062	Unlimited	Unlimited
-4_1	4	Children	12	1	100000	No Change	50023	Unlimited	Unlimited
-4_2	4	Adults Medicated	19	1	74821	No Change	50151	Unlimited	Unlimited
-4_3	4	Adults Medicated	17	1	75106	No Change	49582	Unlimited	Unlimited
-4_4	4	Children	15	1	100000	No Change	50046	Unlimited	Unlimited
-4_5	4	Adults Normal	12	1	74814	0.42423	Unlimited	10008	Unlimited
-5_0	5	Adults Medicated	22	1	75063	No Change	49682	Unlimited	Unlimited
-5_1	5	Adults Normal	11	1	74877	0.569892	Unlimited	9837	Unlimited
-6_0	6	Adults Medicated	14	1	75038	No Change	49895	Unlimited	Unlimited
-6_1	6	Adults Medicated	15	1	75168	No Change	49868	Unlimited	Unlimited
-6_2	6	Adults Medicated	20	1	74950	No Change	50033	Unlimited	Unlimited
-6_3	6	Adults Medicated	11	1	75079	No Change	49924	Unlimited	Unlimited
-6_4	6	Children	15	1	100000	No Change	50325	Unlimited	Unlimited
-7_0	7	Adults Medicated	12	1	75041	No Change	50155	Unlimited	Unlimited
-7_1	7	Adults Medicated	16	1	75049	No Change	50136	Unlimited	Unlimited
-7_2	7	Adults Medicated	16	1	75284	No Change	49975	Unlimited	Unlimited
-7_3	7	Adults Medicated	14	1	75065	No Change	50097	Unlimited	Unlimited
-7_4	7	Adults Medicated	13	1	74933	No Change	50282	Unlimited	Unlimited
-7_5	7	Adults Medicated	23	1	75005	No Change	49906	Unlimited	Unlimited
-7_6	7	Adults Normal	13	1	75205	0.177929	Unlimited	9927	Unlimited
-7_7	7	Adults Normal	16	1	74981	0.392563	Unlimited	9968	Unlimited
-7_8	7	Children	16	1	100000	No Change	49866	Unlimited	Unlimited
-7_9	7	Adults Medicated	8	1	75063	No Change	49928	Unlimited	Unlimited
-7_10	7	Adults Medicated	20	1	74957	No Change	49771	Unlimited	Unlimited
-8_0	8	Adults Medicated	19	1	75101	No Change	50002	Unlimited	Unlimited
-8_1	8	Children	22	1	100000	No Change	49923	Unlimited	Unlimited
-8_2	8	Adults Medicated	18	1	74848	No Change	49894	Unlimited	Unlimited
-8_3	8	Adults Medicated	11	1	75103	No Change	50224	Unlimited	Unlimited
-8_4	8	Adults Medicated	15	1	75188	No Change	49888	Unlimited	Unlimited
-8_5	8	Adults Medicated	17	1	75233	No Change	49851	Unlimited	Unlimited
-8_6	8	Adults Medicated	16	1	74830	No Change	49891	Unlimited	Unlimited
-8_7	8	Adults Normal	15	1	75105	0.176063	Unlimited	10111	Unlimited
-8_8	8	Adults Normal	16	1	75001	0.332637	Unlimited	9923	Unlimited
-8_9	8	Adults Medicated	15	1	75060	No Change	50191	Unlimited	Unlimited
-8_10	8	Adults Medicated	13	1	75145	No Change	49929	Unlimited	Unlimited
-8_11	8	Adults Medicated	18	1	75060	No Change	49965	Unlimited	Unlimited
-8_12	8	Adults Medicated	18	1	74916	No Change	49764	Unlimited	Unlimited
-8_13	8	Adults Medicated	15	1	74901	No Change	50246	Unlimited	Unlimited
-8_14	8	Adults Medicated	14	1	75152	No Change	50249	Unlimited	Unlimited
-8_15	8	Adults Medicated	13	1	74893	No Change	49787	Unlimited	Unlimited
-8_16	8	Adults Medicated	8	1	74874	No Change	50484	Unlimited	Unlimited
-8_17	8	Children	12	1	100000	No Change	50153	Unlimited	Unlimited
-8_18	8	Children	23	1	100000	No Change	49743	Unlimited	Unlimited
-8_19	8	Adults Medicated	19	1	75040	No Change	49908	Unlimited	Unlimited
-8_20	8	Adults Medicated	13	1	75278	No Change	50076	Unlimited	Unlimited
-9_0	9	Children	15	1	100000	No Change	50024	Unlimited	Unlimited
-9_1	9	Adults Medicated	19	1	74807	No Change	50213	Unlimited	Unlimited
-9_2	9	Adults Medicated	16	1	75203	No Change	50124	Unlimited	Unlimited
-9_3	9	Adults Normal	17	1	75135	0.249226	Unlimited	10013	Unlimited
-9_4	9	Adults Medicated	28	1	74917	No Change	50121	Unlimited	Unlimited
-10_0	10	Adults Medicated	14	1	74951	No Change	49872	Unlimited	Unlimited
-10_1	10	Children	17	1	100000	No Change	49995	Unlimited	Unlimited
-10_2	10	Adults Medicated	11	1	74993	No Change	50006	Unlimited	Unlimited
-10_3	10	Adults Normal	19	1	75037	0.443991	Unlimited	10025	Unlimited
-10_4	10	Adults Medicated	17	1	74856	No Change	49771	Unlimited	Unlimited
-10_5	10	Children	21	1	100000	No Change	50149	Unlimited	Unlimited
-10_6	10	Adults Medicated	16	1	75144	No Change	49925	Unlimited	Unlimited
-11_0	11	Adults Normal	18	1	75004	0.356034	Unlimited	9988	Unlimited
-11_1	11	Adults Medicated	15	1	74809	No Change	50079	Unlimited	Unlimited
-11_2	11	Adults Medicated	21	1	75059	No Change	50022	Unlimited	Unlimited
-11_3	11	Adults Normal	17	1	74948	0.216587	Unlimited	10051	Unlimited
-11_4	11	Adults Normal	14	1	74911	0.242909	Unlimited	9952	Unlimited
-11_5	11	Adults Medicated	14	1	75009	No Change	50139	Unlimited	Unlimited
-11_6	11	Children	15	1	100000	No Change	50277	Unlimited	Unlimited
-11_7	11	Adults Medicated	12	1	74876	No Change	50132	Unlimited	Unlimited
-12_0	12	Adults Medicated	17	1	75130	No Change	50111	Unlimited	Unlimited
-12_1	12	Adults Medicated	12	1	75120	No Change	50009	Unlimited	Unlimited
-12_2	12	Adults Medicated	16	1	74700	No Change	50035	Unlimited	Unlimited
-12_3	12	Children	8	1	100000	No Change	50185	Unlimited	Unlimited
-12_4	12	Adults Medicated	11	1	74979	No Change	50039	Unlimited	Unlimited
-13_0	13	Adults Medicated	13	1	74790	No Change	49968	Unlimited	Unlimited
-13_1	13	Adults Medicated	17	1	75040	No Change	50182	Unlimited	Unlimited
-13_2	13	Adults Medicated	10	1	75071	No Change	50049	Unlimited	Unlimited
-13_3	13	Adults Medicated	12	1	74832	No Change	49967	Unlimited	Unlimited
-13_4	13	Adults Medicated	18	1	75096	No Change	49965	Unlimited	Unlimited
-13_5	13	Adults Medicated	19	1	74908	No Change	49783	Unlimited	Unlimited
-13_6	13	Adults Medicated	17	1	74800	No Change	50049	Unlimited	Unlimited
-14_0	14	Adults Normal	25	1	75173	0.480299	Unlimited	10064	Unlimited
-14_1	14	Adults Medicated	16	1	75192	No Change	50071	Unlimited	Unlimited
-14_2	14	Adults Medicated	16	1	74983	No Change	50215	Unlimited	Unlimited
-14_3	14	Adults Medicated	18	1	75060	No Change	50052	Unlimited	Unlimited
-14_4	14	Children	13	1	100000	No Change	50110	Unlimited	Unlimited
-14_5	14	Adults Normal	18	1	74854	0.410941	Unlimited	10147	Unlimited
-14_6	14	Adults Normal	17	1	75126	0.186257	Unlimited	9803	Unlimited
-14_7	14	Adults Medicated	20	1	75060	No Change	49910	Unlimited	Unlimited
-14_8	14	Adults Medicated	15	1	74957	No Change	49906	Unlimited	Unlimited
-14_9	14	Adults Medicated	16	1	75138	No Change	49992	Unlimited	Unlimited
-14_10	14	Adults Medicated	13	1	74906	No Change	49985	Unlimited	Unlimited
-14_11	14	Adults Medicated	19	1	74943	No Change	49774	Unlimited	Unlimited
-15_0	15	Adults Medicated	17	1	75254	No Change	50026	Unlimited	Unlimited
-15_1	15	Adults Medicated	18	1	75078	No Change	50119	Unlimited	Unlimited
-15_2	15	Adults Medicated	12	1	74998	No Change	50041	Unlimited	Unlimited
-15_3	15	Adults Medicated	15	1	74945	No Change	50128	Unlimited	Unlimited
-15_4	15	Adults Medicated	17	1	75052	No Change	50068	Unlimited	Unlimited
-15_5	15	Adults Medicated	16	1	74942	No Change	50216	Unlimited	Unlimited
-16_0	16	Children	16	1	100000	No Change	50245	Unlimited	Unlimited
-16_1	16	Adults Medicated	12	1	74818	No Change	50183	Unlimited	Unlimited
-16_2	16	Adults Medicated	22	1	74730	No Change	50054	Unlimited	Unlimited
-16_3	16	Adults Medicated	18	1	75114	No Change	49843	Unlimited	Unlimited
-16_4	16	Adults Normal	12	1	75222	0.546576	Unlimited	9944	Unlimited
-17_0	17	Adults Medicated	13	1	75155	No Change	50120	Unlimited	Unlimited
-17_1	17	Adults Medicated	17	1	75064	No Change	50117	Unlimited	Unlimited
-17_2	17	Adults Medicated	20	1	75035	No Change	50116	Unlimited	Unlimited
-17_3	17	Adults Medicated	9	1	75059	No Change	50054	Unlimited	Unlimited
-17_4	17	Children	9	1	100000	No Change	50071	Unlimited	Unlimited
-17_5	17	Adults Medicated	18	1	74873	No Change	50186	Unlimited	Unlimited
-17_6	17	Adults Medicated	17	1	75049	No Change	49820	Unlimited	Unlimited
-17_7	17	Adults Normal	21	1	74927	0.325532	Unlimited	9846	Unlimited
-18_0	18	Adults Medicated	16	1	75093	No Change	50053	Unlimited	Unlimited
-18_1	18	Children	14	1	100000	No Change	49905	Unlimited	Unlimited
-18_2	18	Adults Medicated	17	1	74952	No Change	49907	Unlimited	Unlimited
-18_3	18	Adults Medicated	11	1	74908	No Change	49886	Unlimited	Unlimited
-18_4	18	Adults Medicated	14	1	75160	No Change	49897	Unlimited	Unlimited
-19_0	19	Adults Medicated	17	1	75005	No Change	49958	Unlimited	Unlimited
-19_1	19	Adults Medicated	17	1	75088	No Change	50007	Unlimited	Unlimited
-19_2	19	Adults Medicated	17	1	74907	No Change	50162	Unlimited	Unlimited
-19_3	19	Adults Medicated	11	1	75182	No Change	50253	Unlimited	Unlimited
-19_4	19	Children	12	1	100000	No Change	49731	Unlimited	Unlimited
-19_5	19	Adults Medicated	15	1	75052	No Change	50127	Unlimited	Unlimited
-19_6	19	Children	13	1	100000	No Change	50269	Unlimited	Unlimited
-20_0	20	Adults Medicated	14	1	75067	No Change	50182	Unlimited	Unlimited
-20_1	20	Adults Medicated	17	1	75101	No Change	49995	Unlimited	Unlimited
-20_2	20	Adults Normal	17	1	75048	0.303928	Unlimited	9901	Unlimited
-20_3	20	Adults Medicated	13	1	75066	No Change	50110	Unlimited	Unlimited
-20_4	20	Children	11	1	100000	No Change	49965	Unlimited	Unlimited
-20_5	20	Adults Medicated	15	1	74918	No Change	50077	Unlimited	Unlimited
-20_6	20	Adults Normal	17	1	74875	0.164436	Unlimited	10016	Unlimited
-20_7	20	Adults Medicated	10	1	75038	No Change	49890	Unlimited	Unlimited
-20_8	20	Children	18	1	100000	No Change	50168	Unlimited	Unlimited
-20_9	20	Adults Medicated	16	1	75019	No Change	49810	Unlimited	Unlimited
-20_10	20	Adults Medicated	17	1	75158	No Change	49971	Unlimited	Unlimited
-20_11	20	Adults Normal	20	1	74911	0.136599	Unlimited	9994	Unlimited
-20_12	20	Adults Medicated	12	1	74991	No Change	49911	Unlimited	Unlimited
-21_0	21	Adults Medicated	17	1	74929	No Change	49952	Unlimited	Unlimited
-21_1	21	Adults Medicated	10	1	74914	No Change	49899	Unlimited	Unlimited
-21_2	21	Adults Medicated	9	1	75094	No Change	50262	Unlimited	Unlimited
-21_3	21	Adults Normal	21	1	74877	0.429143	Unlimited	10194	Unlimited
-21_4	21	Children	11	1	100000	No Change	50260	Unlimited	Unlimited
-21_5	21	Adults Medicated	14	1	75259	No Change	50042	Unlimited	Unlimited
-21_6	21	Adults Medicated	16	1	75251	No Change	50014	Unlimited	Unlimited
-21_7	21	Adults Medicated	20	1	75201	No Change	49911	Unlimited	Unlimited
-21_8	21	Adults Medicated	10	1	75161	No Change	49974	Unlimited	Unlimited
-22_0	22	Adults Medicated	22	1	75260	No Change	50002	Unlimited	Unlimited
-22_1	22	Adults Medicated	17	1	74866	No Change	50394	Unlimited	Unlimited
-22_2	22	Adults Medicated	20	1	74916	No Change	49901	Unlimited	Unlimited
-22_3	22	Children	13	1	100000	No Change	49967	Unlimited	Unlimited
-23_0	23	Adults Medicated	16	1	75107	No Change	50098	Unlimited	Unlimited
-23_1	23	Adults Normal	14	1	74969	0.334618	Unlimited	9984	Unlimited
-23_2	23	Adults Medicated	13	1	74720	No Change	49917	Unlimited	Unlimited
-23_3	23	Children	11	1	100000	No Change	50080	Unlimited	Unlimited
-23_4	23	Adults Medicated	13	1	74987	No Change	50011	Unlimited	Unlimited
-23_5	23	Adults Medicated	15	1	74967	No Change	50054	Unlimited	Unlimited
-23_6	23	Adults Medicated	20	1	74945	No Change	50076	Unlimited	Unlimited
-24_0	24	Adults Medicated	17	1	74981	No Change	49959	Unlimited	Unlimited
-24_1	24	Children	16	1	100000	No Change	50105	Unlimited	Unlimited
-24_2	24	Adults Normal	16	1	75006	0.288818	Unlimited	10069	Unlimited
-24_3	24	Children	17	1	100000	No Change	50242	Unlimited	Unlimited
-24_4	24	Children	31	1	100000	No Change	49812	Unlimited	Unlimited
-24_5	24	Adults Normal	22	1	75007	0.29368	Unlimited	10161	Unlimited
-24_6	24	Adults Medicated	14	1	74901	No Change	50154	Unlimited	Unlimited
-24_7	24	Adults Normal	15	1	75071	0.206666	Unlimited	10006	Unlimited
-24_8	24	Adults Normal	13	1	75096	0.311556	Unlimited	9915	Unlimited
+0_0	0	Children	8	1	100	No Change	50162	Unlimited	Unlimited
+0_1	0	Adults Medicated	14	1	100	No Change	49932	Unlimited	Unlimited
+0_2	0	Children	12	1	100	No Change	49890	Unlimited	Unlimited
+1_0	1	Children	14	1	100	No Change	50289	Unlimited	Unlimited
+1_1	1	Adults Normal	20	1	100	0.273705	Unlimited	9969	Unlimited
+1_2	1	Adults Medicated	12	1	100	No Change	49923	Unlimited	Unlimited
+1_3	1	Adults Medicated	9	1	100	No Change	50170	Unlimited	Unlimited
+1_4	1	Children	16	1	100	No Change	50080	Unlimited	Unlimited
+1_5	1	Adults Medicated	15	1	100	No Change	49854	Unlimited	Unlimited
+1_6	1	Adults Medicated	13	1	100	No Change	50142	Unlimited	Unlimited
+1_7	1	Adults Medicated	17	1	100	No Change	49991	Unlimited	Unlimited
+1_8	1	Adults Medicated	16	1	100	No Change	50091	Unlimited	Unlimited
+1_9	1	Adults Medicated	14	1	100	No Change	49628	Unlimited	Unlimited
+1_10	1	Adults Medicated	19	1	100	No Change	50225	Unlimited	Unlimited
+1_11	1	Adults Normal	16	1	100	0.328114	Unlimited	10066	Unlimited
+1_12	1	Adults Normal	9	1	100	0.492084	Unlimited	10170	Unlimited
+2_0	2	Adults Medicated	17	1	100	No Change	49995	Unlimited	Unlimited
+2_1	2	Adults Medicated	18	1	100	No Change	49784	Unlimited	Unlimited
+2_2	2	Adults Medicated	12	1	100	No Change	49901	Unlimited	Unlimited
+2_3	2	Adults Medicated	12	1	100	No Change	50084	Unlimited	Unlimited
+2_4	2	Adults Medicated	18	1	100	No Change	49677	Unlimited	Unlimited
+2_5	2	Adults Medicated	11	1	100	No Change	49998	Unlimited	Unlimited
+2_6	2	Adults Medicated	10	1	100	No Change	50174	Unlimited	Unlimited
+2_7	2	Children	11	1	100	No Change	49883	Unlimited	Unlimited
+2_8	2	Adults Medicated	15	1	100	No Change	50073	Unlimited	Unlimited
+2_9	2	Adults Medicated	11	1	100	No Change	49941	Unlimited	Unlimited
+2_10	2	Adults Medicated	10	1	100	No Change	49831	Unlimited	Unlimited
+2_11	2	Adults Medicated	15	1	100	No Change	50206	Unlimited	Unlimited
+3_0	3	Adults Normal	20	1	100	0.442185	Unlimited	10144	Unlimited
+3_1	3	Adults Medicated	18	1	100	No Change	50194	Unlimited	Unlimited
+3_2	3	Adults Medicated	15	1	100	No Change	49918	Unlimited	Unlimited
+3_3	3	Children	11	1	100	No Change	50007	Unlimited	Unlimited
+3_4	3	Adults Medicated	11	1	100	No Change	49981	Unlimited	Unlimited
+3_5	3	Adults Medicated	18	1	100	No Change	50108	Unlimited	Unlimited
+3_6	3	Adults Medicated	15	1	100	No Change	50158	Unlimited	Unlimited
+4_0	4	Adults Medicated	17	1	100	No Change	49846	Unlimited	Unlimited
+4_1	4	Adults Medicated	20	1	100	No Change	50031	Unlimited	Unlimited
+4_2	4	Adults Normal	12	1	100	0.282741	Unlimited	10021	Unlimited
+4_3	4	Adults Medicated	13	1	100	No Change	50262	Unlimited	Unlimited
+4_4	4	Children	7	1	100	No Change	50175	Unlimited	Unlimited
+4_5	4	Adults Medicated	12	1	100	No Change	49805	Unlimited	Unlimited
+4_6	4	Children	12	1	100	No Change	50229	Unlimited	Unlimited
+4_7	4	Adults Medicated	13	1	100	No Change	50126	Unlimited	Unlimited
+4_8	4	Children	18	1	100	No Change	49825	Unlimited	Unlimited
+5_0	5	Adults Medicated	11	1	100	No Change	49962	Unlimited	Unlimited
+5_1	5	Adults Medicated	17	1	100	No Change	49923	Unlimited	Unlimited
+5_2	5	Children	13	1	100	No Change	49926	Unlimited	Unlimited
+5_3	5	Adults Normal	8	1	100	0.371046	Unlimited	10032	Unlimited
+5_4	5	Adults Medicated	9	1	100	No Change	49995	Unlimited	Unlimited
+5_5	5	Adults Normal	10	1	100	0.201475	Unlimited	9892	Unlimited
+5_6	5	Adults Medicated	11	1	100	No Change	50083	Unlimited	Unlimited
+5_7	5	Adults Medicated	22	1	100	No Change	50082	Unlimited	Unlimited
+6_0	6	Adults Medicated	11	1	100	No Change	50029	Unlimited	Unlimited
+6_1	6	Adults Medicated	10	1	100	No Change	50380	Unlimited	Unlimited
+6_2	6	Children	8	1	100	No Change	50141	Unlimited	Unlimited
+6_3	6	Adults Medicated	11	1	100	No Change	49963	Unlimited	Unlimited
+6_4	6	Adults Medicated	11	1	100	No Change	50123	Unlimited	Unlimited
+6_5	6	Adults Medicated	16	1	100	No Change	50135	Unlimited	Unlimited
+7_0	7	Adults Medicated	20	1	100	No Change	50102	Unlimited	Unlimited
+7_1	7	Adults Medicated	15	1	100	No Change	49760	Unlimited	Unlimited
+7_2	7	Adults Medicated	12	1	100	No Change	50008	Unlimited	Unlimited
+8_0	8	Adults Normal	9	1	100	0.316789	Unlimited	9833	Unlimited
+8_1	8	Adults Normal	8	1	100	0.387505	Unlimited	10027	Unlimited
+8_2	8	Children	10	1	100	No Change	50041	Unlimited	Unlimited
+8_3	8	Adults Medicated	19	1	100	No Change	50027	Unlimited	Unlimited
+8_4	8	Adults Medicated	20	1	100	No Change	50174	Unlimited	Unlimited
+8_5	8	Adults Medicated	14	1	100	No Change	49763	Unlimited	Unlimited
+8_6	8	Children	14	1	100	No Change	50178	Unlimited	Unlimited
+9_0	9	Adults Medicated	17	1	100	No Change	50172	Unlimited	Unlimited
+9_1	9	Adults Medicated	16	1	100	No Change	49744	Unlimited	Unlimited
+9_2	9	Adults Medicated	8	1	100	No Change	49963	Unlimited	Unlimited
+9_3	9	Adults Medicated	15	1	100	No Change	50192	Unlimited	Unlimited
+9_4	9	Adults Medicated	8	1	100	No Change	50121	Unlimited	Unlimited
+9_5	9	Adults Normal	15	1	100	0.588284	Unlimited	9985	Unlimited
+9_6	9	Adults Normal	14	1	100	0.4191	Unlimited	10103	Unlimited
+9_7	9	Adults Medicated	12	1	100	No Change	50042	Unlimited	Unlimited
+10_0	10	Adults Medicated	11	1	100	No Change	50189	Unlimited	Unlimited
+10_1	10	Adults Medicated	15	1	100	No Change	50010	Unlimited	Unlimited
+10_2	10	Adults Medicated	15	1	100	No Change	49833	Unlimited	Unlimited
+10_3	10	Adults Medicated	12	1	100	No Change	49920	Unlimited	Unlimited
+10_4	10	Adults Medicated	14	1	100	No Change	49703	Unlimited	Unlimited
+10_5	10	Adults Medicated	15	1	100	No Change	50029	Unlimited	Unlimited
+10_6	10	Adults Medicated	6	1	100	No Change	49884	Unlimited	Unlimited
+10_7	10	Children	18	1	100	No Change	50185	Unlimited	Unlimited
+10_8	10	Children	12	1	100	No Change	49957	Unlimited	Unlimited
+10_9	10	Adults Medicated	19	1	100	No Change	49954	Unlimited	Unlimited
+10_10	10	Adults Medicated	12	1	100	No Change	50247	Unlimited	Unlimited
+11_0	11	Children	16	1	100	No Change	49708	Unlimited	Unlimited
+11_1	11	Adults Medicated	10	1	100	No Change	50213	Unlimited	Unlimited
+11_2	11	Adults Medicated	15	1	100	No Change	50337	Unlimited	Unlimited
+11_3	11	Adults Normal	14	1	100	0.447326	Unlimited	9952	Unlimited
+11_4	11	Adults Medicated	11	1	100	No Change	50397	Unlimited	Unlimited
+11_5	11	Adults Medicated	18	1	100	No Change	49994	Unlimited	Unlimited
+11_6	11	Children	11	1	100	No Change	49825	Unlimited	Unlimited
+11_7	11	Adults Medicated	13	1	100	No Change	50040	Unlimited	Unlimited
+12_0	12	Adults Normal	11	1	100	0.280984	Unlimited	10043	Unlimited
+12_1	12	Adults Medicated	12	1	100	No Change	49825	Unlimited	Unlimited
+12_2	12	Children	13	1	100	No Change	50100	Unlimited	Unlimited
+12_3	12	Adults Medicated	13	1	100	No Change	50282	Unlimited	Unlimited
+12_4	12	Adults Normal	20	1	100	0.61688	Unlimited	9866	Unlimited
+12_5	12	Adults Medicated	9	1	100	No Change	49998	Unlimited	Unlimited
+12_6	12	Adults Medicated	13	1	100	No Change	49900	Unlimited	Unlimited
+12_7	12	Adults Normal	14	1	100	0.255934	Unlimited	10005	Unlimited
+13_0	13	Adults Normal	14	1	100	0.39872	Unlimited	9936	Unlimited
+13_1	13	Adults Medicated	14	1	100	No Change	50003	Unlimited	Unlimited
+13_2	13	Children	15	1	100	No Change	50045	Unlimited	Unlimited
+13_3	13	Adults Medicated	10	1	100	No Change	50025	Unlimited	Unlimited
+13_4	13	Adults Medicated	10	1	100	No Change	50038	Unlimited	Unlimited
+13_5	13	Adults Medicated	15	1	100	No Change	49887	Unlimited	Unlimited
+13_6	13	Adults Medicated	14	1	100	No Change	49922	Unlimited	Unlimited
+13_7	13	Children	13	1	100	No Change	49636	Unlimited	Unlimited
+13_8	13	Adults Medicated	15	1	100	No Change	49828	Unlimited	Unlimited
+13_9	13	Adults Medicated	12	1	100	No Change	50157	Unlimited	Unlimited
+13_10	13	Adults Medicated	8	1	100	No Change	49901	Unlimited	Unlimited
+13_11	13	Adults Medicated	15	1	100	No Change	50087	Unlimited	Unlimited
+14_0	14	Adults Medicated	13	1	100	No Change	49874	Unlimited	Unlimited
+14_1	14	Adults Medicated	19	1	100	No Change	49946	Unlimited	Unlimited
+15_0	15	Adults Medicated	9	1	100	No Change	49943	Unlimited	Unlimited
+15_1	15	Adults Medicated	11	1	100	No Change	50061	Unlimited	Unlimited
+15_2	15	Adults Normal	15	1	100	0.365402	Unlimited	9929	Unlimited
+15_3	15	Adults Medicated	10	1	100	No Change	49992	Unlimited	Unlimited
+15_4	15	Adults Medicated	16	1	100	No Change	49900	Unlimited	Unlimited
+16_0	16	Adults Medicated	8	1	100	No Change	49845	Unlimited	Unlimited
+16_1	16	Children	18	1	100	No Change	50020	Unlimited	Unlimited
+16_2	16	Adults Normal	12	1	100	0.368584	Unlimited	10024	Unlimited
+16_3	16	Adults Normal	10	1	100	0.465202	Unlimited	10160	Unlimited
+16_4	16	Adults Medicated	13	1	100	No Change	49879	Unlimited	Unlimited
+16_5	16	Adults Medicated	16	1	100	No Change	50347	Unlimited	Unlimited
+16_6	16	Adults Medicated	10	1	100	No Change	49827	Unlimited	Unlimited
+16_7	16	Adults Medicated	9	1	100	No Change	49936	Unlimited	Unlimited
+16_8	16	Adults Medicated	13	1	100	No Change	50316	Unlimited	Unlimited
+16_9	16	Adults Medicated	12	1	100	No Change	49863	Unlimited	Unlimited
+16_10	16	Adults Medicated	11	1	100	No Change	50072	Unlimited	Unlimited
+16_11	16	Adults Medicated	12	1	100	No Change	50043	Unlimited	Unlimited
+16_12	16	Adults Medicated	8	1	100	No Change	50021	Unlimited	Unlimited
+17_0	17	Adults Medicated	9	1	100	No Change	50063	Unlimited	Unlimited
+17_1	17	Adults Medicated	15	1	100	No Change	49660	Unlimited	Unlimited
+17_2	17	Children	11	1	100	No Change	50081	Unlimited	Unlimited
+17_3	17	Adults Medicated	15	1	100	No Change	50174	Unlimited	Unlimited
+17_4	17	Adults Medicated	16	1	100	No Change	50083	Unlimited	Unlimited
+17_5	17	Adults Medicated	10	1	100	No Change	49803	Unlimited	Unlimited
+17_6	17	Adults Normal	18	1	100	0.221856	Unlimited	9929	Unlimited
+17_7	17	Adults Medicated	13	1	100	No Change	50308	Unlimited	Unlimited
+17_8	17	Adults Medicated	11	1	100	No Change	49877	Unlimited	Unlimited
+17_9	17	Adults Medicated	15	1	100	No Change	50159	Unlimited	Unlimited
+18_0	18	Adults Medicated	13	1	100	No Change	50037	Unlimited	Unlimited
+19_0	19	Children	18	1	100	No Change	49756	Unlimited	Unlimited
+19_1	19	Adults Medicated	16	1	100	No Change	49902	Unlimited	Unlimited
+19_2	19	Adults Medicated	18	1	100	No Change	49845	Unlimited	Unlimited
+20_0	20	Adults Normal	14	1	100	0.262584	Unlimited	10033	Unlimited
+20_1	20	Adults Medicated	20	1	100	No Change	50039	Unlimited	Unlimited
+20_2	20	Children	12	1	100	No Change	49751	Unlimited	Unlimited
+20_3	20	Adults Medicated	15	1	100	No Change	50071	Unlimited	Unlimited
+20_4	20	Adults Medicated	14	1	100	No Change	49649	Unlimited	Unlimited
+21_0	21	Adults Medicated	16	1	100	No Change	49953	Unlimited	Unlimited
+21_1	21	Adults Medicated	18	1	100	No Change	50095	Unlimited	Unlimited
+21_2	21	Adults Medicated	17	1	100	No Change	49890	Unlimited	Unlimited
+21_3	21	Adults Medicated	17	1	100	No Change	50029	Unlimited	Unlimited
+21_4	21	Adults Medicated	11	1	100	No Change	50164	Unlimited	Unlimited
+21_5	21	Children	17	1	100	No Change	50105	Unlimited	Unlimited
+21_6	21	Adults Medicated	12	1	100	No Change	49649	Unlimited	Unlimited
+21_7	21	Children	14	1	100	No Change	49883	Unlimited	Unlimited
+21_8	21	Adults Medicated	15	1	100	No Change	49829	Unlimited	Unlimited
+21_9	21	Adults Medicated	16	1	100	No Change	49835	Unlimited	Unlimited
+22_0	22	Adults Normal	10	1	100	0.457599	Unlimited	10010	Unlimited
+22_1	22	Adults Medicated	11	1	100	No Change	49897	Unlimited	Unlimited
+22_2	22	Children	13	1	100	No Change	50037	Unlimited	Unlimited
+22_3	22	Adults Medicated	13	1	100	No Change	50346	Unlimited	Unlimited
+22_4	22	Adults Normal	15	1	100	0.40756	Unlimited	9737	Unlimited
+23_0	23	Adults Medicated	13	1	100	No Change	50214	Unlimited	Unlimited
+23_1	23	Children	13	1	100	No Change	50194	Unlimited	Unlimited
+24_0	24	Adults Medicated	11	1	100	No Change	49990	Unlimited	Unlimited
+24_1	24	Adults Medicated	12	1	100	No Change	49985	Unlimited	Unlimited
+24_2	24	Adults Normal	15	1	100	0.541605	Unlimited	10132	Unlimited
+24_3	24	Adults Medicated	18	1	100	No Change	49863	Unlimited	Unlimited
+24_4	24	Adults Medicated	14	1	100	No Change	49926	Unlimited	Unlimited
+24_5	24	Adults Medicated	9	1	100	No Change	50062	Unlimited	Unlimited
+24_6	24	Adults Medicated	11	1	100	No Change	49678	Unlimited	Unlimited
+24_7	24	Adults Normal	10	1	100	0.215052	Unlimited	10027	Unlimited
+24_8	24	Children	12	1	100	No Change	49854	Unlimited	Unlimited
+24_9	24	Adults Medicated	11	1	100	No Change	49872	Unlimited	Unlimited
+24_10	24	Adults Medicated	13	1	100	No Change	49977	Unlimited	Unlimited
+24_11	24	Adults Medicated	11	1	100	No Change	49945	Unlimited	Unlimited

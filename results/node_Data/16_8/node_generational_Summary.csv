@@ -1,0 +1,7 @@
+overall_Generation	node_Generation	Tissue	num_Parents	num_Progeny	dead_Progeny
+3	0	Blood	0	0	0
+3	0	Lung	1	12	7
+3	0	Gut	0	0	0
+4	1	Blood	1	24	12
+4	1	Lung	1	0	0
+4	1	Gut	0	0	0

@@ -932,11 +932,11 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
 
             for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
             {
-                nFASTA_file << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
+                nFASTA_file << ">" << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
                             << "_collection_date_" << to_string(decimal_Date) << "_" << to_string(year) << "-" << to_string(month) << "-" << to_string(day) << endl;
                 nFASTA_file << collected_Sequences[sequence] << endl;
 
-                sequence_summary_File << ">" << get_Name()
+                sequence_summary_File << get_Name()
                                       << "\t" << tissue_Names[tissue]
                                       << "\t" << get_Name() << "_" << tissue_Names[tissue] << "_" << to_string(current_Generation) << "_" << to_string(indexes_of_Seq_write[sequence])
                                       << "\t" << to_string(decimal_Date)
@@ -3119,12 +3119,12 @@ int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
         return 0;
     }
 }
-int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string &intermediary_Sequence_location)
+int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string source_sequence_Data_folder)
 {
     if (get_Load(num_tissues, tissue_array) >= terminal_Load)
     {
         set_Dead();
-        compress_Folder(intermediary_Sequence_location + "/" + to_string(this->host_Index));
+        compress_Folder(source_sequence_Data_folder);
         return 1;
     }
     else
