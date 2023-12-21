@@ -1539,14 +1539,14 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     cout << endl;
 
-    for (int row = 0; row < Total_seqeunces_to_Process; row++)
-    {
-        for (int col = 0; col < genome_Length; col++)
-        {
-            cout << parent_Sequences[row][col];
-        }
-        cout << endl;
-    }
+    // for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    // {
+    //     for (int col = 0; col < genome_Length; col++)
+    //     {
+    //         cout << parent_Sequences[row][col];
+    //     }
+    //     cout << endl;
+    // }
 
     cout << endl;
 
@@ -2465,7 +2465,7 @@ __global__ void cuda_Parent_configuration(int num_Sequences, int **sequence_INT,
             progeny = curand_poisson(&localState, cuda_progeny_distribution_parameters_Array[1]);
         }
 
-        cuda_sequence_Configuration_standard[tid][0] = progeny * fitness;
+        cuda_sequence_Configuration_standard[tid][0] = (int)(progeny * fitness);
 
         // proof reading
         if (cuda_Reference_fitness_survivability_proof_reading[2] != -1)

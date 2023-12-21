@@ -331,7 +331,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     // // TODO: create an overall generational summary
     // // TODO: Per individual generational summary
     // // TODO: SIRS
-    // TODO: Terminate after given number of generations or time
+    // // TODO: Terminate after given number of generations or time
     // TODO: CHECK IF ALL ARRAYS ARE CLEARED
 
     // Source\tTarget\tInfection_time
