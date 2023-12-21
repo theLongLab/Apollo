@@ -17,7 +17,7 @@
   "Terminal load distribution type":"Fixed",
   "Terminal load Binomial trials":100000,
   "Terminal load Binomial probability":"0.75",
-  "Terminal load Fixed":100,
+  "Terminal load Fixed":10000,
 
   # Control the viral transmission infection from one host to another
   "Infection sequence distribution":"Fixed",
@@ -63,14 +63,12 @@
 
       "Replication phases":{
 
-        "Number of phases":2,
+        "Number of phases":1,
 
-        "Phase 1 Mode":"Neutral",
-        "Phase 1 Time ratio":"0.5",
-
-        "Phase 2 Mode":"Stationary",
-        "Phase 2 Time ratio":"0.5",
-        "Phase 2 Variance":"10",
+        "Phase 1 Mode":"Depriciation",
+        "Phase 1 Time ratio":"1",
+        "Phase 1 Alpha":"100",
+        "Phase 1 Beta":"100",
       },
     },
 

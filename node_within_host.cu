@@ -618,7 +618,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         // }
                         // exit(-1);
                         // vector<int> start_Stop_cells;
-                        if (start_Stop_cells.size() - 1 > 0)
+                        if ((start_Stop_cells.size() - 1) > 0)
                         {
                             for (int i = 0; i < start_Stop_cells.size() - 1; i++)
                             {
@@ -2250,14 +2250,14 @@ void node_within_host::progeny_Completion(functions_library &functions,
     }
     cout << endl;
 
-    for (int test = 0; test < 1; test++)
-    {
-        for (size_t i = 0; i < genome_Length; i++)
-        {
-            cout << progeny_Sequences[test][i];
-        }
-        cout << endl;
-    }
+    // for (int test = 0; test < 1; test++)
+    // {
+    //     for (size_t i = 0; i < genome_Length; i++)
+    //     {
+    //         cout << progeny_Sequences[test][i];
+    //     }
+    //     cout << endl;
+    // }
     cout << endl;
     for (int test = 0; test < num_Progeny_being_Processed; test++)
     {

@@ -247,6 +247,11 @@ int **functions_library::create_INT_2D_arrays(int rows, int columns)
         array_2D[i] = (int *)malloc((columns + 1) * sizeof(int));
     }
 
+    if (rows > 0)
+    {
+        array_2D[0][0] = 0;
+    }
+
     return array_2D;
     free(array_2D);
 }
@@ -258,6 +263,11 @@ float **functions_library::create_FLOAT_2D_arrays(int rows, int columns)
     for (int i = 0; i < rows; i++)
     {
         array_2D[i] = (float *)malloc((columns + 1) * sizeof(float));
+    }
+
+    if (rows > 0)
+    {
+        array_2D[0][0] = 0;
     }
 
     return array_2D;
