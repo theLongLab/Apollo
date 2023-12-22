@@ -6692,12 +6692,25 @@ float functions_library::date_to_Decimal(int year, int month, int day)
     cout << "Converting date (yyyy-mm-dd) to decimal\n";
     int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
+    int days_Total = 365;
     if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))
     {
-        daysInMonth[1] = 29; // Adjust for leap year
+        daysInMonth[1] = 29;
+        days_Total = 366; // Adjust for leap year
     }
 
-    float decimalDate = year + (month - 1 + (day - 1) / static_cast<float>(daysInMonth[month - 1])) / 12.0;
+    int days_passed = 0;
+
+    month = month - 1;
+
+    for (int month_i = 0; month_i < month; month_i++)
+    {
+        days_passed = days_passed + daysInMonth[month_i];
+    }
+
+    days_passed = days_passed + day;
+
+    float decimalDate = (float)year + ((float)days_passed / (float)days_Total);
 
     return decimalDate;
 }
@@ -6705,18 +6718,47 @@ float functions_library::date_to_Decimal(int year, int month, int day)
 void functions_library::decimal_to_Date(float decimal_Date, int &year, int &month, int &day)
 {
     cout << "Converting decimal to date (yyyy-mm-dd)\n";
-    year = static_cast<int>(decimal_Date); // Extract the year
 
-    // Extract the month (fractional part multiplied by 12, add 1 to convert to 1-based index)
-    double fractionalPart = decimal_Date - year;
-    month = static_cast<int>(std::round(fractionalPart * 12)) + 1;
+    year = (int)decimal_Date;
 
-    // Extract the day (fractional part multiplied by the number of days in the month, add 1)
-    fractionalPart = fractionalPart * 12 - (month - 1);
+    float decimal_Section = decimal_Date - year;
+
     int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    int days_Total = 365;
     if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0))
     {
-        daysInMonth[1] = 29; // Adjust for leap year
+        daysInMonth[1] = 29;
+        days_Total = 366; // Adjust for leap year
     }
-    day = static_cast<int>(std::round(fractionalPart * daysInMonth[month - 1] + 1));
+
+    day = decimal_Section * days_Total;
+
+    // int get_Month = 0;
+
+    int days_passed = 0;
+    for (int month_i = 0; month_i < 12; month_i++)
+    {
+        days_passed = days_passed + daysInMonth[month_i];
+        if (days_passed >= day)
+        {
+            month = month_i + 1;
+            days_passed = days_passed - daysInMonth[month_i];
+            break;
+        }
+    }
+
+    day = day - days_passed;
+
+    if (day == 0)
+    {
+        month = month - 1;
+        if (month == 0)
+        {
+            month = 12;
+            year = year - 1;
+        }
+
+        day = daysInMonth[month - 1];
+    }
 }
