@@ -1941,18 +1941,25 @@ int **functions_library::create_progeny_Sequences(int **cuda_parent_Sequences, i
 int **functions_library::Fill_2D_array_CUDA(int rows, int columns, int fill_Value, int **cuda_Progeny_numbers)
 {
     int **cuda_Array_2D;
-    cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(int));
 
-    int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
-
-    for (int i = 0; i < rows; i++)
+    cudaMallocManaged(&cuda_Array_2D, rows * sizeof(int *));
+    for (int row = 0; row < rows; row++)
     {
-        // cout << i << endl;
-        cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+        cudaMalloc((void **)&(cuda_Array_2D[row]), (1 + columns) * sizeof(int));
     }
-    // cout << "run" << endl;
-    cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
-    free(tmp);
+
+    // cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(int));
+
+    // int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
+
+    // for (int i = 0; i < rows; i++)
+    // {
+    //     // cout << i << endl;
+    //     cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+    // }
+    // // cout << "run" << endl;
+    // cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
+    // free(tmp);
 
     int total_Cells = rows * columns;
 
@@ -2006,18 +2013,24 @@ int **functions_library::create_Fill_2D_array(int rows, int columns, int fill_Va
     int **array_2D = create_INT_2D_arrays(rows, (columns + 1));
     int **cuda_Array_2D;
 
-    cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(int));
-
-    int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
-
-    for (int i = 0; i < rows; i++)
+    cudaMallocManaged(&cuda_Array_2D, rows * sizeof(int *));
+    for (int row = 0; row < rows; row++)
     {
-        // cout << i << endl;
-        cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+        cudaMalloc((void **)&(cuda_Array_2D[row]), (1 + columns) * sizeof(int));
     }
-    // cout << "run" << endl;
-    cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
-    free(tmp);
+
+    // cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(int));
+
+    // int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
+
+    // for (int i = 0; i < rows; i++)
+    // {
+    //     // cout << i << endl;
+    //     cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+    // }
+    // // cout << "run" << endl;
+    // cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
+    // free(tmp);
 
     cuda_Fill_2D_array<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
@@ -2099,18 +2112,24 @@ float **functions_library::create_Fill_2D_array_FLOAT(int rows, int columns, flo
     float **array_2D = create_FLOAT_2D_arrays(rows, (columns + 1));
     float **cuda_Array_2D;
 
-    cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(float));
-
-    float **tmp = (float **)malloc(rows * sizeof(tmp[0]));
-
-    for (int i = 0; i < rows; i++)
+    cudaMallocManaged(&cuda_Array_2D, rows * sizeof(float *));
+    for (int row = 0; row < rows; row++)
     {
-        // cout << i << endl;
-        cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+        cudaMalloc((void **)&(cuda_Array_2D[row]), (1 + columns) * sizeof(float));
     }
-    // cout << "run" << endl;
-    cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(float *), cudaMemcpyHostToDevice);
-    free(tmp);
+
+    // cudaMallocManaged(&cuda_Array_2D, (columns + 1) * rows * sizeof(float));
+
+    // float **tmp = (float **)malloc(rows * sizeof(tmp[0]));
+
+    // for (int i = 0; i < rows; i++)
+    // {
+    //     // cout << i << endl;
+    //     cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+    // }
+    // // cout << "run" << endl;
+    // cudaMemcpy(cuda_Array_2D, tmp, rows * sizeof(float *), cudaMemcpyHostToDevice);
+    // free(tmp);
 
     cuda_Fill_2D_array_Float<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
@@ -5491,15 +5510,21 @@ int **functions_library::create_CUDA_2D_int(int rows, int columns)
     cudaSetDevice(CUDA_device_IDs[0]);
     int **CUDA_array;
 
-    cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(int));
-    int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
-    for (int i = 0; i < rows; i++)
+    cudaMallocManaged(&CUDA_array, rows * sizeof(int *));
+    for (int row = 0; row < rows; row++)
     {
-        // cout << i << endl;
-        cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+        cudaMalloc((void **)&(CUDA_array[row]), (1 + columns) * sizeof(int));
     }
-    cudaMemcpy(CUDA_array, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
-    free(tmp);
+
+    // cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(int));
+    // int **tmp = (int **)malloc(rows * sizeof(tmp[0]));
+    // for (int i = 0; i < rows; i++)
+    // {
+    //     // cout << i << endl;
+    //     cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+    // }
+    // cudaMemcpy(CUDA_array, tmp, rows * sizeof(int *), cudaMemcpyHostToDevice);
+    // free(tmp);
 
     // for (int i = 0; i < rows; i++)
     // {
@@ -5514,21 +5539,27 @@ float **functions_library::create_CUDA_2D_FLOAT(int rows, int columns)
     cudaSetDevice(CUDA_device_IDs[0]);
     float **CUDA_array;
 
-    cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(float));
-    float **tmp = (float **)malloc(rows * sizeof(tmp[0]));
-    for (int i = 0; i < rows; i++)
+    cudaMallocManaged(&CUDA_array, rows * sizeof(float *));
+    for (int row = 0; row < rows; row++)
     {
-        // cout << i << endl;
-        cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
+        cudaMalloc((void **)&(CUDA_array[row]), (1 + columns) * sizeof(float));
     }
-    cudaMemcpy(CUDA_array, tmp, rows * sizeof(float *), cudaMemcpyHostToDevice);
 
+    // cudaMallocManaged(&CUDA_array, (columns + 1) * rows * sizeof(float));
+    // float **tmp = (float **)malloc(rows * sizeof(tmp[0]));
     // for (int i = 0; i < rows; i++)
     // {
-    //     free(tmp[i]);
+    //     // cout << i << endl;
+    //     cudaMalloc((void **)&tmp[i], (columns + 1) * sizeof(tmp[0][0]));
     // }
+    // cudaMemcpy(CUDA_array, tmp, rows * sizeof(float *), cudaMemcpyHostToDevice);
 
-    free(tmp);
+    // // for (int i = 0; i < rows; i++)
+    // // {
+    // //     free(tmp[i]);
+    // // }
+
+    // free(tmp);
 
     return CUDA_array;
 }

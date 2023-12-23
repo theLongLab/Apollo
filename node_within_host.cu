@@ -568,7 +568,14 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
                         //// clear 2d
                         // int *parents_in_Tissue = (int *)malloc(sizeof(int) * real_Particle_count_per_Tissue[tissue]);
-                        int **parents_in_Tissue = functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
+                        //= functions.create_INT_2D_arrays(2, real_Particle_count_per_Tissue[tissue]);
+
+                        int **parents_in_Tissue;
+                        parents_in_Tissue = (int **)malloc(2 * sizeof(int *));
+                        for (int row = 0; row < 2; row++)
+                        {
+                            parents_in_Tissue[row] = (int *)malloc(real_Particle_count_per_Tissue[tissue] * sizeof(int));
+                        }
 
                         // test
                         // check_to_Remove.insert(0);
@@ -620,14 +627,14 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         // vector<int> start_Stop_cells;
                         if ((start_Stop_cells.size() - 1) > 0)
                         {
-                            //cout << "check\n";
-                            // for (int i = 0; i < start_Stop_cells.size(); i++)
-                            // {
-                            //     cout << start_Stop_cells[i] << endl;
-                            // }
+                            // cout << "check\n";
+                            //  for (int i = 0; i < start_Stop_cells.size(); i++)
+                            //  {
+                            //      cout << start_Stop_cells[i] << endl;
+                            //  }
                             for (int i = 0; i < start_Stop_cells.size() - 1; i++)
                             {
-                                //cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
                                 for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
                                 {
                                     // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
@@ -1416,11 +1423,23 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     cout << "Retrieving parent sequences and configuring their profiles\n";
 
     // // clear 2d array
-    int **parent_Sequences = functions.create_INT_2D_arrays(Total_seqeunces_to_Process, genome_Length);
+    int **parent_Sequences;
+    //= functions.create_INT_2D_arrays(Total_seqeunces_to_Process, genome_Length);
+    parent_Sequences = (int **)malloc(Total_seqeunces_to_Process * sizeof(int *));
+    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    {
+        parent_Sequences[row] = (int *)malloc(genome_Length * sizeof(int));
+    }
     // // clear 2d array
     float **sequence_Configuration_standard;
     // int columns = 3 + (2 * recombination_Hotspots);
-    sequence_Configuration_standard = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
+    // sequence_Configuration_standard = functions.create_FLOAT_2D_arrays(Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
+
+    sequence_Configuration_standard = (float **)malloc(Total_seqeunces_to_Process * sizeof(float *));
+    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    {
+        sequence_Configuration_standard[row] = (float *)malloc((2 + (2 * recombination_Hotspots)) * sizeof(float));
+    }
 
     // float **sequence_Configuration_recombination;
     // if (mutation_recombination_proof_Reading_availability[1] == 1)
@@ -1430,7 +1449,13 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // // clear 2d array
     // int *parent_IDs = (int *)malloc(sizeof(int) * Total_seqeunces_to_Process);
-    int **parent_IDs = functions.create_INT_2D_arrays(2, Total_seqeunces_to_Process);
+    int **parent_IDs;
+    // functions.create_INT_2D_arrays(2, Total_seqeunces_to_Process);
+    parent_IDs = (int **)malloc(2 * sizeof(int *));
+    for (int row = 0; row < 2; row++)
+    {
+        parent_IDs[row] = (int *)malloc(Total_seqeunces_to_Process * sizeof(int));
+    }
 
     // cout << progeny_distribution_parameters_Array[0] << endl;
     // cout << progeny_distribution_parameters_Array[1] << endl;
@@ -1633,7 +1658,13 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // //clear array
     // int **cuda_progeny_Configuration = functions.create_CUDA_2D_int(total_Progeny, 1 + recombination_Hotspots);
-    int **progeny_Configuration = functions.create_INT_2D_arrays(total_Progeny, 1 + recombination_Hotspots);
+    int **progeny_Configuration;
+    // = functions.create_INT_2D_arrays(total_Progeny, 1 + recombination_Hotspots);
+    progeny_Configuration = (int **)malloc(total_Progeny * sizeof(int *));
+    for (int row = 0; row < total_Progeny; row++)
+    {
+        progeny_Configuration[row] = (int *)malloc((1 + recombination_Hotspots) * sizeof(int));
+    }
 
     //// clear array
     int *cuda_progeny_Stride;
@@ -1721,7 +1752,13 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     free(cell_Index);
 
-    functions.clear_Array_float_CPU(totals_Progeny_Selectivity, num_Cells);
+    // functions.clear_Array_float_CPU(totals_Progeny_Selectivity, num_Cells);
+    for (int row = 0; row < num_Cells; row++)
+    {
+        free(totals_Progeny_Selectivity[row]);
+    }
+    free(totals_Progeny_Selectivity);
+
     functions.clear_Array_int_CPU(progeny_Configuration, total_Progeny);
 }
 
@@ -2162,8 +2199,22 @@ void node_within_host::progeny_Completion(functions_library &functions,
     cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
 
     //// cleared all 3
-    int **progeny_Configuration_Filled = functions.create_INT_2D_arrays_for_GPU(num_Progeny_being_Processed, (1 + recombination_Hotspots));
-    int **progeny_Sequences = functions.create_INT_2D_arrays_for_GPU(num_Progeny_being_Processed, genome_Length);
+    int **progeny_Configuration_Filled;
+    // = functions.create_INT_2D_arrays_for_GPU(num_Progeny_being_Processed, (1 + recombination_Hotspots));
+    progeny_Configuration_Filled = (int **)malloc(num_Progeny_being_Processed * sizeof(int *));
+    for (int row = 0; row < num_Progeny_being_Processed; row++)
+    {
+        progeny_Configuration_Filled[row] = (int *)malloc((1 + recombination_Hotspots) * sizeof(int));
+    }
+
+    int **progeny_Sequences;
+    // functions.create_INT_2D_arrays_for_GPU(num_Progeny_being_Processed, genome_Length);
+    progeny_Sequences = (int **)malloc(num_Progeny_being_Processed * sizeof(int *));
+    for (int row = 0; row < num_Progeny_being_Processed; row++)
+    {
+        progeny_Sequences[row] = (int *)malloc(genome_Length * sizeof(int));
+    }
+
     int *Dead_or_Alive = (int *)malloc(sizeof(int) * num_Progeny_being_Processed);
 
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -2356,7 +2407,13 @@ void node_within_host::progeny_Configurator(functions_library &functions,
 {
     cout << "Configuring " << num_Parents_to_Process << " parents' " << progeny_Total << " progeny\n";
 
-    int **cuda_progeny_Configuration = functions.create_CUDA_2D_int(progeny_Total, 1 + recombination_Hotspots);
+    int **cuda_progeny_Configuration;
+    //= functions.create_CUDA_2D_int(progeny_Total, 1 + recombination_Hotspots);
+    cudaMallocManaged(&cuda_progeny_Configuration, progeny_Total * sizeof(int *));
+    for (int row = 0; row < progeny_Total; row++)
+    {
+        cudaMalloc((void **)&(cuda_progeny_Configuration[row]), (1 + recombination_Hotspots) * sizeof(int));
+    }
 
     cuda_Progeny_Configurator<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(num_Parents_to_Process, start_Index,
                                                                                                          cuda_sequence_Configuration_standard, recombination_Hotspots,
