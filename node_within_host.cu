@@ -620,9 +620,14 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         // vector<int> start_Stop_cells;
                         if ((start_Stop_cells.size() - 1) > 0)
                         {
+                            //cout << "check\n";
+                            // for (int i = 0; i < start_Stop_cells.size(); i++)
+                            // {
+                            //     cout << start_Stop_cells[i] << endl;
+                            // }
                             for (int i = 0; i < start_Stop_cells.size() - 1; i++)
                             {
-                                // cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
+                                //cout << start_Stop_cells[i] << " : \t" << start_Stop_cells[i + 1] << endl;
                                 for (int particle = start_Stop_cells[i]; particle < start_Stop_cells[i + 1]; particle++)
                                 {
                                     // cout << parents_in_Tissue[0][particle] << " :\t" << parents_in_Tissue[1][particle] << endl;
@@ -738,7 +743,9 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             // // TODO: COMPRESS THE PREVIOUS GENERAIONS (Current generations) SEQUENCES per tissue FOLDER
                             compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation));
                         }
+                        cout << "Clearing parent cell array: ";
                         functions.clear_Array_int_CPU(parents_in_Tissue, 2);
+                        cout << "cleared" << endl;
                     }
                     else
                     {
@@ -1782,7 +1789,7 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
                     // TEST BLOCK 2
                     if (recomb_parent != cuda_progeny_Configuration[tid][0])
                     {
-                        for (int base = (cuda_recombination_hotspot_parameters[hotspot][0] - 1); base < cuda_recombination_hotspot_parameters[hotspot][1]; base++)
+                        for (int base = ((int)cuda_recombination_hotspot_parameters[hotspot][0] - 1); base < (int)cuda_recombination_hotspot_parameters[hotspot][1]; base++)
                         {
                             cuda_progeny_Sequences[tid][base] = cuda_parent_Sequences[recomb_parent][base];
                         }
@@ -1864,7 +1871,7 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
                     {
                         for (int mutation = 0; mutation < num_Mutations; mutation++)
                         {
-                            int position = (int)(curand_uniform(&localState) * ((cuda_mutation_hotspot_parameters[hotspot][1] - 1) - (cuda_mutation_hotspot_parameters[hotspot][0] - 1) + 1)) + (cuda_mutation_hotspot_parameters[hotspot][0] - 1);
+                            int position = (int)(curand_uniform(&localState) * (((int)cuda_mutation_hotspot_parameters[hotspot][1] - 1) - ((int)cuda_mutation_hotspot_parameters[hotspot][0] - 1) + 1)) + ((int)cuda_mutation_hotspot_parameters[hotspot][0] - 1);
 
                             float rand_num = curand_uniform(&localState);
                             float cumulative_prob = 0.0f;
@@ -2956,6 +2963,11 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
     srand(time(0));
     random_shuffle(parents_in_Tissue[0], parents_in_Tissue[0] + num_Viral_particles);
 
+    // for (int i = 0; i < num_Viral_particles; i++)
+    // {
+    //     cout << parents_in_Tissue[0][i] << endl;
+    // }
+
     if (gen_Phase == 1 || gen_Phase == 2)
     {
         int new_Parent_Count = -1;
@@ -2996,25 +3008,33 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
         }
         if (new_Parent_Count != -1)
         {
-            int **temp = functions.create_INT_2D_arrays(2, new_Parent_Count);
+            // if (new_Parent_Count > 0)
+            // {
+            //     int **temp = functions.create_INT_2D_arrays(2, new_Parent_Count);
 
-            for (int parent = 0; parent < new_Parent_Count; parent++)
-            {
-                temp[0][parent] = parents_in_Tissue[0][parent];
-                temp[1][parent] = parents_in_Tissue[1][parent];
-            }
+            //     for (int parent = 0; parent < new_Parent_Count; parent++)
+            //     {
+            //         temp[0][parent] = parents_in_Tissue[0][parent];
+            //         temp[1][parent] = parents_in_Tissue[1][parent];
+            //     }
 
-            functions.clear_Array_int_CPU(parents_in_Tissue, 2);
+            //     functions.clear_Array_int_CPU(parents_in_Tissue, 2);
 
-            parents_in_Tissue = functions.create_INT_2D_arrays(2, new_Parent_Count);
+            //     parents_in_Tissue = functions.create_INT_2D_arrays(2, new_Parent_Count);
 
-            for (int parent = 0; parent < new_Parent_Count; parent++)
-            {
-                parents_in_Tissue[0][parent] = temp[0][parent];
-                parents_in_Tissue[1][parent] = temp[1][parent];
-            }
+            //     for (int parent = 0; parent < new_Parent_Count; parent++)
+            //     {
+            //         parents_in_Tissue[0][parent] = temp[0][parent];
+            //         parents_in_Tissue[1][parent] = temp[1][parent];
+            //     }
 
-            functions.clear_Array_int_CPU(temp, 2);
+            //     functions.clear_Array_int_CPU(temp, 2);
+
+            //     for (int i = 0; i < new_Parent_Count; i++)
+            //     {
+            //         cout << parents_in_Tissue[0][i] << endl;
+            //     }
+            // }
 
             cout << "Resizing parent cell array\n";
 
@@ -3022,10 +3042,12 @@ vector<int> node_within_host::assign_Cells(functions_library &functions, int **p
             if (new_Parent_Count > 0)
             {
                 cout << "Configuring cell index\n";
-                for (int cell = 0; cell < parents_in_Tissue[1][new_Parent_Count - 1] + 1; cell++)
+                int max_Cell = parents_in_Tissue[1][new_Parent_Count - 1] + 1;
+                for (int cell = 0; cell < max_Cell; cell++)
                 {
                     temp_Cells.push_back(start_Stop_cells[cell]);
                 }
+                temp_Cells.push_back(start_Stop_cells[max_Cell]);
 
                 if (temp_Cells[temp_Cells.size() - 1] > new_Parent_Count)
                 {

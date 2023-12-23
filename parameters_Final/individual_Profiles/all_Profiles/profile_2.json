@@ -65,10 +65,9 @@
 
         "Number of phases":1,
 
-        "Phase 1 Mode":"Depriciation",
+        "Phase 1 Mode":"Stationary",
         "Phase 1 Time ratio":"1",
-        "Phase 1 Alpha":"100",
-        "Phase 1 Beta":"100",
+        "Phase 1 Variance":"100",
       },
     },
 
