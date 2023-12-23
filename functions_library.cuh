@@ -137,6 +137,9 @@ public:
     int **create_INT_2D_arrays(int rows, int columns);
     float **create_FLOAT_2D_arrays(int rows, int columns);
 
+    int **create_INT_2D_arrays_for_GPU(int rows, int columns);
+    float **create_FLOAT_2D_arrays_for_GPU(int rows, int columns);
+
     int **create_Fill_2D_array(int rows, int columns, int fill_Value);
     float **create_Fill_2D_array_FLOAT(int rows, int columns, float fill_Value);
 

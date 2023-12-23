@@ -256,6 +256,31 @@ int **functions_library::create_INT_2D_arrays(int rows, int columns)
     free(array_2D);
 }
 
+int **functions_library::create_INT_2D_arrays_for_GPU(int rows, int columns)
+{
+    int **array_2D = (int **)malloc(rows * sizeof(int *));
+
+    for (int i = 0; i < rows; i++)
+    {
+        array_2D[i] = (int *)malloc((columns + 1) * sizeof(int));
+    }
+
+    return array_2D;
+    free(array_2D);
+}
+
+float **functions_library::create_FLOAT_2D_arrays_for_GPU(int rows, int columns)
+{
+    float **array_2D = (float **)malloc(rows * sizeof(float *));
+
+    for (int i = 0; i < rows; i++)
+    {
+        array_2D[i] = (float *)malloc((columns + 1) * sizeof(float));
+    }
+
+    return array_2D;
+}
+
 float **functions_library::create_FLOAT_2D_arrays(int rows, int columns)
 {
     float **array_2D = (float **)malloc(rows * sizeof(float *));
