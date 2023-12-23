@@ -1672,7 +1672,21 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     cudaMemcpy(cuda_progeny_Stride, progeny_Stride, (Total_seqeunces_to_Process + 1) * sizeof(int), cudaMemcpyHostToDevice);
     free(progeny_Stride);
 
-    float **cuda_sequence_Configuration_standard = functions.float_2D_Array_load_to_CUDA(sequence_Configuration_standard, Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
+    // // ! clear
+    float **cuda_sequence_Configuration_standard;
+    // functions.float_2D_Array_load_to_CUDA(sequence_Configuration_standard, Total_seqeunces_to_Process, 2 + (2 * recombination_Hotspots));
+
+    cudaMallocManaged(&cuda_sequence_Configuration_standard, Total_seqeunces_to_Process * sizeof(float *));
+    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    {
+        cudaMalloc((void **)&(cuda_sequence_Configuration_standard[row]), (2 + (2 * recombination_Hotspots)) * sizeof(float));
+        cudaMemcpy(cuda_sequence_Configuration_standard[row], sequence_Configuration_standard[row], (2 + (2 * recombination_Hotspots)) * sizeof(float), cudaMemcpyHostToDevice);
+    }
+
+    // for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    // {
+    //     cudaMemcpy(cuda_sequence_Configuration_standard[row], sequence_Configuration_standard[row], (2 + (2 * recombination_Hotspots)) * sizeof(float), cudaMemcpyHostToDevice);
+    // }
 
     for (int round = 0; round < start_stops.size(); round++)
     {
@@ -1698,6 +1712,15 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // functions.clear_Array_INT(cuda_progeny_Configuration, total_Progeny);
     cudaFree(cuda_progeny_Stride);
+
+    // Free each row
+    for (int row = 0; row < Total_seqeunces_to_Process; row++)
+    {
+        cudaFree(cuda_sequence_Configuration_standard[row]);
+    }
+
+    // Free the array of pointers
+    cudaFree(cuda_sequence_Configuration_standard);
 
     // create and save sequence
     start_stops.clear();
