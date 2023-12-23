@@ -402,6 +402,17 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     string overall_Generational_Summary = output_Network_location + "/overall_generational_Summary.csv";
     functions.create_File(overall_Generational_Summary, "overall_Generation\tdecimal_Date\tDate\tsusceptible_Population\tinfected_Population\tinfectious_Population\tremoved_Population\tdead_Population");
 
+    // for (int test = 0; test < all_node_IDs.size(); test++)
+    // {
+    //     for (size_t i = 0; i < each_Nodes_Connection_INT[test].size(); i++)
+    //     {
+    //         cout << all_node_IDs[each_Nodes_Connection_INT[test][i]].first << "_" << all_node_IDs[each_Nodes_Connection_INT[test][i]].second << ", ";
+    //     }
+    //     cout << endl;
+    // }
+
+    // exit(-1);
+
     do
     {
         // check dead and remove from infected
@@ -503,8 +514,8 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     cout << "\nNode: " << Hosts[infectious_Population[host]].get_Name() << " is infecting new nodes\n";
                     int node_Profile = Hosts[infectious_Population[host]].get_Profile();
 
-                    vector<pair<int, int>> host_Connections = each_Nodes_Connection[infectious_Population[host]];
-                    Node_search(host_Connections);
+                    vector<int> host_Connections = each_Nodes_Connection_INT[infectious_Population[host]];
+                    // Node_search(host_Connections);
 
                     // test
                     // cout << Hosts[infectious_Population[host]].get_Name() << endl
@@ -535,21 +546,21 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                         for (int host = 0; host < host_Connections.size(); host++)
                         {
-                            if (search_Indexes[host] == -1)
+                            // if (search_Indexes[host] == -1)
+                            // {
+                            //     cout << "ERROR: ID MISSING\n";
+                            //     exit(-1);
+                            // }
+                            // if (host_Connections[host] != -1)
+                            // {
+                            if (Hosts[host_Connections[host]].get_Status() == "Susceptible")
                             {
-                                cout << "ERROR: ID MISSING\n";
-                                exit(-1);
+                                possible_Infections.push_back(host_Connections[host]);
                             }
-                            else
-                            {
-                                if (Hosts[search_Indexes[host]].get_Status() == "Susceptible")
-                                {
-                                    possible_Infections.push_back(search_Indexes[host]);
-                                }
-                            }
+                            // }
                         }
-                        search_Indexes.clear();
-                        overall_Found = 0;
+                        // search_Indexes.clear();
+                        // overall_Found = 0;
                         if (possible_Infections.size() > 0)
                         {
                             new_Hosts_Indexes = get_new_Hosts_Indexes(node_Profile, gen, possible_Infections);
@@ -569,22 +580,22 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                         // vector<int> possible_Infections;
                         for (int host = 0; host < host_Connections.size(); host++)
                         {
-                            if (search_Indexes[host] == -1)
+                            // if (search_Indexes[host] == -1)
+                            // {
+                            //     cout << "ERROR: ID MISSING\n";
+                            //     exit(-1);
+                            // }
+                            // if (host_Connections[host] != -1)
+                            // {
+                            if (Hosts[host_Connections[host]].get_Status() != "Dead" && Hosts[host_Connections[host]].get_Status() != "Removed")
                             {
-                                cout << "ERROR: ID MISSING\n";
-                                exit(-1);
+                                possible_Infections.push_back(host_Connections[host]);
                             }
-                            else
-                            {
-                                if (Hosts[search_Indexes[host]].get_Status() != "Dead" && Hosts[search_Indexes[host]].get_Status() != "Removed")
-                                {
-                                    possible_Infections.push_back(search_Indexes[host]);
-                                }
-                            }
+                            //}
                         }
 
-                        search_Indexes.clear();
-                        overall_Found = 0;
+                        // search_Indexes.clear();
+                        // overall_Found = 0;
 
                         if (possible_Infections.size() > 0)
                         {
@@ -914,95 +925,95 @@ vector<int> simulator_Master::get_new_Hosts_Indexes(int &node_Profile, mt19937 &
     return new_Hosts_Indexes;
 }
 
-void simulator_Master::Node_search(vector<pair<int, int>> &host_Connections)
-{
-    cout << "Intiating node index search\n";
-    search_Indexes.clear();
-    overall_Found = 0;
-    for (int host = 0; host < host_Connections.size(); host++)
-    {
-        search_Indexes.push_back(-1);
-    }
+// void simulator_Master::Node_search(vector<pair<int, int>> &host_Connections)
+// {
+//     cout << "Intiating node index search\n";
+//     search_Indexes.clear();
+//     overall_Found = 0;
+//     for (int host = 0; host < host_Connections.size(); host++)
+//     {
+//         search_Indexes.push_back(-1);
+//     }
 
-    int num_per_Core = Total_number_of_Nodes / this->CPU_cores;
-    int remainder = Total_number_of_Nodes % this->CPU_cores;
+//     int num_per_Core = Total_number_of_Nodes / this->CPU_cores;
+//     int remainder = Total_number_of_Nodes % this->CPU_cores;
 
-    vector<thread> threads_vec;
+//     vector<thread> threads_vec;
 
-    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
-    {
-        int start_Node = core_ID * num_per_Core;
-        int stop_Node = start_Node + num_per_Core;
+//     for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+//     {
+//         int start_Node = core_ID * num_per_Core;
+//         int stop_Node = start_Node + num_per_Core;
 
-        threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
-    }
+//         threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
+//     }
 
-    if (remainder != 0)
-    {
-        int start_Node = Total_number_of_Nodes - remainder;
-        int stop_Node = Total_number_of_Nodes;
+//     if (remainder != 0)
+//     {
+//         int start_Node = Total_number_of_Nodes - remainder;
+//         int stop_Node = Total_number_of_Nodes;
 
-        threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
-    }
+//         threads_vec.push_back(thread{&simulator_Master::thread_Node_search, this, start_Node, stop_Node, host_Connections});
+//     }
 
-    for (thread &t : threads_vec)
-    {
-        if (t.joinable())
-        {
-            t.join();
-        }
-    }
+//     for (thread &t : threads_vec)
+//     {
+//         if (t.joinable())
+//         {
+//             t.join();
+//         }
+//     }
 
-    threads_vec.clear();
+//     threads_vec.clear();
 
-    // for (int host = 0; host < host_Connections.size(); host++)
-    // {
-    //     cout << "Index: " << search_Indexes[host] << endl;
-    // }
-}
+//     // for (int host = 0; host < host_Connections.size(); host++)
+//     // {
+//     //     cout << "Index: " << search_Indexes[host] << endl;
+//     // }
+// }
 
-void simulator_Master::thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections)
-{
-    vector<int> found_Indexes;
+// void simulator_Master::thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections)
+// {
+//     vector<int> found_Indexes;
 
-    for (int host = 0; host < host_Connections.size(); host++)
-    {
-        found_Indexes.push_back(-1);
-    }
+//     for (int host = 0; host < host_Connections.size(); host++)
+//     {
+//         found_Indexes.push_back(-1);
+//     }
 
-    int found = 0;
+//     int found = 0;
 
-    for (int node = start_Node; node < stop_Node; node++)
-    {
-        if (overall_Found == host_Connections.size())
-        {
-            break;
-        }
-        for (int check = 0; check < host_Connections.size(); check++)
-        {
-            if (all_node_IDs[node].first == host_Connections[check].first && all_node_IDs[node].second == host_Connections[check].second)
-            {
-                found_Indexes[check] = node;
-                found++;
-                break;
-            }
-        }
-        if (found == host_Connections.size())
-        {
-            break;
-        }
-    }
+//     for (int node = start_Node; node < stop_Node; node++)
+//     {
+//         if (overall_Found == host_Connections.size())
+//         {
+//             break;
+//         }
+//         for (int check = 0; check < host_Connections.size(); check++)
+//         {
+//             if (all_node_IDs[node].first == host_Connections[check].first && all_node_IDs[node].second == host_Connections[check].second)
+//             {
+//                 found_Indexes[check] = node;
+//                 found++;
+//                 break;
+//             }
+//         }
+//         if (found == host_Connections.size())
+//         {
+//             break;
+//         }
+//     }
 
-    unique_lock<shared_mutex> ul(g_mutex);
-    for (int host = 0; host < host_Connections.size(); host++)
-    {
-        if (found_Indexes[host] != -1)
-        {
-            search_Indexes[host] = found_Indexes[host];
-            overall_Found++;
-        }
-    }
-}
+//     unique_lock<shared_mutex> ul(g_mutex);
+//     for (int host = 0; host < host_Connections.size(); host++)
+//     {
+//         if (found_Indexes[host] != -1)
+//         {
+//             search_Indexes[host] = found_Indexes[host];
+//             overall_Found++;
+//         }
+//     }
+// }
 
 int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
                                          vector<int> &infected_Population, functions_library &functions)
@@ -2938,8 +2949,11 @@ void simulator_Master::network_Manager(functions_library &functions)
 {
     for (int initialize = 0; initialize < Total_number_of_Nodes; initialize++)
     {
-        vector<pair<int, int>> intialize_Vector;
-        each_Nodes_Connection.push_back(intialize_Vector);
+        // vector<pair<int, int>> intialize_Vector;
+        // each_Nodes_Connection.push_back(intialize_Vector);
+
+        vector<int> nodes_Intialize_INT;
+        each_Nodes_Connection_INT.push_back(nodes_Intialize_INT);
     }
 
     if (network_Model == "BA")
@@ -3010,8 +3024,11 @@ void simulator_Master::RANDOM_Model_Engine(functions_library &functions)
             attach_Node = distribution_Neighbour(gen);
         } while (attach_Node == node);
 
-        each_Nodes_Connection[node].push_back(make_pair(0, attach_Node));
-        each_Nodes_Connection[attach_Node].push_back(make_pair(0, node));
+        // each_Nodes_Connection[node].push_back(make_pair(0, attach_Node));
+        // each_Nodes_Connection[attach_Node].push_back(make_pair(0, node));
+
+        each_Nodes_Connection_INT[node].push_back(attach_Node);
+        each_Nodes_Connection_INT[attach_Node].push_back(node);
 
         network_File << "0"
                      << "_" << node << "\t"
@@ -3141,8 +3158,11 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
 
     for (size_t i = 0; i < Total_number_of_Nodes; i++)
     {
-        vector<pair<int, int>> nodes_Intialize;
-        each_Nodes_Connection.push_back(nodes_Intialize);
+        // vector<pair<int, int>> nodes_Intialize;
+        // each_Nodes_Connection.push_back(nodes_Intialize);
+
+        vector<int> nodes_Intialize_INT;
+        each_Nodes_Connection_INT.push_back(nodes_Intialize_INT);
     }
 
     cout << "Configuring cave cohort relationships\n";
@@ -3168,9 +3188,12 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
             {
                 int node_child_Main = node_Count + (node_child - node_parent);
                 network_File << cave_ID << "_" << node_parent << "\t" << cave_ID << "_" << node_child << "\n";
-                each_Nodes_Connection[node_Count].push_back(make_pair(cave_ID, node_child));
-                each_Nodes_Connection[node_child_Main].push_back(make_pair(cave_ID, node_parent));
+                // each_Nodes_Connection[node_Count].push_back(make_pair(cave_ID, node_child));
+                // each_Nodes_Connection[node_child_Main].push_back(make_pair(cave_ID, node_parent));
                 // cout << node_Count << "\t" << node_child_Main << endl;
+
+                each_Nodes_Connection_INT[node_Count].push_back(node_child_Main);
+                each_Nodes_Connection_INT[node_child_Main].push_back(node_Count);
             }
         }
         // cout << endl;
@@ -3203,8 +3226,11 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
         int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Node_Index;
         int attach_Node_all_Index = per_cave_Stride[attach_Cave] + attach_Node_Index;
 
-        each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(attach_Cave, attach_Node_Index));
-        each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
+        // each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(attach_Cave, attach_Node_Index));
+        // each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Node_Index));
+
+        each_Nodes_Connection_INT[parent_Node_all_Index].push_back(attach_Node_all_Index);
+        each_Nodes_Connection_INT[attach_Node_all_Index].push_back(parent_Node_all_Index);
     }
 
     cout << "Configuring Global networks attachments\n";
@@ -3260,8 +3286,11 @@ void simulator_Master::DCM_Model_Engine(functions_library &functions)
                     int parent_Node_all_Index = per_cave_Stride[cave_ID] + parent_Cave_Node;
                     int attach_Node_all_Index = per_cave_Stride[cave_Global] + Global_Cave_Node;
 
-                    each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(cave_Global, Global_Cave_Node));
-                    each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Cave_Node));
+                    // each_Nodes_Connection[parent_Node_all_Index].push_back(make_pair(cave_Global, Global_Cave_Node));
+                    // each_Nodes_Connection[attach_Node_all_Index].push_back(make_pair(cave_ID, parent_Cave_Node));
+
+                    each_Nodes_Connection_INT[parent_Node_all_Index].push_back(attach_Node_all_Index);
+                    each_Nodes_Connection_INT[attach_Node_all_Index].push_back(parent_Node_all_Index);
                 }
             }
         }
@@ -3304,28 +3333,33 @@ void simulator_Master::SCM_Model_Engine(functions_library &functions)
 
             for (int node_Index_child = node_Index_Parent + 1; node_Index_child < SCM_number_of_nodes_per_cave; node_Index_child++)
             {
-                each_Nodes_Connection[node_start_Index + node_Index_Parent].push_back(make_pair(cave_ID, node_Index_child));
-                each_Nodes_Connection[node_start_Index + node_Index_child].push_back(make_pair(cave_ID, node_Index_Parent));
+                // each_Nodes_Connection[node_start_Index + node_Index_Parent].push_back(make_pair(cave_ID, node_Index_child));
+                // each_Nodes_Connection[node_start_Index + node_Index_child].push_back(make_pair(cave_ID, node_Index_Parent));
+
+                each_Nodes_Connection_INT[node_start_Index + node_Index_Parent].push_back(node_start_Index + node_Index_child);
+                each_Nodes_Connection_INT[node_start_Index + node_Index_child].push_back(node_start_Index + node_Index_Parent);
             }
         }
     }
 
     cout << "Re-routing cave cohort nodes to neighbours" << endl;
 
+    vector<int> index_of_neighbour_CAVES;
+
     for (int cave_ID = 0; cave_ID < SCM_number_of_caves; cave_ID++)
     {
         int node_start_Index = cave_ID * SCM_number_of_nodes_per_cave;
         int rerouting_Node = neighbour_Node[cave_ID] + node_start_Index;
 
-        uniform_int_distribution<int> rerouting_Connection_Draw(0, each_Nodes_Connection[rerouting_Node].size() - 1);
+        uniform_int_distribution<int> rerouting_Connection_Draw(0, each_Nodes_Connection_INT[rerouting_Node].size() - 1);
 
         int rerouting_Connection = rerouting_Connection_Draw(gen);
-        int rerouting_Connection_Node = each_Nodes_Connection[rerouting_Node][rerouting_Connection].second + node_start_Index;
+        int rerouting_Connection_Node = each_Nodes_Connection_INT[rerouting_Node][rerouting_Connection];
 
         int index = -1;
-        for (int find = 0; find < each_Nodes_Connection[rerouting_Connection_Node].size(); find++)
+        for (int find = 0; find < each_Nodes_Connection_INT[rerouting_Connection_Node].size(); find++)
         {
-            if (each_Nodes_Connection[rerouting_Connection_Node][find].second == neighbour_Node[cave_ID])
+            if (each_Nodes_Connection_INT[rerouting_Connection_Node][find] == rerouting_Node)
             {
                 index = find;
                 break;
@@ -3338,20 +3372,80 @@ void simulator_Master::SCM_Model_Engine(functions_library &functions)
         }
         else
         {
-            each_Nodes_Connection[rerouting_Connection_Node].erase(each_Nodes_Connection[rerouting_Connection_Node].begin() + index);
+            each_Nodes_Connection_INT[rerouting_Node].erase(each_Nodes_Connection_INT[rerouting_Node].begin() + rerouting_Connection);
+            each_Nodes_Connection_INT[rerouting_Connection_Node].erase(each_Nodes_Connection_INT[rerouting_Connection_Node].begin() + index);
         }
+    }
+
+    for (int cave_ID = 0; cave_ID < SCM_number_of_caves; cave_ID++)
+    {
+        int node_start_Index = cave_ID * SCM_number_of_nodes_per_cave;
+        int rerouting_Node = neighbour_Node[cave_ID] + node_start_Index;
 
         if ((cave_ID + 1) != SCM_number_of_caves)
         {
-            each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = cave_ID + 1;
-            each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[cave_ID + 1];
+            int node_start_Index_neighboour = (cave_ID + 1) * SCM_number_of_nodes_per_cave;
+            int rerouting_Node_neighboour = neighbour_Node[cave_ID + 1] + node_start_Index_neighboour;
+            // each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = cave_ID + 1;
+            // each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[cave_ID + 1];
+
+            each_Nodes_Connection_INT[rerouting_Node].push_back(rerouting_Node_neighboour);
+            each_Nodes_Connection_INT[rerouting_Node_neighboour].push_back(rerouting_Node);
         }
         else
         {
-            each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = 0;
-            each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[0];
+            int rerouting_Node_neighboour = neighbour_Node[0];
+
+            each_Nodes_Connection_INT[rerouting_Node].push_back(rerouting_Node_neighboour);
+            each_Nodes_Connection_INT[rerouting_Node_neighboour].push_back(rerouting_Node);
+
+            // each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = 0;
+            // each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[0];
         }
     }
+
+    // for (int cave_ID = 0; cave_ID < SCM_number_of_caves; cave_ID++)
+    // {
+    //     int node_start_Index = cave_ID * SCM_number_of_nodes_per_cave;
+    //     int rerouting_Node = neighbour_Node[cave_ID] + node_start_Index;
+
+    //     uniform_int_distribution<int> rerouting_Connection_Draw(0, each_Nodes_Connection_INT[rerouting_Node].size() - 1);
+
+    //     int rerouting_Connection = rerouting_Connection_Draw(gen);
+    //     int rerouting_Connection_Node = each_Nodes_Connection_INT[rerouting_Node][rerouting_Connection];
+
+    //     int index = -1;
+    //     for (int find = 0; find < each_Nodes_Connection[rerouting_Connection_Node].size(); find++)
+    //     {
+    //         if (each_Nodes_Connection[rerouting_Connection_Node][find] == rerouting_Node)
+    //         {
+    //             index = find;
+    //             break;
+    //         }
+    //     }
+
+    //     if (index == -1)
+    //     {
+    //         cout << "ERROR in node rerouting removal\n";
+    //     }
+    //     else
+    //     {
+    //         each_Nodes_Connection_INT[rerouting_Connection_Node].erase(each_Nodes_Connection[rerouting_Connection_Node].begin() + index);
+    //     }
+
+    //     if ((cave_ID + 1) != SCM_number_of_caves)
+    //     {
+    //         // each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = cave_ID + 1;
+    //         // each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[cave_ID + 1];
+
+    //         each_Nodes_Connection_INT[rerouting_Node][rerouting_Connection] = neighbour_Node[cave_ID + 1] + ((cave_ID + 1) * SCM_number_of_nodes_per_cave);
+    //     }
+    //     else
+    //     {
+    //         // each_Nodes_Connection[rerouting_Node][rerouting_Connection].first = 0;
+    //         // each_Nodes_Connection[rerouting_Node][rerouting_Connection].second = neighbour_Node[0];
+    //     }
+    // }
 
     fstream network_File;
     network_File.open(network_File_location, ios::app);
@@ -3363,21 +3457,37 @@ void simulator_Master::SCM_Model_Engine(functions_library &functions)
 
         for (int node = 0; node < SCM_number_of_nodes_per_cave; node++)
         {
-            for (int connections = 0; connections < each_Nodes_Connection[node_start_Index + node].size(); connections++)
+            for (int connections = 0; connections < each_Nodes_Connection_INT[node_start_Index + node].size(); connections++)
             {
-                if (each_Nodes_Connection[node_start_Index + node][connections].first == cave_ID)
+                if (all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].first == cave_ID)
                 {
-                    if (each_Nodes_Connection[node_start_Index + node][connections].second > node)
+                    if (all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].second > node)
                     {
-                        network_File << cave_ID << "_" << to_string(node) << "\t"
-                                     << cave_ID << "_" << to_string(each_Nodes_Connection[node_start_Index + node][connections].second) << "\n";
+                        network_File << all_node_IDs[node_start_Index + node].first << "_" << all_node_IDs[node_start_Index + node].second
+                                     << "\t" << all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].first << "_" << all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].second << endl;
+
+                        // network_File << cave_ID << "_" << to_string(node) << "\t"
+                        //              << cave_ID << "_" << to_string(each_Nodes_Connection[node_start_Index + node][connections].second) << "\n";
                     }
                 }
-                else
+                else if (all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].first > cave_ID)
                 {
-                    network_File << to_string(cave_ID) << "_" << to_string(node) << "\t"
-                                 << to_string(each_Nodes_Connection[node_start_Index + node][connections].first) << "_" << to_string(each_Nodes_Connection[node_start_Index + node][connections].second) << "\n";
+                    network_File << all_node_IDs[node_start_Index + node].first << "_" << all_node_IDs[node_start_Index + node].second
+                                 << "\t" << all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].first << "_" << all_node_IDs[each_Nodes_Connection_INT[node_start_Index + node][connections]].second << endl;
                 }
+                // if (each_Nodes_Connection[node_start_Index + node][connections].first == cave_ID)
+                // {
+                //     if (each_Nodes_Connection[node_start_Index + node][connections].second > node)
+                //     {
+                //         network_File << cave_ID << "_" << to_string(node) << "\t"
+                //                      << cave_ID << "_" << to_string(each_Nodes_Connection[node_start_Index + node][connections].second) << "\n";
+                //     }
+                // }
+                // else
+                // {
+                //     network_File << to_string(cave_ID) << "_" << to_string(node) << "\t"
+                //                  << to_string(each_Nodes_Connection[node_start_Index + node][connections].first) << "_" << to_string(each_Nodes_Connection[node_start_Index + node][connections].second) << "\n";
+                // }
             }
         }
     }
@@ -3397,6 +3507,8 @@ void simulator_Master::SCM_Model_Engine(functions_library &functions)
     //     }
     //     cout << endl;
     // }
+
+    // exit(-1);
 
     cout << endl;
 }
@@ -3488,9 +3600,9 @@ void simulator_Master::BA_Model_Engine(functions_library &functions)
             {
                 int check_Present = 0;
 
-                for (int check = 0; check < each_Nodes_Connection[node].size(); check++)
+                for (int check = 0; check < each_Nodes_Connection_INT[node].size(); check++)
                 {
-                    if (attach_Node == each_Nodes_Connection[node][check].second)
+                    if (attach_Node == each_Nodes_Connection_INT[node][check])
                     {
                         check_Present = 1;
                         break;
@@ -3505,8 +3617,11 @@ void simulator_Master::BA_Model_Engine(functions_library &functions)
 
                     connections_per_Node[attach_Node] = connections_per_Node[attach_Node] + 1;
 
-                    each_Nodes_Connection[attach_Node].push_back(make_pair(0, node));
-                    each_Nodes_Connection[node].push_back(make_pair(0, attach_Node));
+                    // each_Nodes_Connection[attach_Node].push_back(make_pair(0, node));
+                    // each_Nodes_Connection[node].push_back(make_pair(0, attach_Node));
+
+                    each_Nodes_Connection_INT[attach_Node].push_back(node);
+                    each_Nodes_Connection_INT[node].push_back(attach_Node);
 
                     tot_connections++;
                 }

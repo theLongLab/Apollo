@@ -1522,7 +1522,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     }
     else
     {
-        cout << "ERROR: UNABLE TO PARENT CELLS TRACK FILE: " << cells_of_parents_location << endl;
+        cout << "ERROR: UNABLE TO OPEN PARENT CELLS TRACK FILE: " << cells_of_parents_location << endl;
         exit(-1);
     }
 
@@ -1537,7 +1537,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // exit(-1);
 
-    cout << endl;
+    // cout << endl;
 
     // for (int row = 0; row < Total_seqeunces_to_Process; row++)
     // {
@@ -1548,7 +1548,12 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     //     cout << endl;
     // }
 
-    cout << endl;
+    // cout << endl;
+
+    cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
+         << endl;
+
+    // exit(-1);
 
     for (int row = 0; row < Total_seqeunces_to_Process; row++)
     {
@@ -1587,7 +1592,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
                 totals_Progeny_Selectivity[cell][hotspot] = totals_Progeny_Selectivity[cell][hotspot] + sequence_Configuration_standard[parent][(hotspot * 2) + 3];
             }
         }
-        //cout << endl;
+        // cout << endl;
     }
 
     // for (int row = 0; row < Total_seqeunces_to_Process; row++)
@@ -1677,6 +1682,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     for (int round = 0; round < start_stops.size(); round++)
     {
+        cout << "\nProgeny completition round " << round + 1 << " of " << start_stops.size() << endl;
         progeny_Completion(functions,
                            CUDA_device_IDs, num_Cuda_devices,
                            CPU_cores, max_sequences_per_File,
@@ -1758,7 +1764,8 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
                     float rand_num = curand_uniform(&localState);
                     float cumulative_prob = 0.0f;
 
-                    int recomb_parent = -1;
+                    //! CHECK LATER
+                    int recomb_parent = cuda_progeny_Configuration[tid][0];
 
                     for (int check = cuda_cell_Index[get_Cell]; check < cuda_cell_Index[get_Cell + 1]; check++)
                     {

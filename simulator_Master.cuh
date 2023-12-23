@@ -71,11 +71,13 @@ private:
     string network_Model = "NA";
     int Total_number_of_Nodes = 0;
 
-    vector<vector<pair<int, int>>> each_Nodes_Connection;
+    // vector<vector<pair<int, int>>> each_Nodes_Connection;
+    // TODO: change
+    vector<vector<int>> each_Nodes_Connection_INT;
     vector<pair<int, int>> all_node_IDs;
 
-    vector<int> search_Indexes;
-    int overall_Found = 0;
+    //vector<int> search_Indexes;
+    //int overall_Found = 0;
 
     string connection_Model = "FIXED";
 
@@ -294,8 +296,8 @@ public:
     vector<string> read_Reference_Sequences(int index_first_Infected);
     vector<string> read_Reference_Sequence_Files(vector<string> &reference_Files);
 
-    void Node_search(vector<pair<int, int>> &host_Connections);
-    void thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections);
+    // void Node_search(vector<pair<int, int>> &host_Connections);
+    // void thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections);
 
     vector<int> get_new_Hosts_Indexes(int &node_Profile, mt19937 &gen, vector<int> &possible_Infections);
 };
