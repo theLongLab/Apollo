@@ -2041,14 +2041,14 @@ int **functions_library::create_Fill_2D_array(int rows, int columns, int fill_Va
 
     cuda_Fill_2D_array<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
-    // cudaError_t err = cudaGetLastError();
+    cudaError_t err = cudaGetLastError();
 
-    // if (err != cudaSuccess)
-    // {
-    //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
-
-    //     // Possibly: exit(-1) if program cannot continue....
-    // }
+    if (err != cudaSuccess)
+    {
+        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+        exit(-1);
+        // Possibly: exit(-1) if program cannot continue....
+    }
     cudaDeviceSynchronize();
     //  cout << "run" << endl;
 
@@ -2175,14 +2175,14 @@ float **functions_library::create_Fill_2D_array_FLOAT(int rows, int columns, flo
 
     cuda_Fill_2D_array_Float<<<tot_Blocks, tot_ThreadsperBlock>>>((rows * columns), columns, fill_Value, cuda_Array_2D);
 
-    // cudaError_t err = cudaGetLastError();
+    cudaError_t err = cudaGetLastError();
 
-    // if (err != cudaSuccess)
-    // {
-    //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
-
-    //     // Possibly: exit(-1) if program cannot continue....
-    // }
+    if (err != cudaSuccess)
+    {
+        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+        exit(-1);
+        // Possibly: exit(-1) if program cannot continue....
+    }
     cudaDeviceSynchronize();
     //  cout << "run" << endl;
 
@@ -5882,7 +5882,7 @@ int **functions_library::process_Reference_Sequences(vector<string> collect_Sequ
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
         cudaSetDevice(CUDA_device_IDs[gpu]);
-        cudaFree(cuda_full_Char);
+        cudaFree(cuda_full_Char[gpu]);
         // cudaFree(cuda_Sequence);
 
         for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
@@ -5893,6 +5893,21 @@ int **functions_library::process_Reference_Sequences(vector<string> collect_Sequ
 
         cudaStreamDestroy(streams[gpu]);
     }
+
+    // cudaError_t err = cudaGetLastError();
+
+    // if (err != cudaSuccess)
+    // {
+    //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
+    //     exit(-1);
+    //     // Possibly: exit(-1) if program cannot continue....
+    // }
+    // else
+    // {
+    //     cout << "OK\n";
+    // }
+
+    // exit(-1);
 
     // for (int row = 0; row < num_of_Sequences_current; row++)
     // {

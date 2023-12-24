@@ -339,6 +339,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     // Generation\tGeneration_time_decimal\tDate\tTissue\tParents\tParticles_produced\tDead\tTransferred\tRemaining
 
     cout << "Configuring infection start date: " << start_Date << endl;
+
     vector<string> split_Date;
     functions.split(split_Date, start_Date, '-');
 
@@ -372,6 +373,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     vector<int> infected_Population;
 
     int first_Infected = get_first_Infected(susceptible_Population, infected_Population, functions);
+
     Hosts[first_Infected].begin_Infection(functions, intermediary_Sequence_location, entry_tissues, entry_array, max_sequences_per_File, output_Node_location, tissue_Names);
 
     cout << endl;
@@ -851,6 +853,21 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
         // stop = 1;
 
+        // cudaError_t err = cudaGetLastError();
+
+        // if (err != cudaSuccess)
+        // {
+        //     printf("CUDA Error: %s\n", cudaGetErrorString(err));
+        //     exit(-1);
+        //     // Possibly: exit(-1) if program cannot continue....
+        // }
+        // else
+        // {
+        //     cout << "OK\n";
+        // }
+
+        // exit(-1);
+
     } while (stop == 0);
 
     cout << "\nSimulation has concluded: ";
@@ -1092,6 +1109,7 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
         // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
 
         int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, num_of_Sequences_current);
+
         vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
 
         functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);

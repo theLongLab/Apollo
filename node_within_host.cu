@@ -1470,7 +1470,6 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     fstream cells_of_parents_File;
     cells_of_parents_File.open(cells_of_parents_location, ios::app);
-
     if (cells_of_parents_File.is_open())
     {
         for (int round = 0; round < start_stops.size(); round++)
@@ -1720,7 +1719,6 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     }
 
     // Free the array of pointers
-    cudaFree(cuda_sequence_Configuration_standard);
 
     // create and save sequence
     start_stops.clear();
@@ -2287,7 +2285,7 @@ void node_within_host::progeny_Completion(functions_library &functions,
     {
         cudaSetDevice(CUDA_device_IDs[gpu]);
 
-        cudaFree(cuda_Reference_fitness_survivability_proof_reading);
+        cudaFree(cuda_Reference_fitness_survivability_proof_reading[gpu]);
 
         for (int row = 0; row < num_effect_Segregating_sites[1]; row++)
         {
@@ -2301,7 +2299,7 @@ void node_within_host::progeny_Completion(functions_library &functions,
         }
         cudaFree(cuda_recombination_hotspot_parameters[gpu]);
 
-        cudaFree(cuda_tot_prob_selectivity);
+        cudaFree(cuda_tot_prob_selectivity[gpu]);
 
         for (int row = 0; row < mutation_Hotspots; row++)
         {
@@ -2333,7 +2331,7 @@ void node_within_host::progeny_Completion(functions_library &functions,
         }
         cudaFree(cuda_parent_IDs[gpu]);
 
-        cudaFree(cuda_cell_Index);
+        cudaFree(cuda_cell_Index[gpu]);
 
         for (int row = 0; row < num_Cells; row++)
         {
@@ -2346,10 +2344,10 @@ void node_within_host::progeny_Completion(functions_library &functions,
             cudaFree(cuda_progeny_Configuration[gpu][row]);
             cudaFree(cuda_progeny_Sequences[gpu][row]);
         }
-        cudaFree(cuda_progeny_Configuration);
-        cudaFree(cuda_progeny_Sequences);
+        cudaFree(cuda_progeny_Configuration[gpu]);
+        cudaFree(cuda_progeny_Sequences[gpu]);
 
-        cudaFree(cuda_Dead_or_Alive);
+        cudaFree(cuda_Dead_or_Alive[gpu]);
 
         cudaStreamDestroy(streams[gpu]);
     }
@@ -2926,7 +2924,7 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
     {
         cudaSetDevice(CUDA_device_IDs[gpu]);
 
-        cudaFree(cuda_full_Char);
+        cudaFree(cuda_full_Char[gpu]);
 
         for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
         {
@@ -2936,9 +2934,9 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         cudaFree(cuda_Sequence[gpu]);
         cudaFree(cuda_sequence_Configuration_standard[gpu]);
 
-        cudaFree(cuda_Reference_fitness_survivability_proof_reading);
-        cudaFree(cuda_mutation_recombination_proof_Reading_availability);
-        cudaFree(cuda_num_effect_Segregating_sites);
+        cudaFree(cuda_Reference_fitness_survivability_proof_reading[gpu]);
+        cudaFree(cuda_mutation_recombination_proof_Reading_availability[gpu]);
+        cudaFree(cuda_num_effect_Segregating_sites[gpu]);
 
         for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
         {
@@ -2952,9 +2950,9 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         }
         cudaFree(cuda_sequence_Proof_reading_changes[gpu]);
 
-        cudaFree(cuda_tot_prob_selectivity);
-        cudaFree(cuda_recombination_prob_Stride);
-        cudaFree(cuda_recombination_select_Stride);
+        cudaFree(cuda_tot_prob_selectivity[gpu]);
+        cudaFree(cuda_recombination_prob_Stride[gpu]);
+        cudaFree(cuda_recombination_select_Stride[gpu]);
         if (recombination_Hotspots > 0)
         {
             for (int row = 0; row < recombination_Hotspots; row++)
@@ -2976,7 +2974,7 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         cudaFree(cuda_recombination_Prob_matrix[gpu]);
         cudaFree(cuda_recombination_Select_matrix[gpu]);
 
-        cudaFree(cuda_progeny_distribution_parameters_Array);
+        cudaFree(cuda_progeny_distribution_parameters_Array[gpu]);
 
         cudaStreamDestroy(streams[gpu]);
     }
