@@ -2060,6 +2060,12 @@ int **functions_library::create_Fill_2D_array(int rows, int columns, int fill_Va
         cudaMemcpy(array_2D[i], cuda_Array_2D[i], (columns + 1) * sizeof(cuda_Array_2D[0][0]), cudaMemcpyDeviceToHost);
     }
     // cout << "run" << endl;
+    for (int row = 0; row < rows; row++)
+    {
+        cudaFree(cuda_Array_2D[row]);
+    }
+
+    // Free the array of pointers
     cudaFree(cuda_Array_2D);
 
     return array_2D;
@@ -2188,6 +2194,14 @@ float **functions_library::create_Fill_2D_array_FLOAT(int rows, int columns, flo
         cudaMemcpy(array_2D[i], cuda_Array_2D[i], (columns + 1) * sizeof(cuda_Array_2D[0][0]), cudaMemcpyDeviceToHost);
     }
     // cout << "run" << endl;
+    // cudaFree(cuda_Array_2D);
+
+    for (int row = 0; row < rows; row++)
+    {
+        cudaFree(cuda_Array_2D[row]);
+    }
+
+    // Free the array of pointers
     cudaFree(cuda_Array_2D);
 
     return array_2D;
