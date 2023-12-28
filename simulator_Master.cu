@@ -528,11 +528,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                 threads_vec.clear();
             }
-
-            new_dead_Population.clear();
             cout << endl;
             // exit(-1);
         }
+        new_dead_Population.clear();
 
         // // TODO WRITE to overall generational summary
         fstream overall_Generational_summary_File;
