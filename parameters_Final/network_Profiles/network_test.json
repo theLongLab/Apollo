@@ -6,7 +6,7 @@
   # Standard Caveman Model is selected by typing SC model
   # Dynamic Caveman Model is selected by typing DC model
 
-  "Network type":"DC model",
+  "Network type":"BA model",
 
   # Total number of nodes that will be present in the Random network model
   "Random model number of nodes":100,

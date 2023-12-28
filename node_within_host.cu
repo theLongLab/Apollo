@@ -459,6 +459,8 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                       float **viral_Migration_Values,
                                       int &overall_Generations,
                                       string &infected_to_Recovered,
+                                      string enable_Folder_management,
+                                      string enable_Compression,
                                       mt19937 &gen)
 {
     cout << "\nSimulating generation " << current_Generation << " of " << num_Generation << " for " << get_Name() << endl
@@ -479,7 +481,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
 
         if (sum_Check > 0)
         {
-            if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder) != 1)
+            if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder, enable_Folder_management, enable_Compression) != 1)
             {
                 cout << "\nInitiating simulation\n";
                 // cout << profile_ID << endl;
@@ -748,7 +750,10 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                             // cout << dead_Particle_count[tissue] << endl
                             //      << current_Viral_load_per_Tissue[tissue] << endl;
                             // // TODO: COMPRESS THE PREVIOUS GENERAIONS (Current generations) SEQUENCES per tissue FOLDER
-                            compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation));
+                            if (enable_Folder_management == "YES")
+                            {
+                                compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), enable_Compression);
+                            }
                         }
                         cout << "Clearing parent cell array: ";
                         functions.clear_Array_int_CPU(parents_in_Tissue, 2);
@@ -759,9 +764,12 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                         removed_by_Transfer_Indexes[tissue].clear();
                         dead_Particle_count[tissue] = 0;
                         current_Viral_load_per_Tissue[tissue] = 0;
-                        if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
+                        if (enable_Folder_management == "YES")
                         {
-                            compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation));
+                            if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
+                            {
+                                compress_Folder(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), enable_Compression);
+                            }
                         }
                     }
                     // cout << "Cell Limit: " << cell_Limit[tissue] << endl;
@@ -819,7 +827,11 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
             if (infected_to_Recovered == "NO")
             {
                 set_Removed();
-                compress_Folder(source_sequence_Data_folder);
+                if (enable_Folder_management == "YES")
+                {
+                    compress_Folder(source_sequence_Data_folder, enable_Compression);
+                }
+
                 clear_Arrays_end();
             }
             else
@@ -833,21 +845,34 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
     else
     {
         set_Removed();
-        compress_Folder(source_sequence_Data_folder);
+        if (enable_Folder_management == "YES")
+        {
+            compress_Folder(source_sequence_Data_folder, enable_Compression);
+        }
     }
 
     // get each tissues generational phase
 }
 
-void node_within_host::compress_Folder(string path)
+void node_within_host::compress_Folder(string path, string &enable_Compression)
 {
     if (filesystem::exists(path))
     {
         cout << "\nCompressing folder: " << path << endl;
 
-        string tar_Folder = path + ".tar.gz";
+        string tar_Folder;
+        string command_Tar;
 
-        string command_Tar = "tar -czf " + tar_Folder + " " + path + " && rm -R " + path;
+        if (enable_Compression == "YES")
+        {
+            tar_Folder = path + ".tar.gz";
+            command_Tar = "tar -czf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
+        else
+        {
+            tar_Folder = path + ".tar";
+            command_Tar = "tar -cf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
 
         int result = system(command_Tar.c_str());
 
@@ -868,11 +893,16 @@ void node_within_host::compress_Folder(string path)
     }
 }
 
-void node_within_host::set_Infection_prob_Zero(string source_sequence_Data_folder)
+void node_within_host::set_Infection_prob_Zero(string source_sequence_Data_folder,
+                                               string enable_Folder_management,
+                                               string enable_Compression)
 {
     set_Removed();
     clear_Arrays_end();
-    compress_Folder(source_sequence_Data_folder);
+    if (enable_Folder_management == "YES")
+    {
+        compress_Folder(source_sequence_Data_folder, enable_Compression);
+    }
 }
 
 int node_within_host::sample_Host(functions_library &functions, float &decimal_Date,
@@ -3253,12 +3283,16 @@ int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
         return 0;
     }
 }
-int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string source_sequence_Data_folder)
+int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string source_sequence_Data_folder,
+                                      string enable_Folder_management, string enable_Compression)
 {
     if (get_Load(num_tissues, tissue_array) >= terminal_Load)
     {
         set_Dead();
-        compress_Folder(source_sequence_Data_folder);
+        if (enable_Folder_management == "YES")
+        {
+            compress_Folder(source_sequence_Data_folder, enable_Compression);
+        }
         return 1;
     }
     else

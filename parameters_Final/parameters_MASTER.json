@@ -29,5 +29,10 @@
   "Nodes master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/node_Master.json",
 
   # Sequence profiles
-  "Sequence master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/sequence_Master.json"
+  "Sequence master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/sequence_Master.json",
+
+  # Folder management
+  # Compresses folders to a TAR.GZ or reduces them to a single TAR file
+  "Enable folder managment":"Yes",
+  "Compress folders":"No"
 }

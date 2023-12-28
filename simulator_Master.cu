@@ -20,11 +20,12 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Intermediate Sequences per file\"",
         "\"Process cell rate\"",
         "\"Start date\"",
-        "\"Stop after generations\""};
+        "\"Stop after generations\"",
+        "\"Enable folder managment\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
-    cout << "Configuring folders:\n";
+    cout << "\nConfiguring folders:\n";
 
     output_Folder_location = Parameters.get_STRING(found_Parameters[4]);
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[3]);
@@ -46,6 +47,23 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
     }
 
     function.config_Folder(intermediate_Folder_location, "Intermediate");
+    cout << "\nFolder management: ";
+    if (function.to_Upper_Case(Parameters.get_STRING(found_Parameters[13])) == "YES")
+    {
+        enable_Folder_management = "YES";
+
+        vector<string> folder_Management = {"\"Compress folders\""};
+        vector<string> folder_management_Parameters = Parameters.get_parameters(parameter_Master_Location, folder_Management);
+
+        if (function.to_Upper_Case(Parameters.get_STRING(folder_Management[0])) == "YES")
+        {
+            enable_Compression = "YES";
+        }
+    }
+    cout << enable_Folder_management << endl;
+    cout << "Folder compression: " << enable_Compression << endl;
+    // exit(-1);
+
     function.config_Folder(output_Folder_location, "Output");
 
     output_Network_location = this->output_Folder_location + "/network_Data";
@@ -434,7 +452,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " removed\n";
                 removed_Count++;
             }
-            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index())) == 1)
+            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()), enable_Folder_management, enable_Compression) == 1)
             {
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
                 dead_Count++;
@@ -710,6 +728,8 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 viral_Migration_Values,
                                                                 overall_Generations,
                                                                 infected_to_Recovered,
+                                                                enable_Folder_management,
+                                                                enable_Compression,
                                                                 gen);
             }
 
@@ -794,7 +814,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
                             if (Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_infection_probability() <= 0)
                             {
-                                Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].set_Infection_prob_Zero(intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()));
+                                Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].set_Infection_prob_Zero(intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[indexes_of_Sampling_Nodes[host]]].get_host_Index()), enable_Folder_management, enable_Compression);
                             }
                         }
                     }
@@ -3630,8 +3650,8 @@ void simulator_Master::BA_Model_Engine(functions_library &functions)
                 if (check_Present == 0)
                 {
                     // cout << "Node " << node + 1 << " attached to " << attach_Node + 1 << endl;
-                    network_File << "0_" << to_string(attach_Node + 1) << "\t"
-                                 << "0_" << to_string(node + 1) << "\n";
+                    network_File << "0_" << to_string(attach_Node) << "\t"
+                                 << "0_" << to_string(node) << "\n";
 
                     connections_per_Node[attach_Node] = connections_per_Node[attach_Node] + 1;
 

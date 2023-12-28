@@ -59,6 +59,9 @@ private:
     string intermediate_Folders;
     string intermediate_sequence_Store;
 
+    string enable_Folder_management = "NO";
+    string enable_Compression = "NO";
+
     int max_sequences_per_File = 0;
 
     string node_Master_location;
@@ -76,8 +79,8 @@ private:
     vector<vector<int>> each_Nodes_Connection_INT;
     vector<pair<int, int>> all_node_IDs;
 
-    //vector<int> search_Indexes;
-    //int overall_Found = 0;
+    // vector<int> search_Indexes;
+    // int overall_Found = 0;
 
     string connection_Model = "FIXED";
 

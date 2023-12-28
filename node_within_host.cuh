@@ -93,7 +93,8 @@ public:
     int get_Load(int &num_tissues_Calc, int *tissue_array);
 
     int infectious_status(int &num_tissues_Calc, int *tissue_array);
-    int terminal_status(int &num_tissues_Calc, int *tissue_array, string source_sequence_Data_folder);
+    int terminal_status(int &num_tissues_Calc, int *tissue_array, string source_sequence_Data_folder,
+                        string enable_Folder_management, string enable_Compression);
 
     void print_All();
 
@@ -150,6 +151,8 @@ public:
                         float **viral_Migration_Values,
                         int &overall_Generations,
                         string &infected_to_Recovered,
+                        string enable_Folder_management,
+                        string enable_Compression,
                         mt19937 &gen);
 
     int get_generation_Phase(int generation, int *num_replication_phases, float **tissue_replication_data, int *tissue_param_profile_Stride, int &tissue,
@@ -275,9 +278,11 @@ public:
                     string &sampled_sequences_Folder,
                     mt19937 &gen);
 
-    void compress_Folder(string path);
+    void compress_Folder(string path, string &enable_Compression);
 
     void clear_Arrays_end();
 
-    void set_Infection_prob_Zero(string source_sequence_Data_folder);
+    void set_Infection_prob_Zero(string source_sequence_Data_folder,
+                                 string enable_Folder_management,
+                                 string enable_Compression);
 };
