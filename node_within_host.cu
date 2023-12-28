@@ -893,6 +893,45 @@ void node_within_host::compress_Folder(string path, string &enable_Compression)
     }
 }
 
+void node_within_host::compress_Folder(string path, string enable_Compression, int thread)
+{
+    if (filesystem::exists(path))
+    {
+        cout << "\nCompressing folder: " << path << endl;
+
+        string tar_Folder;
+        string command_Tar;
+
+        if (enable_Compression == "YES")
+        {
+            tar_Folder = path + ".tar.gz";
+            command_Tar = "tar -czf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
+        else
+        {
+            tar_Folder = path + ".tar";
+            command_Tar = "tar -cf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
+
+        int result = system(command_Tar.c_str());
+
+        if (result == 0)
+        {
+            cout << "Compression successful: " << path << endl;
+        }
+        else
+        {
+            cout << "Failed to compress the folder: " << path << endl;
+            exit(-1);
+        }
+    }
+    else
+    {
+        cout << "COMPRESSION ERROR: UNABLE TO FIND THE FOLDER: " << path << endl;
+        exit(-1);
+    }
+}
+
 void node_within_host::set_Infection_prob_Zero(string source_sequence_Data_folder,
                                                string enable_Folder_management,
                                                string enable_Compression)
@@ -3283,6 +3322,23 @@ int node_within_host::infectious_status(int &num_tissues, int *tissue_array)
         return 0;
     }
 }
+int node_within_host::terminal_status(int &num_tissues, int *tissue_array)
+{
+    if (get_Load(num_tissues, tissue_array) >= terminal_Load)
+    {
+        set_Dead();
+        // if (enable_Folder_management == "YES")
+        // {
+        //     compress_Folder(source_sequence_Data_folder, enable_Compression);
+        // }
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 int node_within_host::terminal_status(int &num_tissues, int *tissue_array, string source_sequence_Data_folder,
                                       string enable_Folder_management, string enable_Compression)
 {

@@ -303,4 +303,6 @@ public:
     // void thread_Node_search(int start_Node, int stop_Node, vector<pair<int, int>> host_Connections);
 
     vector<int> get_new_Hosts_Indexes(int &node_Profile, mt19937 &gen, vector<int> &possible_Infections);
+
+    void thread_compress_Folders(int start, int stop, vector<int> new_dead_Population, vector<node_within_host> &Hosts);
 };

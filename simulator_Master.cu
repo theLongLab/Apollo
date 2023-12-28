@@ -343,6 +343,14 @@ void simulator_Master::ingress()
     apollo(functions, Hosts);
 }
 
+void simulator_Master::thread_compress_Folders(int start, int stop, vector<int> new_dead_Population, vector<node_within_host> &Hosts)
+{
+    for (int host = start; host < stop; host++)
+    {
+        Hosts[new_dead_Population[host]].compress_Folder(intermediary_Sequence_location + "/" + to_string(Hosts[new_dead_Population[host]].get_host_Index()), enable_Compression, 1);
+    }
+}
+
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
 {
     // // TODO: host infection times
@@ -439,6 +447,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         cout << "\nDetermining removed/ dead and newly infectious hosts\n";
         vector<int> temp;
         vector<int> infectious_Population;
+        vector<int> new_dead_Population;
         for (int host = 0; host < infected_Population.size(); host++)
         {
             if (Hosts[infected_Population[host]].get_Status() == "Dead")
@@ -452,9 +461,10 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " removed\n";
                 removed_Count++;
             }
-            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array, intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()), enable_Folder_management, enable_Compression) == 1)
+            else if (Hosts[infected_Population[host]].terminal_status(terminal_tissues, terminal_array) == 1)
             {
                 cout << "Node " << Hosts[infected_Population[host]].get_Name() << " is dead\n";
+                new_dead_Population.push_back(infected_Population[host]);
                 dead_Count++;
             }
             else if (Hosts[infected_Population[host]].get_Status() != "Susceptible")
@@ -470,6 +480,59 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
         infected_Population = temp;
         temp.clear();
+
+        // TODO: Compress all dead at once if multiread is available or else one by one
+        if (new_dead_Population.size() > 0 && enable_Folder_management == "YES")
+        {
+            cout << "\nCompressing " << new_dead_Population.size() << " dead host(s)\n";
+            //  intermediary_Sequence_location + "/" + to_string(Hosts[infected_Population[host]].get_host_Index()), enable_Folder_management, enable_Compression
+            if (multi_Read == "NO")
+            {
+                cout << "Single thread compression\n";
+                for (int host = 0; host < new_dead_Population.size(); host++)
+                {
+                    Hosts[new_dead_Population[host]].compress_Folder(intermediary_Sequence_location + "/" + to_string(Hosts[new_dead_Population[host]].get_host_Index()), enable_Compression);
+                }
+            }
+            else
+            {
+                cout << "Multi threaded compression\n";
+                int num_per_Core = new_dead_Population.size() / CPU_cores;
+                int remainder = new_dead_Population.size() % CPU_cores;
+
+                vector<thread> threads_vec;
+
+                for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
+                {
+                    int start_Node = core_ID * num_per_Core;
+                    int stop_Node = start_Node + num_per_Core;
+
+                    threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
+                }
+
+                if (remainder != 0)
+                {
+                    int start_Node = new_dead_Population.size() - remainder;
+                    int stop_Node = new_dead_Population.size();
+
+                    threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
+                }
+
+                for (thread &t : threads_vec)
+                {
+                    if (t.joinable())
+                    {
+                        t.join();
+                    }
+                }
+
+                threads_vec.clear();
+            }
+
+            new_dead_Population.clear();
+            cout << endl;
+            // exit(-1);
+        }
 
         // // TODO WRITE to overall generational summary
         fstream overall_Generational_summary_File;

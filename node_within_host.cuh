@@ -96,6 +96,8 @@ public:
     int terminal_status(int &num_tissues_Calc, int *tissue_array, string source_sequence_Data_folder,
                         string enable_Folder_management, string enable_Compression);
 
+    int terminal_status(int &num_tissues_Calc, int *tissue_array);
+
     void print_All();
 
     void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
@@ -279,6 +281,7 @@ public:
                     mt19937 &gen);
 
     void compress_Folder(string path, string &enable_Compression);
+    void compress_Folder(string path, string enable_Compression, int thread);
 
     void clear_Arrays_end();
 
