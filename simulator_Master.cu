@@ -481,7 +481,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         infected_Population = temp;
         temp.clear();
 
-        // TODO: Compress all dead at once if multiread is available or else one by one
+        // // TODO: Compress all dead at once if multiread is available or else one by one
         if (new_dead_Population.size() > 0 && enable_Folder_management == "YES")
         {
             cout << "\nCompressing " << new_dead_Population.size() << " dead host(s)\n";
