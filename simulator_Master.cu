@@ -343,12 +343,12 @@ void simulator_Master::ingress()
     apollo(functions, Hosts);
 }
 
-void simulator_Master::thread_compress_Folders(int start, int stop, vector<int> new_dead_Population, vector<node_within_host> &Hosts)
+void simulator_Master::thread_compress_Folders(int new_dead_Host, vector<node_within_host> &Hosts)
 {
-    for (int host = start; host < stop; host++)
-    {
-        Hosts[new_dead_Population[host]].compress_Folder(intermediary_Sequence_location + "/" + to_string(Hosts[new_dead_Population[host]].get_host_Index()), enable_Compression, 1);
-    }
+    //  for (int host = start; host < stop; host++)
+    //{
+    Hosts[new_dead_Host].compress_Folder(intermediary_Sequence_location + "/" + to_string(Hosts[new_dead_Host].get_host_Index()), enable_Compression, 1);
+    //}
 }
 
 void simulator_Master::apollo(functions_library &functions, vector<node_within_host> &Hosts)
@@ -497,25 +497,33 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             else
             {
                 cout << "Multi threaded compression\n";
-                int num_per_Core = new_dead_Population.size() / CPU_cores;
-                int remainder = new_dead_Population.size() % CPU_cores;
+
+                //  int num_per_Core = new_dead_Population.size() / CPU_cores;
+                // int remainder = new_dead_Population.size() % CPU_cores;
 
                 vector<thread> threads_vec;
 
-                for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
+                int current_thread_Usage = 0;
+
+                for (int host = 0; host < new_dead_Population.size(); host++)
                 {
-                    int start_Node = core_ID * num_per_Core;
-                    int stop_Node = start_Node + num_per_Core;
+                    threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, new_dead_Population[host], ref(Hosts)});
 
-                    threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
-                }
+                    current_thread_Usage++;
 
-                if (remainder != 0)
-                {
-                    int start_Node = new_dead_Population.size() - remainder;
-                    int stop_Node = new_dead_Population.size();
+                    if (current_thread_Usage >= CPU_cores)
+                    {
+                        for (thread &t : threads_vec)
+                        {
+                            if (t.joinable())
+                            {
+                                t.join();
+                            }
+                        }
 
-                    threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
+                        threads_vec.clear();
+                        current_thread_Usage = 0;
+                    }
                 }
 
                 for (thread &t : threads_vec)
@@ -526,10 +534,34 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                     }
                 }
 
+                // for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
+                // {
+                //     int start_Node = core_ID * num_per_Core;
+                //     int stop_Node = start_Node + num_per_Core;
+
+                //     threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
+                // }
+
+                // if (remainder != 0)
+                // {
+                //     int start_Node = new_dead_Population.size() - remainder;
+                //     int stop_Node = new_dead_Population.size();
+
+                //     threads_vec.push_back(thread{&simulator_Master::thread_compress_Folders, this, start_Node, stop_Node, new_dead_Population, ref(Hosts)});
+                // }
+
+                // for (thread &t : threads_vec)
+                // {
+                //     if (t.joinable())
+                //     {
+                //         t.join();
+                //     }
+                // }
+
                 threads_vec.clear();
             }
             cout << endl;
-            // exit(-1);
+            //exit(-1);
         }
         new_dead_Population.clear();
 
