@@ -24,6 +24,7 @@
 #include "extract_seq.cuh"
 
 #include "simulator_Master.cuh"
+#include "hap_counter.cuh"
 
 using namespace std;
 
@@ -64,6 +65,13 @@ int main(int argc, char *argv[])
 
           simulator_Master simulator = simulator_Master(parameter_MASTER_file);
           simulator.ingress();
+     }
+     else if (function == "--hapcounter")
+     {
+          cout << "Haplotype counter with frequencies\n\n";
+
+          hap_counter hapcount = hap_counter(parameter_MASTER_file);
+          hapcount.ingress();
      }
      else if (function == "--extract")
      {

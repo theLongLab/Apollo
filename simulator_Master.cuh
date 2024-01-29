@@ -43,6 +43,7 @@ private:
     string intermediate_Folder_location;
 
     string intermediary_Sequence_location;
+    string intermediary_Index_location;
 
     int CUDA_device_number;
 

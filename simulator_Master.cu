@@ -21,7 +21,7 @@ simulator_Master::simulator_Master(string parameter_Master_Location)
         "\"Process cell rate\"",
         "\"Start date\"",
         "\"Stop after generations\"",
-        "\"Enable folder managment\""};
+        "\"Enable folder management\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
@@ -358,7 +358,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     // // TODO: Per individual generational summary
     // // TODO: SIRS
     // // TODO: Terminate after given number of generations or time
-    // TODO: CHECK IF ALL ARRAYS ARE CLEARED
+    // // TODO: CHECK IF ALL ARRAYS ARE CLEARED
 
     // Source\tTarget\tInfection_time
     // Generation_Network\tGeneration_time_decimal\tDate\tSusceptible_population\tInfected\tInfectious\tDead\tRemoved
@@ -439,7 +439,24 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     //     cout << endl;
     // }
 
-    // exit(-1);
+    cout << "\nWriting node index information\n";
+    functions.create_File(intermediary_Index_location + "/node_Index.csv", "node_Index\tnode_ID");
+    fstream index_Data_file;
+    index_Data_file.open(intermediary_Index_location + "/node_Index.csv", ios::app);
+    if (index_Data_file.is_open())
+    {
+        for (int node = 0; node < all_node_IDs.size(); node++)
+        {
+            index_Data_file << node << "\t" << all_node_IDs[node].first << "_" << all_node_IDs[node].second << "\n";
+        }
+        index_Data_file.close();
+    }
+    else
+    {
+        cout << "\nERROR: INDEX DATA FILE CANNOT BE OPENED: " << intermediary_Index_location << "/node_Index.csv\n";
+    }
+
+    //exit(-1);
 
     do
     {
@@ -498,7 +515,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
             {
                 cout << "Multi threaded compression\n";
 
-                //  int num_per_Core = new_dead_Population.size() / CPU_cores;
+                // int num_per_Core = new_dead_Population.size() / CPU_cores;
                 // int remainder = new_dead_Population.size() % CPU_cores;
 
                 vector<thread> threads_vec;
@@ -561,7 +578,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                 threads_vec.clear();
             }
             cout << endl;
-            //exit(-1);
+            // exit(-1);
         }
         new_dead_Population.clear();
 
@@ -1180,6 +1197,9 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
 
     intermediary_Sequence_location = intermediate_Folder_location + "/sequence_Data";
     functions.config_Folder(intermediary_Sequence_location, "Intermediary sequence data");
+
+    intermediary_Index_location = intermediate_Folder_location + "/index_Data";
+    functions.config_Folder(intermediary_Index_location, "Node index data");
 
     string reference_Sequences = intermediary_Sequence_location + "/reference_Sequences";
     functions.config_Folder(reference_Sequences, "Converted reference sequence(s)");
@@ -2242,7 +2262,7 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                                "\"Sampling rate Binomial probability\"",
                                "\"Resampling of nodes\"",
                                "\"Distribution per node sequences sampled\"",
-                               "\"Limit samples otained\""};
+                               "\"Limit samples obtained\""};
 
             vector<string> sampling_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
 
