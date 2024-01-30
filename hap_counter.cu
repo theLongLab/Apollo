@@ -187,6 +187,96 @@ void hap_counter::ingress()
                         string intermediary_Folder = intermediary_Sequence_location + "/" + to_string(index);
                         cout << "Intermediary directory found: " << intermediary_Folder << endl;
 
+                        cout << "\nLoading Parent sequence data: ";
+
+                        fstream parent_Sequence_file;
+                        parent_Sequence_file.open(output_Folder_location + "/node_Data/" + nodes[node] + "/cells_of_Parents.csv", ios::in);
+
+                        // 3D vector
+                        vector<vector<vector<int>>> tissue_generation_Sequence;
+
+                        for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+                        {
+                            vector<vector<int>> tissue_Vector;
+                            tissue_generation_Sequence.push_back(tissue_Vector);
+                        }
+
+                        if (parent_Sequence_file.is_open())
+                        {
+                            cout << output_Folder_location << "/node_Data/" << nodes[node] << "/cells_of_Parents.csv\n";
+                            string line;
+                            vector<string> line_Data;
+
+                            getline(parent_Sequence_file, line);
+
+                            while (getline(parent_Sequence_file, line))
+                            {
+                                functions.split(line_Data, line, '\t');
+                                vector<string> sequence_Data;
+                                functions.split(sequence_Data, line_Data[0], '_');
+
+                                int tissue_Index = -1;
+                                for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+                                {
+                                    if (tissue_Names[tissue] == sequence_Data[2])
+                                    {
+                                        tissue_Index = tissue;
+                                        break;
+                                    }
+                                }
+
+                                if (tissue_Index != -1)
+                                {
+                                    int generation = stoi(sequence_Data[3]);
+                                    while (tissue_generation_Sequence[tissue_Index].size() <= generation)
+                                    {
+                                        vector<int> generation_Vector;
+                                        tissue_generation_Sequence[tissue_Index].push_back(generation_Vector);
+                                    }
+                                    tissue_generation_Sequence[tissue_Index][generation].push_back(stoi(sequence_Data[4]));
+                                }
+                                else
+                                {
+                                    cout << "ERROR UNKNOWN TISSUE FOUND: " << sequence_Data[2] << endl;
+                                    exit(-1);
+                                }
+                            }
+
+                            parent_Sequence_file.close();
+                        }
+                        else
+                        {
+                            cout << "ERROR: UNABLE TO OPEN PARENT SEQUENCE FILE: " << output_Folder_location << "/node_Data/" << nodes[node] << "/cells_of_Parents.csv\n";
+                            exit(-1);
+                        }
+
+                        for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+                        {
+                            for (int gen = 0; gen < tissue_generation_Sequence[tissue].size(); gen++)
+                            {
+                                sort(tissue_generation_Sequence[tissue][gen].begin(), tissue_generation_Sequence[tissue][gen].end());
+                            }
+                        }
+
+                        // for (int test = 0; test < tissue_generation_Sequence[1].size(); test++)
+                        // {
+                        //     for (int seq = 0; seq < tissue_generation_Sequence[1][test].size(); seq++)
+                        //     {
+                        //         cout << tissue_generation_Sequence[1][test][seq] << endl;
+                        //     }
+                        //     cout << endl;
+                        // }
+
+                        // exit(-1);
+
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Frequencies.csv", "Tissue\tGeneration\tSequence\tCount\tFrequency");
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Frequencies.csv", "Tissue\tGeneration\tSequence\tCount\tFrequency");
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Frequencies.csv", "Tissue\tGeneration\tSequence\tCount\tFrequency");
+
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Count.csv", "Tissue\tGeneration\thaplotype_Count");
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Count.csv", "Tissue\tGeneration\thaplotype_Count");
+                        functions.create_File(output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Count.csv", "Tissue\tGeneration\thaplotype_Count");
+
                         for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
                         {
                             cout << "\nConfiguring tissue: " << tissue_Names[tissue] << endl;
@@ -210,6 +300,8 @@ void hap_counter::ingress()
 
                             for (int generation = 0; generation < generation_Folder_Path.size(); generation++)
                             {
+                                int track_Seq = 0;
+
                                 cout << "\nProcessing generation: " << generation << endl;
                                 if (filesystem::path(generation_Folder_Path[generation].second).extension().string() == ".tar")
                                 {
@@ -243,6 +335,8 @@ void hap_counter::ingress()
                                     // vector<pair<int, string>> all_Hap_Alive_Count;
                                     // vector<pair<int, string>> all_Hap_Parent_Count;
 
+                                    cout << "Detecting haplotypes and their counts: ";
+
                                     for (int nFASTA_file = 0; nFASTA_file < nFASTA_files.size(); nFASTA_file++)
                                     {
                                         string file = tissue_Folder + "/" + (filesystem::path(generation_Folder_Path[generation].second).stem().string()) + "/" + to_string(nFASTA_files[nFASTA_file].first) + "_" + to_string(nFASTA_files[nFASTA_file].second) + ".nfasta";
@@ -264,9 +358,9 @@ void hap_counter::ingress()
 
                                             // for (int test = 0; test < line_Data.size(); test++)
                                             // {
-                                            //     cout << line_Data[test].first << endl
-                                            //          << endl
-                                            //          << line_Data[test].second << endl;
+                                            //     cout << line_Data[test].first << endl;
+                                            //     //      << endl
+                                            //     //      << line_Data[test].second << endl;
                                             // }
 
                                             // exit(-1);
@@ -275,6 +369,10 @@ void hap_counter::ingress()
 
                                             threads_vec.push_back(thread{&hap_counter::all_Haplotype_Counter, this, ref(line_Data)});
                                             threads_vec.push_back(thread{&hap_counter::all_Haplotype_Alive_Counter, this, ref(line_Data), ref(functions)});
+                                            if (generation < tissue_generation_Sequence[tissue].size())
+                                            {
+                                                threads_vec.push_back(thread{&hap_counter::all_Haplotype_Parent_Counter, this, ref(line_Data), ref(functions), ref(tissue_generation_Sequence), tissue, generation, ref(track_Seq)});
+                                            }
 
                                             for (thread &t : threads_vec)
                                             {
@@ -286,13 +384,16 @@ void hap_counter::ingress()
 
                                             threads_vec.clear();
 
-                                            for (int test = 0; test < all_Hap_Alive_Count.size(); test++)
-                                            {
-                                                // if (all_Hap_Count[test].first != 1)
-                                                //{
-                                                cout << all_Hap_Alive_Count[test].first << endl;
-                                                //}
-                                            }
+                                            // for (int test = 0; test < all_Hap_Count.size(); test++)
+                                            // {
+                                            //     // if (all_Hap_Count[test].first != 1)
+                                            //     //{
+                                            //     cout << all_Hap_Count[test].first << endl;
+                                            //     cout << all_Hap_Count[test].second << endl;
+                                            //     //}
+                                            // }
+
+                                            // exit(-1);
                                         }
                                         else
                                         {
@@ -300,6 +401,8 @@ void hap_counter::ingress()
                                             exit(-1);
                                         }
                                     }
+                                    // exit(-1);
+                                    cout << "Done\n";
 
                                     if (filesystem::path(generation_Folder_Path[generation].second).extension().string() == ".tar")
                                     {
@@ -321,9 +424,28 @@ void hap_counter::ingress()
                                 }
                                 // exit(-1);
 
+                                // Calculate totals and write the frequencies
+                                write_Files(tissue_Names[tissue], generation, all_Hap_Count,
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Frequencies.csv",
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Count.csv");
+
+                                write_Files(tissue_Names[tissue], generation, all_Hap_Alive_Count,
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Frequencies.csv",
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Count.csv");
+
+                                write_Files(tissue_Names[tissue], generation, all_Hap_Parent_Count,
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Frequencies.csv",
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Count.csv");
+
                                 all_Hap_Count.clear();
                                 all_Hap_Alive_Count.clear();
                                 all_Hap_Parent_Count.clear();
+
+                                all_Hap_Total = 0;
+                                all_Hap_Alive_Total = 0;
+                                all_Hap_Parent_Total = 0;
+
+                                // track_Seq = 0;
                             }
                             exit(-1);
                         }
@@ -340,6 +462,33 @@ void hap_counter::ingress()
             }
         }
     }
+}
+
+void hap_counter::write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries)
+{
+    fstream all_hap_File;
+    all_hap_File.open(location_Frequencies, ios::app);
+    if (all_hap_File.is_open())
+    {
+        for (int haplotype = 0; haplotype < Hap_count.size(); haplotype++)
+        {
+            all_hap_File << tissue_Name << "\t"
+                         << to_string(generation) << "\t"
+                         << "\"" << Hap_count[haplotype].second << "\""
+                         << "\t"
+                         << Hap_count[haplotype].first<<"\t";
+            float frequency = (float)Hap_count[haplotype].first / (float)all_Hap_Total;
+            all_hap_File << frequency << "\n";
+        }
+        all_hap_File.close();
+    }
+
+    fstream all_hap_Summary;
+    all_hap_Summary.open(location_Summaries, ios::app);
+    all_hap_Summary << tissue_Name << "\t"
+                    << to_string(generation) << "\t"
+                    << to_string(Hap_count.size()) << "\n";
+    all_hap_Summary.close();
 }
 
 void hap_counter::all_Haplotype_Counter(vector<pair<string, string>> &line_Data)
@@ -360,6 +509,7 @@ void hap_counter::all_Haplotype_Counter(vector<pair<string, string>> &line_Data)
         {
             all_Hap_Count.push_back(make_pair(1, line_Data[check].second));
         }
+        all_Hap_Total++;
     }
 }
 
@@ -385,6 +535,47 @@ void hap_counter::all_Haplotype_Alive_Counter(vector<pair<string, string>> &line
             if (found == 0)
             {
                 all_Hap_Alive_Count.push_back(make_pair(1, line_Data[check].second));
+            }
+            all_Hap_Alive_Total++;
+        }
+    }
+}
+
+void hap_counter::all_Haplotype_Parent_Counter(vector<pair<string, string>> &line_Data, functions_library &functions,
+                                               vector<vector<vector<int>>> &tissue_generation_Sequence,
+                                               int tissue, int generation, int &track_Seq)
+{
+    vector<int> sequences = tissue_generation_Sequence[tissue][generation];
+
+    if (sequences.size() != 0 && track_Seq < sequences.size())
+    {
+        vector<string> sequence_Name_data;
+        for (int check = 0; check < line_Data.size(); check++)
+        {
+            functions.split(sequence_Name_data, line_Data[check].first, '_');
+            if (stoi(sequence_Name_data[0]) == sequences[track_Seq])
+            {
+                int found = 0;
+                for (int hap = 0; hap < all_Hap_Parent_Count.size(); hap++)
+                {
+                    if (line_Data[check].second == all_Hap_Parent_Count[hap].second)
+                    {
+                        all_Hap_Parent_Count[hap].first = all_Hap_Parent_Count[hap].first + 1;
+                        found = 1;
+                        break;
+                    }
+                }
+                if (found == 0)
+                {
+                    all_Hap_Parent_Count.push_back(make_pair(1, line_Data[check].second));
+                }
+                track_Seq++;
+
+                if (track_Seq >= sequences.size())
+                {
+                    break;
+                }
+                all_Hap_Parent_Total++;
             }
         }
     }

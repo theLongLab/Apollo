@@ -66,6 +66,10 @@ private:
     vector<pair<int, string>> all_Hap_Alive_Count;
     vector<pair<int, string>> all_Hap_Parent_Count;
 
+    int all_Hap_Total = 0;
+    int all_Hap_Alive_Total = 0;
+    int all_Hap_Parent_Total = 0;
+
 public:
     hap_counter(string parameter_Master_Location);
 
@@ -73,5 +77,9 @@ public:
 
     void all_Haplotype_Counter(vector<pair<string, string>> &line_Data);
     void all_Haplotype_Alive_Counter(vector<pair<string, string>> &line_Data, functions_library &functions);
-    void all_Haplotype_Parent_Counter(vector<pair<string, string>> &line_Data);
+    void all_Haplotype_Parent_Counter(vector<pair<string, string>> &line_Data, functions_library &functions,
+                                      vector<vector<vector<int>>> &tissue_generation_Sequence,
+                                      int tissue, int generation, int &track_Seq);
+
+    void write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries);
 };
