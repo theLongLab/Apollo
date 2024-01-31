@@ -427,15 +427,15 @@ void hap_counter::ingress()
                                 // Calculate totals and write the frequencies
                                 write_Files(tissue_Names[tissue], generation, all_Hap_Count,
                                             output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Frequencies.csv",
-                                            output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Count.csv");
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/all_Haplotype_Count.csv", all_Hap_Total);
 
                                 write_Files(tissue_Names[tissue], generation, all_Hap_Alive_Count,
                                             output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Frequencies.csv",
-                                            output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Count.csv");
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/alive_Haplotype_Count.csv", all_Hap_Alive_Total);
 
                                 write_Files(tissue_Names[tissue], generation, all_Hap_Parent_Count,
                                             output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Frequencies.csv",
-                                            output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Count.csv");
+                                            output_Folder_location + "/node_Data/" + nodes[node] + "/parent_Haplotype_Count.csv", all_Hap_Parent_Total);
 
                                 all_Hap_Count.clear();
                                 all_Hap_Alive_Count.clear();
@@ -464,7 +464,7 @@ void hap_counter::ingress()
     }
 }
 
-void hap_counter::write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries)
+void hap_counter::write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries, int total)
 {
     fstream all_hap_File;
     all_hap_File.open(location_Frequencies, ios::app);
@@ -476,8 +476,8 @@ void hap_counter::write_Files(string tissue_Name, int generation, vector<pair<in
                          << to_string(generation) << "\t"
                          << "\"" << Hap_count[haplotype].second << "\""
                          << "\t"
-                         << Hap_count[haplotype].first<<"\t";
-            float frequency = (float)Hap_count[haplotype].first / (float)all_Hap_Total;
+                         << Hap_count[haplotype].first << "\t";
+            float frequency = (float)Hap_count[haplotype].first / (float)total;
             all_hap_File << frequency << "\n";
         }
         all_hap_File.close();
@@ -569,13 +569,14 @@ void hap_counter::all_Haplotype_Parent_Counter(vector<pair<string, string>> &lin
                 {
                     all_Hap_Parent_Count.push_back(make_pair(1, line_Data[check].second));
                 }
+
                 track_Seq++;
+                all_Hap_Parent_Total++;
 
                 if (track_Seq >= sequences.size())
                 {
                     break;
                 }
-                all_Hap_Parent_Total++;
             }
         }
     }

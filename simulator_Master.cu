@@ -456,7 +456,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
         cout << "\nERROR: INDEX DATA FILE CANNOT BE OPENED: " << intermediary_Index_location << "/node_Index.csv\n";
     }
 
-    //exit(-1);
+    // exit(-1);
 
     do
     {
@@ -1832,6 +1832,12 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
     }
 
     cout << "\nConfiguring profiles:\n\n";
+    tot_prob_selectivity = (int *)malloc(sizeof(int) * 2);
+    for (int fill = 0; fill < 2; fill++)
+    {
+        tot_prob_selectivity[fill] = 0;
+    }
+    
     if (mutation_recombination_proof_Reading_availability[0] == 1 || mutation_recombination_proof_Reading_availability[1] == 1)
     {
         parameters_List = {
@@ -2056,12 +2062,6 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
 
                 vector<vector<pair<int, vector<float>>>> recom_probability_Changes;
                 vector<vector<pair<int, vector<float>>>> recom_survivability_Changes;
-
-                tot_prob_selectivity = (int *)malloc(sizeof(int) * 2);
-                for (int fill = 0; fill < 2; fill++)
-                {
-                    tot_prob_selectivity[fill] = 0;
-                }
 
                 for (int recombination_hotspot = 0; recombination_hotspot < recombination_Hotspots; recombination_hotspot++)
                 {

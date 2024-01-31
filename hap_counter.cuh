@@ -81,5 +81,5 @@ public:
                                       vector<vector<vector<int>>> &tissue_generation_Sequence,
                                       int tissue, int generation, int &track_Seq);
 
-    void write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries);
+    void write_Files(string tissue_Name, int generation, vector<pair<int, string>> &Hap_count, string location_Frequencies, string location_Summaries,int total);
 };

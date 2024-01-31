@@ -2808,6 +2808,8 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         start_stop_Per_GPU.push_back(make_pair(start, stop));
     }
 
+    // cout<<"Test 1\n";
+
     start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
 
     string all_Sequences = "";
@@ -2820,6 +2822,8 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         }
     }
 
+    // cout<<"Test 2\n";
+
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
         for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
@@ -2828,9 +2832,13 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         }
     }
 
+    // cout<<"Test 3\n";
+
     char *full_Char;
     full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
     strcpy(full_Char, all_Sequences.c_str());
+
+    // cout<<"Test 4\n";
 
     cudaStream_t streams[num_Cuda_devices];
     cudaDeviceProp deviceProp;
@@ -2855,6 +2863,8 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
 
     float *cuda_progeny_distribution_parameters_Array[num_Cuda_devices];
 
+    // cout<<"Test 5\n";
+
     // cout << "Sites: " << num_effect_Segregating_sites[0] << endl;
     // for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
     // {
@@ -2870,10 +2880,10 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
         cudaSetDevice(CUDA_device_IDs[gpu]);
         cudaGetDeviceProperties(&deviceProp, gpu);
         cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
-
+        cout << "Test 1\n";
         cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
         cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
-
+        cout << "Test 2\n";
         cudaMallocManaged(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
         cudaMallocManaged(&cuda_sequence_Configuration_standard[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(float *));
         for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
@@ -2881,50 +2891,52 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
             cudaMalloc((void **)&cuda_Sequence[gpu][row], genome_Length * sizeof(int));
             cudaMalloc((void **)&cuda_sequence_Configuration_standard[gpu][row], (3 + (2 * recombination_Hotspots)) * sizeof(float));
         }
-
+        cout << "Test 3\n";
         cudaMallocManaged(&cuda_Reference_fitness_survivability_proof_reading[gpu], 3 * sizeof(float));
         cudaMemcpy(cuda_Reference_fitness_survivability_proof_reading[gpu], Reference_fitness_survivability_proof_reading, 3 * sizeof(float), cudaMemcpyHostToDevice);
-
+        cout << "Test 4\n";
         cudaMallocManaged(&cuda_mutation_recombination_proof_Reading_availability[gpu], 3 * sizeof(int));
         cudaMemcpy(cuda_mutation_recombination_proof_Reading_availability[gpu], mutation_recombination_proof_Reading_availability, 3 * sizeof(int), cudaMemcpyHostToDevice);
-
+        cout << "Test 5\n";
         cudaMallocManaged(&cuda_num_effect_Segregating_sites[gpu], 3 * sizeof(int));
         cudaMemcpy(cuda_num_effect_Segregating_sites[gpu], num_effect_Segregating_sites, 3 * sizeof(int), cudaMemcpyHostToDevice);
-
+        cout << "Test 6\n";
         cudaMallocManaged(&cuda_progeny_distribution_parameters_Array[gpu], 3 * sizeof(float));
         cudaMemcpy(cuda_progeny_distribution_parameters_Array[gpu], progeny_distribution_parameters_Array, 3 * sizeof(float), cudaMemcpyHostToDevice);
-
+        cout << "Test 7\n";
         cudaMallocManaged(&cuda_sequence_Fitness_changes[gpu], num_effect_Segregating_sites[0] * sizeof(float *));
+        cout << "Test 7.1\n";
         for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
         {
             cudaMalloc((void **)&cuda_sequence_Fitness_changes[gpu][row], 5 * sizeof(float));
             cudaMemcpy(cuda_sequence_Fitness_changes[gpu][row], sequence_Fitness_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
         }
-
+        cout << "Test 8\n";
         // cudaMallocManaged(&cuda_sequence_Survivability_changes[gpu], num_effect_Segregating_sites[1] * sizeof(float *));
         // for (int row = 0; row < num_effect_Segregating_sites[1]; row++)
         // {
         //     cudaMalloc((void **)&cuda_sequence_Survivability_changes[gpu][row], 5 * sizeof(float));
         //     cudaMemcpy(cuda_sequence_Survivability_changes[gpu][row], sequence_Survivability_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
         // }
-
+        cout << "Test 9\n";
         cudaMallocManaged(&cuda_sequence_Proof_reading_changes[gpu], num_effect_Segregating_sites[2] * sizeof(float *));
         for (int row = 0; row < num_effect_Segregating_sites[2]; row++)
         {
             cudaMalloc((void **)&cuda_sequence_Proof_reading_changes[gpu][row], 5 * sizeof(float));
             cudaMemcpy(cuda_sequence_Proof_reading_changes[gpu][row], sequence_Proof_reading_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
         }
-
+        cout << "Test 10\n";
         cudaMallocManaged(&cuda_tot_prob_selectivity[gpu], 2 * sizeof(int));
         cudaMallocManaged(&cuda_recombination_prob_Stride[gpu], (recombination_Hotspots + 1) * sizeof(int));
         cudaMallocManaged(&cuda_recombination_select_Stride[gpu], (recombination_Hotspots + 1) * sizeof(int));
-
+        cout << "Test 11\n";
         cudaMallocManaged(&cuda_recombination_hotspot_parameters[gpu], recombination_Hotspots * sizeof(float *));
-        cudaMallocManaged(&cuda_recombination_Prob_matrix[gpu], tot_prob_selectivity[0] * sizeof(float *));
-        cudaMallocManaged(&cuda_recombination_Select_matrix[gpu], tot_prob_selectivity[1] * sizeof(float *));
-
+        cout << "Test 12\n";
         if (recombination_Hotspots > 0)
         {
+            cudaMallocManaged(&cuda_recombination_Prob_matrix[gpu], tot_prob_selectivity[0] * sizeof(float *));
+            cudaMallocManaged(&cuda_recombination_Select_matrix[gpu], tot_prob_selectivity[1] * sizeof(float *));
+
             cudaMemcpy(cuda_tot_prob_selectivity[gpu], tot_prob_selectivity, 2 * sizeof(int), cudaMemcpyHostToDevice);
             cudaMemcpy(cuda_recombination_prob_Stride[gpu], recombination_prob_Stride, (recombination_Hotspots + 1) * sizeof(int), cudaMemcpyHostToDevice);
             cudaMemcpy(cuda_recombination_select_Stride[gpu], recombination_select_Stride, (recombination_Hotspots + 1) * sizeof(int), cudaMemcpyHostToDevice);
@@ -2947,7 +2959,12 @@ void node_within_host::process_Sequences_get_Configuration(functions_library &fu
                 cudaMemcpy(cuda_recombination_Select_matrix[gpu][row], recombination_Select_matrix[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
             }
         }
-
+        else
+        {
+            cudaMallocManaged(&cuda_recombination_Prob_matrix[gpu], 0 * sizeof(float *));
+            cudaMallocManaged(&cuda_recombination_Select_matrix[gpu], 0 * sizeof(float *));
+        }
+        cout << "Test 13\n";
         cudaStreamCreate(&streams[gpu]);
     }
 
