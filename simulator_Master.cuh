@@ -107,6 +107,8 @@ private:
     float DC_percent_Neighbouring = 0;
     float DC_percent_Global_freedom = 0;
 
+    float ER_link_probability = 0;
+
     float generation_Time = 0;
 
     float shape_days_in_Host = 0;
@@ -284,6 +286,7 @@ public:
     void SCM_Model_Engine(functions_library &functions);
     void DCM_Model_Engine(functions_library &functions);
     void RANDOM_Model_Engine(functions_library &functions);
+    void ER_RANDOM_Model_Engine(functions_library &functions);
 
     void node_Master_Manager(functions_library &functions);
 

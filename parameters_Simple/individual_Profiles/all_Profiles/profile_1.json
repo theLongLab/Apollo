@@ -28,7 +28,7 @@
   "Tissue profiles":{
 
     "Tissue 1":{
-      "Cell limit":"YES",
+      "Cell limit":"No",
       "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.50",
 

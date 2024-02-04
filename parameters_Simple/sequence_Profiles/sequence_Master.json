@@ -23,7 +23,7 @@
   "Recombination availability":"No",
 
   "Reference Fitness":"1",
-  "Reference Survivability":"0.5",
+  "Reference Survivability":"1",
   "Reference Proof Reading":"0",
 
   "Mutations":{
@@ -41,24 +41,24 @@
       "Clock model Negative Binomial probability":"0.5",
       "Clock model Fixed probability":"0.5",
 
-      "AA":"0.25",
+      "AA":"1",
       "AG":"0.0",
       "AT":"0.0",
-      "AC":"0.75",
+      "AC":"0",
 
       "GA":"0.25",
       "GG":"0.25",
       "GT":"0.25",
       "GC":"0.25",
 
-      "TT":"0.25",
-      "TC":"0.75",
+      "TT":"1",
+      "TC":"0",
       "TA":"0",
       "TG":"0",
 
-      "CT":"0",
-      "CC":"1",
-      "CA":"0",
+      "CT":"0.5",
+      "CC":"0",
+      "CA":"0.5",
       "CG":"0"
     },
 
@@ -98,7 +98,7 @@
   "Recombination":{
 
     "Number of hotspots":0,
-    "Recombination profiles folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/recombination_profiles",
+    "Recombination profiles folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Simple/sequence_Profiles/recombination_profiles",
 
     "Hotspot 1":{
       "Region":"100_200"

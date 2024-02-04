@@ -10,8 +10,8 @@
   "Multi read":"YES",
 
   # Output and Intermediate folder locations.
-  "Output folders":"resultsWF2",
-  "Intermediate folders":"intermediatesWF2",
+  "Output folders":"resultsWFT",
+  "Intermediate folders":"intermediatesWFT",
 
   # The maximum number of sequences that can be stored in an intermeiate file
   "Intermediate Sequences per file":1000,

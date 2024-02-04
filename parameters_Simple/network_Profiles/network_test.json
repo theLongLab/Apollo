@@ -5,11 +5,15 @@
   # Barabasi Albert Model is selected by typing BA model
   # Standard Caveman Model is selected by typing SC model
   # Dynamic Caveman Model is selected by typing DC model
+  # Erdos and Renyi Random Model is selected by ER model
 
-  "Network type":"Random model",
+  "Network type":"ER model",
 
   # Total number of nodes that will be present in the Random network model
-  "Random model number of nodes":1,
+  "Random model number of nodes":100,
+
+  "ER Random model total number of nodes":100,
+  "ER Random model numbe probability of linkage":"0.75",
 
   # Total number of nodes that will be present in the BA network model
   "BA model number of nodes":100,

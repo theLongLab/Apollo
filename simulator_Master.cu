@@ -180,8 +180,8 @@ void simulator_Master::configure_Network_Profile(string network_Profile_File, pa
 
     transform(found_Parameters[0].begin(), found_Parameters[0].end(), found_Parameters[0].begin(), ::toupper);
 
-    parameters_List.clear();
-    found_Parameters.clear();
+    // parameters_List.clear();
+    // found_Parameters.clear();
 
     if (Parameters.get_STRING(found_Parameters[0]) == "BA MODEL")
     {
@@ -301,6 +301,21 @@ void simulator_Master::configure_Network_Profile(string network_Profile_File, pa
         found_Parameters = Parameters.get_parameters(network_Profile_File, parameters_List);
 
         Total_number_of_Nodes = Parameters.get_INT(found_Parameters[0]);
+    }
+    else if (Parameters.get_STRING(found_Parameters[0]) == "ER MODEL")
+    {
+        cout << "\nErdos and Renyi Random model selected: \n";
+        network_Model = "ER_RANDOM";
+
+        parameters_List = {"\"ER Random model total number of nodes\"",
+                           "\"ER Random model probability of linkage\""};
+
+        found_Parameters = Parameters.get_parameters(network_Profile_File, parameters_List);
+
+        Total_number_of_Nodes = Parameters.get_INT(found_Parameters[0]);
+        ER_link_probability = Parameters.get_FLOAT(found_Parameters[1]);
+
+        // exit(-1);
     }
     else
     {
@@ -1837,7 +1852,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
     {
         tot_prob_selectivity[fill] = 0;
     }
-    
+
     if (mutation_recombination_proof_Reading_availability[0] == 1 || mutation_recombination_proof_Reading_availability[1] == 1)
     {
         parameters_List = {
@@ -3136,6 +3151,10 @@ void simulator_Master::network_Manager(functions_library &functions)
     {
         RANDOM_Model_Engine(functions);
     }
+    else if (network_Model == "ER_RANDOM")
+    {
+        ER_RANDOM_Model_Engine(functions);
+    }
     else
     {
         cout << "ERROR Incorrect network selected. Please check \"Network type\" in the network parameter file.\n";
@@ -3145,6 +3164,78 @@ void simulator_Master::network_Manager(functions_library &functions)
     // cout << Total_number_of_Nodes << endl
     //      << all_node_IDs.size() << endl;
     // exit(-1);
+}
+
+void simulator_Master::ER_RANDOM_Model_Engine(functions_library &functions)
+{
+    cout << "Intializing Erdos and Renyi Random model network engine\n";
+
+    cout << "Total nodes: " << Total_number_of_Nodes << endl;
+    cout << "Probability of paired linakge: " << ER_link_probability << endl
+         << endl;
+
+    for (int node = 0; node < Total_number_of_Nodes; node++)
+    {
+        all_node_IDs.push_back(make_pair(0, node));
+    }
+
+    int number_of_Rounds = (Total_number_of_Nodes * (Total_number_of_Nodes - 1)) / 2;
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> distribution_Neighbour(0, Total_number_of_Nodes - 1);
+    bernoulli_distribution link_or_NOT(ER_link_probability);
+
+    fstream network_File;
+    network_File.open(network_File_location, ios::app);
+
+    cout << "Forming node to node relationships: " << number_of_Rounds << "\n\n ";
+
+    for (int round = 0; round < number_of_Rounds; round++)
+    {
+        if (link_or_NOT(gen) == 1)
+        {
+            int node_1 = distribution_Neighbour(gen);
+            int node_2 = node_1;
+            do
+            {
+                node_2 = distribution_Neighbour(gen);
+            } while (node_2 == node_1);
+
+            int connect = -1;
+
+            for (int check = 0; check < each_Nodes_Connection_INT[node_1].size(); check++)
+            {
+                if (each_Nodes_Connection_INT[node_1][check] == node_2)
+                {
+                    connect = 1;
+                    break;
+                }
+            }
+
+            if (connect == -1)
+            {
+                cout << "Forming linkage between nodes: ";
+
+                cout << all_node_IDs[node_1].first << "_" << all_node_IDs[node_1].second
+                     << " and " << all_node_IDs[node_2].first << "_" << all_node_IDs[node_2].second
+                     << endl;
+
+                each_Nodes_Connection_INT[node_1].push_back(node_2);
+                each_Nodes_Connection_INT[node_2].push_back(node_1);
+
+                network_File << "0"
+                             << "_" << node_1 << "\t"
+                             << "0"
+                             << "_" << node_2 << "\n";
+            }
+        }
+    }
+
+    network_File.close();
+    cout << endl;
+
+   // exit(-1);
 }
 
 void simulator_Master::RANDOM_Model_Engine(functions_library &functions)
