@@ -1,0 +1,10 @@
+Source	Target	Type
+0_3_Blood_1_1	0_35_Blood_0_0	Transmission
+0_35_Blood_0_0	0_35_Blood_1_0	primary_parent
+0_35_Blood_0_0	0_35_Blood_1_0	recombination_parent_1
+0_35_Blood_0_0	0_35_Blood_1_1	primary_parent
+0_35_Blood_0_0	0_35_Blood_1_1	recombination_parent_1
+0_35_Blood_0_0	0_35_Blood_1_1	recombination_parent_2
+0_35_Blood_0_0	0_35_Blood_1_2	primary_parent
+0_35_Blood_0_0	0_35_Blood_1_2	recombination_parent_1
+0_35_Blood_0_0	0_35_Blood_1_2	recombination_parent_2

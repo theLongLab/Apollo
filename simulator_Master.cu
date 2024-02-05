@@ -3179,41 +3179,23 @@ void simulator_Master::ER_RANDOM_Model_Engine(functions_library &functions)
         all_node_IDs.push_back(make_pair(0, node));
     }
 
-    int number_of_Rounds = (Total_number_of_Nodes * (Total_number_of_Nodes - 1)) / 2;
+    // int number_of_Rounds = (Total_number_of_Nodes * (Total_number_of_Nodes - 1)) / 2;
 
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<int> distribution_Neighbour(0, Total_number_of_Nodes - 1);
+    // uniform_int_distribution<int> distribution_Neighbour(0, Total_number_of_Nodes - 1);
     bernoulli_distribution link_or_NOT(ER_link_probability);
 
     fstream network_File;
     network_File.open(network_File_location, ios::app);
 
-    cout << "Forming node to node relationships: " << number_of_Rounds << "\n\n ";
+    cout << "Forming node to node relationships: \n\n ";
 
-    for (int round = 0; round < number_of_Rounds; round++)
+    for (int node_1 = 0; node_1 < Total_number_of_Nodes; node_1++)
     {
-        if (link_or_NOT(gen) == 1)
+        for (int node_2 = node_1 + 1; node_2 < Total_number_of_Nodes; node_2++)
         {
-            int node_1 = distribution_Neighbour(gen);
-            int node_2 = node_1;
-            do
-            {
-                node_2 = distribution_Neighbour(gen);
-            } while (node_2 == node_1);
-
-            int connect = -1;
-
-            for (int check = 0; check < each_Nodes_Connection_INT[node_1].size(); check++)
-            {
-                if (each_Nodes_Connection_INT[node_1][check] == node_2)
-                {
-                    connect = 1;
-                    break;
-                }
-            }
-
-            if (connect == -1)
+            if (link_or_NOT(gen) == 1)
             {
                 cout << "Forming linkage between nodes: ";
 
@@ -3235,7 +3217,7 @@ void simulator_Master::ER_RANDOM_Model_Engine(functions_library &functions)
     network_File.close();
     cout << endl;
 
-   // exit(-1);
+    // exit(-1);
 }
 
 void simulator_Master::RANDOM_Model_Engine(functions_library &functions)
