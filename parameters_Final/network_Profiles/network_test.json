@@ -7,7 +7,7 @@
   # Dynamic Caveman Model is selected by typing DC model
   # Erdos and Renyi Random Model is selected by ER model
 
-  "Network type":"BA model",
+  "Network type":"DC model",
 
   # Total number of nodes that will be present in the Random network model
   "Random model number of nodes":250,
@@ -35,10 +35,10 @@
 
   # Total number of caves and the number of nodes per cave that will be present in the SC network model
   "SC_model number of caves":10,
-  "SC_model number of nodes per caves":10,
+  "SC_model number of nodes per caves":5,
 
   # Total number of caves that will be present in the DC network model
-  "DC_model number of caves":25,
+  "DC_model number of caves":5,
 
   # Determine the number of nodes that will be present in each cave in the network
   # Negative binomial, every caves number of nodes will determined by a NEGATIVE BINOMIAL distribution.

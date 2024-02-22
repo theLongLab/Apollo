@@ -25,6 +25,7 @@
 
 #include "simulator_Master.cuh"
 #include "hap_counter.cuh"
+#include "bfs.cuh"
 
 using namespace std;
 
@@ -72,6 +73,13 @@ int main(int argc, char *argv[])
 
           hap_counter hapcount = hap_counter(parameter_MASTER_file);
           hapcount.ingress();
+     }
+     else if (function == "--bfspedigree")
+     {
+          cout << "Pedigree powered by Breath First Search\n\n";
+
+          bfs breath_first_pedigree = bfs(parameter_MASTER_file);
+          breath_first_pedigree.ingress();
      }
      else if (function == "--extract")
      {

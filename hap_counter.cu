@@ -12,7 +12,7 @@ hap_counter::hap_counter(string parameter_Master_Location)
         "\"Output folders\"",
         "\"CPU cores\"",
         "\"Multi read\"",
-        "\"Node IDs\"",
+        "\"Haplotype Node IDs\"",
         "\"Nodes master profile\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);

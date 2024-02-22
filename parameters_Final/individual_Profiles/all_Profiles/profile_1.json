@@ -19,7 +19,7 @@
   "Terminal load Binomial probability":"0.75",
   "Terminal load Fixed":1000,
 
-  # Control the viral transmission infection from one host to another
+  # Control the number of hosts being infected
   "Infection sequence distribution":"Fixed",
   "Infection sequence Binomial trials":2,
   "Infection sequence Binomial probability":"0.5",
