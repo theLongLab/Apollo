@@ -38,14 +38,15 @@ class bfs
 private:
     string output_Folder_location;
     string intermediate_Folder_location;
+    string pedigree_Folder_location;
 
-    //string current_node_ID = "";
+    // string current_node_ID = "";
+    vector<string> tissue_Names;
 
     int generation = -1;
     vector<string> search_sequence_IDs;
 
     vector<pair<int, string>> node_Indexes;
-
 
 public:
     bfs(string parameter_Master_Location);

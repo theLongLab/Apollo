@@ -21,7 +21,6 @@ bfs::bfs(string parameter_Master_Location)
     string node_main_Index = "";
     int tissue_main_Index = -1;
     string nsequence = "";
-    vector<string> tissue_Names;
     int num_tissues_per_Node = 0;
 
     this->intermediate_Folder_location = Parameters.get_STRING(found_Parameters[0]);
@@ -221,6 +220,18 @@ bfs::bfs(string parameter_Master_Location)
         cout << "\nFound " << search_sequence_IDs.size() << " matching sequence(s)\n";
         // this->current_node_ID = node_ID;
         //  cout << search_sequence_IDs[0] << endl;
+
+        if (!filesystem::exists(this->output_Folder_location + "/node_Data/" + node_ID + "/pedigree_Information"))
+        {
+            filesystem::create_directory(this->output_Folder_location + "/node_Data/" + node_ID + "/pedigree_Information");
+        }
+
+        if (!filesystem::exists(this->output_Folder_location + "/node_Data/" + node_ID + "/pedigree_Information/" + filesystem::path(pedigree_Sequence_loation).stem().string()))
+        {
+            filesystem::create_directory(this->output_Folder_location + "/node_Data/" + node_ID + "/pedigree_Information/" + filesystem::path(pedigree_Sequence_loation).stem().string());
+        }
+
+        pedigree_Folder_location = this->output_Folder_location + "/node_Data/" + node_ID + "/pedigree_Information/" + filesystem::path(pedigree_Sequence_loation).stem().string();
     }
     else
     {
@@ -235,35 +246,151 @@ void bfs::ingress()
 
     for (int sequence = 0; sequence < search_sequence_IDs.size(); sequence++)
     {
-        string ID_Sequence = search_sequence_IDs[sequence];
-        cout << "Identifying pedigree of sequence: " << ID_Sequence << endl;
+        string ID_Sequence_Original = search_sequence_IDs[sequence];
+        cout << "\nIdentifying pedigree of sequence: " << ID_Sequence_Original << endl;
 
         vector<string> sequence_Information;
-        functions.split(sequence_Information, ID_Sequence, '_');
-        string node_ID = sequence_Information[0] + "_" + sequence_Information[1];
+        functions.split(sequence_Information, ID_Sequence_Original, '_');
+        string current_node_ID = sequence_Information[0] + "_" + sequence_Information[1];
 
-        string node_File_location = this->output_Folder_location + "/node_Data/" + node_ID + "/sequence_parent_Progeny_relationships.csv";
-        fstream node_File;
-        node_File.open(node_File_location, ios::in);
+        vector<pair<string, string>> queue;
+        queue.push_back(make_pair(sequence_Information[0] + "_" + sequence_Information[1], ID_Sequence_Original));
+        int queue_Count = 0;
 
-        if (node_File.is_open())
+        functions.create_File(pedigree_Folder_location + "/" + ID_Sequence_Original + "_pedigree_Relationships.csv", "Source\tTarget\tType");
+        functions.create_File(pedigree_Folder_location + "/" + ID_Sequence_Original + "_sequence_Information.csv", "ID\tHost\tTissue\tGeneration");
+
+        set<string> sequence_IDs;
+        sequence_IDs.insert(ID_Sequence_Original);
+
+        vector<string> line_Data;
+
+        do
         {
-            cout << "Reading node parent progeny file: " << node_File_location << endl;
-
+            string ID_Sequence = queue[queue_Count].second;
             string line;
-            vector<string> line_Data;
-            // skip header
-            getline(node_File, line);
 
-            while (getline(node_File, line))
+            fstream node_File;
+            node_File.open(this->output_Folder_location + "/node_Data/" + queue[queue_Count].first + "/sequence_parent_Progeny_relationships.csv",
+                           ios::in);
+
+            // initialize this using node generational_Summary
+            vector<pair<string, string>> progeny_Parent;
+            vector<string> Type;
+
+            int collect = -1;
+
+            if (node_File.is_open())
             {
-                functions.split(line_Data, line, '\t');
+                cout << "\nReading node parent progeny file: " << queue[queue_Count].first << endl;
+
+                // skip header
+                getline(node_File, line);
+
+                while (getline(node_File, line))
+                {
+                    functions.split(line_Data, line, '\t');
+                    if (collect == 1 && line_Data[1] != ID_Sequence)
+                    {
+                        cout << "Captured target sequence: " << ID_Sequence << endl;
+                        break;
+                    }
+                    progeny_Parent.push_back(make_pair(line_Data[1], line_Data[0]));
+                    Type.push_back(line_Data[2]);
+                    if (line_Data[1] == ID_Sequence)
+                    {
+                        collect = 1;
+                    }
+                }
+                node_File.close();
             }
-            node_File.close();
+            else
+            {
+                cout << "ERROR UNABLE TO OPEN PARENT PROGENY FILE: " << this->output_Folder_location << "/node_Data/" << queue[queue_Count].first << "/sequence_parent_Progeny_relationships.csv" << endl;
+                exit(-1);
+            }
+
+            cout << "Collecting parent progeny pedigree\n";
+
+            int get_Parents = 0;
+            vector<string> progeny_List;
+            progeny_List.push_back(ID_Sequence);
+            int track_progeny_Parent = progeny_Parent.size() - 1;
+
+            fstream source_Target_pedigree;
+            source_Target_pedigree.open(pedigree_Folder_location + "/" + ID_Sequence_Original + "_pedigree_Relationships.csv", ios::app);
+
+            if (source_Target_pedigree.is_open())
+            {
+                int catch_Check = -1;
+                do
+                {
+                    if (progeny_Parent[track_progeny_Parent].first == progeny_List[get_Parents])
+                    {
+                        catch_Check = 1;
+                        source_Target_pedigree << progeny_Parent[track_progeny_Parent].second << "\t"
+                                               << progeny_Parent[track_progeny_Parent].first << "\t"
+                                               << Type[track_progeny_Parent] << "\n";
+
+                        // if parent not present in progeny list add it to progeny list
+                        auto it = sequence_IDs.find(progeny_Parent[track_progeny_Parent].second);
+                        if (it == sequence_IDs.end())
+                        {
+                            sequence_IDs.insert(progeny_Parent[track_progeny_Parent].second);
+                            // check if new host
+                            functions.split(line_Data, progeny_Parent[track_progeny_Parent].second, '_');
+                            string check_Node = line_Data[0] + "_" + line_Data[1];
+                            if (check_Node != queue[queue_Count].first)
+                            {
+                                queue.push_back(make_pair(check_Node, progeny_Parent[track_progeny_Parent].second));
+                            }
+                            else
+                            {
+                                progeny_List.push_back(progeny_Parent[track_progeny_Parent].second);
+                            }
+                        }
+                    }
+                    track_progeny_Parent--;
+
+                    if (catch_Check == 1 && progeny_Parent[track_progeny_Parent].first != progeny_List[get_Parents])
+                    {
+                        get_Parents++;
+                        catch_Check = -1;
+                    }
+
+                } while (get_Parents < progeny_List.size() && track_progeny_Parent >= 0);
+
+                source_Target_pedigree.close();
+            }
+            else
+            {
+                cout << "ERROR: UNABLE TO OPEN FILE: " << pedigree_Folder_location << "/" << ID_Sequence_Original << "_pedigree_Relationships.csv" << endl;
+                exit(-1);
+            }
+
+            queue_Count++;
+        } while (queue_Count < queue.size());
+
+        cout << "Writing sequence information\n";
+
+        vector<string> IDs_complete(sequence_IDs.begin(), sequence_IDs.end());
+        fstream sequence_Information_File;
+        sequence_Information_File.open(pedigree_Folder_location + "/" + ID_Sequence_Original + "_sequence_Information.csv", ios::app);
+        if (sequence_Information_File.is_open())
+        {
+            for (string write_Line : IDs_complete)
+            {
+                sequence_Information_File << write_Line << "\t";
+                functions.split(line_Data, write_Line, '_');
+                sequence_Information_File << line_Data[0] << "_" << line_Data[1] << "\t"
+                                          << line_Data[2] << "\t" << line_Data[3] << endl;
+            }
+            sequence_Information_File.close();
         }
         else
         {
-            cout << "ERROR UNABLE TO OPEN PARENT PROGENY FILE: " << node_File_location << endl;
+            cout << "ERROR: UNABLE TO OPEN FILE: " << pedigree_Folder_location << "/" << ID_Sequence_Original << "_sequence_Information.csv\n";
+            exit(-1);
         }
     }
 }
