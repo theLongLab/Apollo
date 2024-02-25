@@ -40,6 +40,8 @@ private:
     string intermediate_Folder_location;
     string pedigree_Folder_location;
 
+    string print_Sequences = "NO";
+
     // string current_node_ID = "";
     vector<string> tissue_Names;
 
@@ -47,6 +49,12 @@ private:
     vector<string> search_sequence_IDs;
 
     vector<pair<int, string>> node_Indexes;
+
+    string node_main_Index = "";
+     int tissue_main_Index = -1;
+    int re_tar_sequence_Folder;
+    int re_tar_Tissue_folder;
+    int re_tar_Generation;
 
 public:
     bfs(string parameter_Master_Location);

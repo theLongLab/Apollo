@@ -6402,6 +6402,35 @@ vector<pair<int, int>> functions_library::index_Source_folder(string &source_Tar
     return indexed_tissue_Folders;
 }
 
+vector<pair<int, int>> functions_library::index_Source_folder(string &source_Target_file_Location)
+{
+    cout << "Initiating indexing source folder: " << source_Target_file_Location << endl;
+
+    // cout << "Indexing tissue: " << tissue_Index + 1 << endl;
+    vector<pair<int, int>> indexed_tissue_Folders;
+    if (filesystem::exists(source_Target_file_Location))
+    {
+        for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location))
+        {
+            if (entry.path().extension() == ".nfasta")
+            {
+                string trim_Extension = entry.path().filename().stem().string();
+                vector<string> split_Data;
+                split(split_Data, trim_Extension, '_');
+                indexed_tissue_Folders.push_back(make_pair(stoi(split_Data[0]), stoi(split_Data[1])));
+            }
+        }
+        sort(indexed_tissue_Folders.begin(), indexed_tissue_Folders.end());
+    }
+    else
+    {
+        cout << "ERROR: SOURCE FOLDER INDEXING FAILED. FOLDER DOES NOT EXIST\n";
+        exit(-1);
+    }
+
+    return indexed_tissue_Folders;
+}
+
 vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string &source_Target_file_Location, int &num_Tissues, int &current_Generation, string &multi_Read)
 {
     cout << "Initiating indexing folder: " << source_Target_file_Location << endl;

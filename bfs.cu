@@ -14,17 +14,17 @@ bfs::bfs(string parameter_Master_Location)
         "\"Pedigree Tissue\"",
         "\"Pedigree Generation\"",
         "\"Pedigree Sequence\"",
-        "\"Nodes master profile\""};
+        "\"Nodes master profile\"",
+        "\"Pedigree get Sequences\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
-    string node_main_Index = "";
-    int tissue_main_Index = -1;
     string nsequence = "";
     int num_tissues_per_Node = 0;
 
     this->intermediate_Folder_location = Parameters.get_STRING(found_Parameters[0]);
     this->output_Folder_location = Parameters.get_STRING(found_Parameters[1]);
+    this->print_Sequences = function.to_Upper_Case(Parameters.get_STRING(found_Parameters[7]));
 
     cout << "\nReading target sequence\n";
     string pedigree_Sequence_loation = Parameters.get_STRING(found_Parameters[5]);
@@ -165,15 +165,15 @@ bfs::bfs(string parameter_Master_Location)
     cout << "\nIndentifying matching sequences from target\n";
     string sequence_Search_folder = intermediate_Folder_location + "/sequence_Data/" + node_main_Index;
 
-    int re_tar_sequence_Folder = check_Tar_Folder(sequence_Search_folder);
+    re_tar_sequence_Folder = check_Tar_Folder(sequence_Search_folder);
 
     sequence_Search_folder = sequence_Search_folder + "/" + to_string(tissue_main_Index);
 
-    int re_tar_Tissue_folder = check_Tar_Folder(sequence_Search_folder);
+    re_tar_Tissue_folder = check_Tar_Folder(sequence_Search_folder);
 
     sequence_Search_folder = sequence_Search_folder + "/generation_" + to_string(generation);
 
-    int re_tar_Generation = check_Tar_Folder(sequence_Search_folder);
+    re_tar_Generation = check_Tar_Folder(sequence_Search_folder);
 
     for (const auto &entry : filesystem::directory_iterator(sequence_Search_folder))
     {
@@ -392,7 +392,244 @@ void bfs::ingress()
             cout << "ERROR: UNABLE TO OPEN FILE: " << pedigree_Folder_location << "/" << ID_Sequence_Original << "_sequence_Information.csv\n";
             exit(-1);
         }
+
+        if (print_Sequences != "NO")
+        {
+            cout << "\nPrinting sequences:\n";
+            fstream sequence_File;
+            sequence_File.open(pedigree_Folder_location + "/" + ID_Sequence_Original + "_pedigree_Sequences.fasta", ios::out);
+
+            vector<string> node_locations_Unique;
+            vector<vector<pair<int, string>>> sequence_IDs_per_Location;
+
+            if (sequence_File.is_open())
+            {
+                vector<string> untar_List;
+                for (int seq = 0; seq < IDs_complete.size(); seq++)
+                {
+                    string sequence_Label = IDs_complete[seq];
+                    cout << "Processing sequence: " << sequence_Label << endl;
+
+                    functions.split(line_Data, sequence_Label, '_');
+
+                    int tissue_Index = -1;
+                    for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
+                    {
+                        if (line_Data[2] == tissue_Names[tissue])
+                        {
+                            tissue_Index = tissue;
+                            break;
+                        }
+                    }
+                    if (tissue_Index == -1)
+                    {
+                        cout << "ERROR: UNRECOGNISED TISSUE LABEL: " << line_Data[2] << endl;
+                        exit(-1);
+                    }
+
+                    string node_ID = line_Data[0] + "_" + line_Data[1];
+                    int node_Index = -1;
+
+                    for (int node = 0; node < node_Indexes.size(); node++)
+                    {
+                        if (node_Indexes[node].second == node_ID)
+                        {
+                            node_Index = node_Indexes[node].first;
+                            break;
+                        }
+                    }
+                    if (node_Index == -1)
+                    {
+                        cout << "ERROR: UNABLE TO FIND NODE: " << node_ID << endl;
+                        exit(-1);
+                    }
+
+                    string folder_Location = this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index) + "/" + to_string(tissue_Index) + "/generation_" + line_Data[3];
+
+                    int location_Check = -1;
+
+                    for (int location = 0; location < node_locations_Unique.size(); location++)
+                    {
+                        if (node_locations_Unique[location] == folder_Location)
+                        {
+                            location_Check = location;
+                            break;
+                        }
+                    }
+
+                    if (location_Check == -1)
+                    {
+                        node_locations_Unique.push_back(folder_Location);
+                        vector<pair<int, string>> init_Seq_IDs;
+                        sequence_IDs_per_Location.push_back(init_Seq_IDs);
+                        sequence_IDs_per_Location[sequence_IDs_per_Location.size() - 1].push_back(make_pair(stoi(line_Data[4]), sequence_Label));
+
+                        if (check_Tar_Folder(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index)) == 1)
+                        {
+                            untar_List.push_back(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index));
+                        }
+
+                        if (check_Tar_Folder(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index) + "/" + to_string(tissue_Index)) == 1)
+                        {
+                            untar_List.push_back(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index) + "/" + to_string(tissue_Index));
+                        }
+
+                        if (check_Tar_Folder(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index) + "/" + to_string(tissue_Index) + "/generation_" + line_Data[3]) == 1)
+                        {
+                            untar_List.push_back(this->intermediate_Folder_location + "/sequence_Data/" + to_string(node_Index) + "/" + to_string(tissue_Index) + "/generation_" + line_Data[3]);
+                        }
+                    }
+                    else
+                    {
+                        sequence_IDs_per_Location[location_Check].push_back(make_pair(stoi(line_Data[4]), sequence_Label));
+                    }
+                }
+
+                cout << "\nExtracting sequences: \n\n";
+
+                for (int location = 0; location < node_locations_Unique.size(); location++)
+                {
+                    vector<pair<int, int>> index_Folder = functions.index_Source_folder(node_locations_Unique[location]);
+                    vector<pair<int, string>> sequences_to_Extract = sequence_IDs_per_Location[location];
+                    sort(sequences_to_Extract.begin(), sequences_to_Extract.end());
+
+                    int seq_Track = 0;
+
+                    for (int folder = 0; folder < index_Folder.size(); folder++)
+                    {
+                        if (seq_Track >= sequences_to_Extract.size())
+                        {
+                            break;
+                        }
+
+                        fstream seq_nFASTA_File;
+                        seq_nFASTA_File.open(node_locations_Unique[location] + "/" + to_string(index_Folder[folder].first) + "_" + to_string(index_Folder[folder].second) + ".nfasta", ios::in);
+                        if (seq_nFASTA_File.is_open())
+                        {
+                            string line;
+                            int current_Line = 0;
+                            int line_t0_check = (sequences_to_Extract[seq_Track].first - index_Folder[folder].first) * 2;
+
+                            while (getline(seq_nFASTA_File, line))
+                            {
+                                if ((sequences_to_Extract[seq_Track].first >= index_Folder[folder].first) && (sequences_to_Extract[seq_Track].first <= index_Folder[folder].second))
+                                {
+                                    if (line_t0_check == current_Line)
+                                    {
+                                        cout << "Writing sequence: " << sequences_to_Extract[seq_Track].second << ": ";
+                                        vector<string> line_Data;
+                                        functions.split(line_Data, line, '_');
+
+                                        if (stoi(line_Data[0].substr(1)) == sequences_to_Extract[seq_Track].first)
+                                        {
+                                            getline(seq_nFASTA_File, line);
+                                            current_Line++;
+                                            sequence_File << ">" << sequences_to_Extract[seq_Track].second << endl;
+                                            // sequence_File << line << endl;
+                                            for (int base = 0; base < line.size(); base++)
+                                            {
+                                                if (line.at(base) == '0')
+                                                {
+                                                    sequence_File << "A";
+                                                }
+                                                else if (line.at(base) == '1')
+                                                {
+                                                    sequence_File << "T";
+                                                }
+                                                else if (line.at(base) == '2')
+                                                {
+                                                    sequence_File << "G";
+                                                }
+                                                else if (line.at(base) == '3')
+                                                {
+                                                    sequence_File << "C";
+                                                }
+                                            }
+                                            sequence_File << endl;
+                                            sequence_File.flush();
+
+                                            cout << "DONE\n";
+
+                                            seq_Track++;
+                                            if (seq_Track >= sequences_to_Extract.size())
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                cout << "Looking for sequence: " << sequences_to_Extract[seq_Track].second << "\n";
+                                                line_t0_check = (sequences_to_Extract[seq_Track].first - index_Folder[folder].first) * 2;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                                            cout << "Looking for: " << sequences_to_Extract[seq_Track].first << endl
+                                                 << "Sequence ID at location: " << line << endl
+                                                 << "File: " << node_locations_Unique[location] << "/" << index_Folder[folder].first << "_" << index_Folder[folder].second << ".nfasta\n";
+                                            exit(-1);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                current_Line++;
+                            }
+                            seq_nFASTA_File.close();
+                        }
+                        else
+                        {
+                            cout << "ERROR: UNABLE TO OPEN FILE: " << node_locations_Unique[location] << "/" << index_Folder[folder].first << "_" << index_Folder[folder].second << ".nfasta\n";
+                            exit(-1);
+                        }
+                    }
+                }
+
+                sequence_File.close();
+                cout << "\nCompleted extraction of sequences\n";
+
+                cout << "\nPurging untar folders\n";
+                for (int untar = untar_List.size() - 1; untar >= 0; untar--)
+                {
+                    if (filesystem::exists(untar_List[untar]))
+                    {
+                        filesystem::remove_all(untar_List[untar]);
+                        cout << "Folder purged: " << untar_List[untar] << endl;
+                    }
+                }
+            }
+            else
+            {
+                cout << "ERROR: UNABLE TO CREATE SEQUENCE FILE: " << pedigree_Folder_location << "/" << ID_Sequence_Original << "_pedigree_Sequences.fasta\n";
+                exit(-1);
+            }
+        }
     }
+
+    // retar code;
+    string sequence_Search_folder;
+    if (re_tar_Generation == 1)
+    {
+        sequence_Search_folder = intermediate_Folder_location + "/sequence_Data/" + node_main_Index;
+        sequence_Search_folder = sequence_Search_folder + "/" + to_string(tissue_main_Index);
+        sequence_Search_folder = sequence_Search_folder + "/generation_" + to_string(generation);
+        functions.folder_Delete(sequence_Search_folder);
+    }
+    if (re_tar_Tissue_folder == 1)
+    {
+        sequence_Search_folder = intermediate_Folder_location + "/sequence_Data/" + node_main_Index;
+        sequence_Search_folder = sequence_Search_folder + "/" + to_string(tissue_main_Index);
+        functions.folder_Delete(sequence_Search_folder);
+    }
+    if (re_tar_sequence_Folder == 1)
+    {
+        sequence_Search_folder = intermediate_Folder_location + "/sequence_Data/" + node_main_Index;
+        functions.folder_Delete(sequence_Search_folder);
+    }
+
+    cout << "\nPedigree extraction complete\n";
 }
 
 int bfs::check_Tar_Folder(string location)

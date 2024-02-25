@@ -51,6 +51,7 @@
   "Pedigree Node ID":"2_0",
   "Pedigree Tissue":"Blood",
   "Pedigree Generation":1,
-  "Pedigree Sequence":"test_Folder/pedigree/test.fasta"
+  "Pedigree Sequence":"test_Folder/pedigree/test.fasta",
+  "Pedigree get Sequences":"Yes"
 
 }
