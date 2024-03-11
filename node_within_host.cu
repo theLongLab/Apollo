@@ -1786,6 +1786,8 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     {
         cudaFree(cuda_sequence_Configuration_standard[row]);
     }
+    //see
+    cudaFree(cuda_sequence_Configuration_standard);
 
     // Free the array of pointers
 

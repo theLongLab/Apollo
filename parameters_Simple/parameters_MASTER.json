@@ -10,8 +10,8 @@
   "Multi read":"YES",
 
   # Output and Intermediate folder locations.
-  "Output folders":"resultsWFT",
-  "Intermediate folders":"intermediatesWFT",
+  "Output folders":"resultsWF",
+  "Intermediate folders":"intermediatesWF",
 
   # The maximum number of sequences that can be stored in an intermeiate file
   "Intermediate Sequences per file":1000,
@@ -25,7 +25,7 @@
   "Stop after generations":"Yes",
   # Generations or Date can be used to stop the simulation as well
   "Mode to stop":"Generations",
-  "Number of generations":100,
+  "Number of generations":500,
   "End date":"2024-01-12",
 
   # Network profile parameter file location
@@ -45,5 +45,5 @@
   # Haplotype frequency and count extractor
   # ALL for NODE ID to get the sequence haplotypes for all infected individual_Profiles
   # OR list the nodes seperated by a comma to get the haplotype frequency for those individuals
-  "Node IDs":"0_0"
+  "Haplotype Node IDs":"0_0"
 }

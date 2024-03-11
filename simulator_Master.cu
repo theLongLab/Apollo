@@ -2224,6 +2224,14 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
             }
         }
     }
+    else
+    {
+        num_effect_Segregating_sites = (int *)malloc(sizeof(int) * 3);
+        for (int fill = 0; fill < 3; fill++)
+        {
+            num_effect_Segregating_sites[fill] = 0;
+        }
+    }
     cout << endl;
     // exit(-1);
 }
