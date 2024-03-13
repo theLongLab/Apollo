@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "--hapcounter",
+                "--simulator",
                 "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Simple/parameters_MASTER.json"
             ],
             "stopAtEntry": false,

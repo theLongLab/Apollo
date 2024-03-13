@@ -1196,17 +1196,18 @@ int simulator_Master::get_first_Infected(vector<int> &susceptible_Population,
     infected_Population.push_back(node_infected);
     sort(infected_Population.begin(), infected_Population.end());
 
-    vector<int> susceptible_Population_Temp;
+    // CHECK change
+    // vector<int> susceptible_Population_Temp;
 
-    for (int fill_Temp = 0; fill_Temp < susceptible_Population.size(); fill_Temp++)
-    {
-        if (fill_Temp != susceptible_Index)
-        {
-            susceptible_Population_Temp.push_back(susceptible_Population[fill_Temp]);
-        }
-    }
+    // for (int fill_Temp = 0; fill_Temp < susceptible_Population.size(); fill_Temp++)
+    // {
+    //     if (fill_Temp != susceptible_Index)
+    //     {
+    //         susceptible_Population_Temp.push_back(susceptible_Population[fill_Temp]);
+    //     }
+    // }
 
-    susceptible_Population = susceptible_Population_Temp;
+    // susceptible_Population = susceptible_Population_Temp;
 
     cout << "Infecting node with reference genomes\n";
 
