@@ -4,7 +4,7 @@
 
         "Hotspot 1":{
 
-            "Region":"2574_2615",
+            "Region":"24_66",
 
             "Reference probability of recombination":"0.07818",
             "Reference selectivity":"1"
@@ -12,7 +12,7 @@
 
         "Hotspot 2":{
 
-            "Region":"2616_2651",
+            "Region":"67_102",
 
             "Reference probability of recombination":"0.0666",
             "Reference selectivity":"1"
@@ -20,7 +20,7 @@
 
         "Hotspot 3":{
 
-            "Region":"2652_2681",
+            "Region":"103_132",
 
             "Reference probability of recombination":"0.0558",
             "Reference selectivity":"1"
@@ -28,7 +28,7 @@
 
         "Hotspot 4":{
 
-            "Region":"2682_2726",
+            "Region":"133_177",
 
             "Reference probability of recombination":"0.0828",
             "Reference selectivity":"1"
@@ -36,7 +36,7 @@
 
         "Hotspot 5":{
 
-            "Region":"2727_2771",
+            "Region":"178_222",
 
             "Reference probability of recombination":"0.0828",
             "Reference selectivity":"1"
@@ -44,7 +44,7 @@
 
         "Hotspot 6":{
 
-            "Region":"2772_2825",
+            "Region":"223_276",
 
             "Reference probability of recombination":"0.099",
             "Reference selectivity":"1"
@@ -52,7 +52,7 @@
 
         "Hotspot 7":{
 
-            "Region":"2826_2870",
+            "Region":"277_321",
 
             "Reference probability of recombination":"0.08217",
             "Reference selectivity":"1"
@@ -60,7 +60,7 @@
 
         "Hotspot 8":{
 
-            "Region":"2871_2909",
+            "Region":"322_360",
 
             "Reference probability of recombination":"0.072",
             "Reference selectivity":"1"
@@ -68,7 +68,7 @@
 
         "Hotspot 9":{
 
-            "Region":"2910_2966",
+            "Region":"361_417",
 
             "Reference probability of recombination":"0.1044",
             "Reference selectivity":"1"
@@ -76,7 +76,7 @@
 
         "Hotspot 10":{
 
-            "Region":"2967_3011",
+            "Region":"418_462",
 
             "Reference probability of recombination":"0.08226",
             "Reference selectivity":"1"
@@ -84,7 +84,7 @@
 
         "Hotspot 11":{
 
-            "Region":"3012_3065",
+            "Region":"463_516",
 
             "Reference probability of recombination":"0.099",
             "Reference selectivity":"1"
@@ -92,7 +92,7 @@
 
         "Hotspot 12":{
 
-            "Region":"3066_3116",
+            "Region":"517_567",
 
             "Reference probability of recombination":"0.0936",
             "Reference selectivity":"1"
@@ -100,7 +100,7 @@
 
         "Hotspot 13":{
 
-            "Region":"3117_3167",
+            "Region":"568_618",
 
             "Reference probability of recombination":"0.0936",
             "Reference selectivity":"1"
@@ -108,7 +108,7 @@
 
         "Hotspot 14":{
 
-            "Region":"3168_3218",
+            "Region":"619_669",
 
             "Reference probability of recombination":"0.09417",
             "Reference selectivity":"1"

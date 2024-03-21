@@ -1687,6 +1687,8 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
             // cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
             progeny_Stride[parent + 1] = progeny_Stride[parent] + sequence_Configuration_standard[parent][0];
 
+            total_Progeny = total_Progeny + sequence_Configuration_standard[parent][0];
+
             for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
             {
                 totals_Progeny_Selectivity[cell][hotspot] = totals_Progeny_Selectivity[cell][hotspot] + sequence_Configuration_standard[parent][(hotspot * 2) + 3];
@@ -1706,7 +1708,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     //     }
     // }
 
-    total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
+    // total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
     cout << "Total progeny to be simulated: " << total_Progeny << endl;
 
     cout << endl;
@@ -1786,7 +1788,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     {
         cudaFree(cuda_sequence_Configuration_standard[row]);
     }
-    //see
+    // see
     cudaFree(cuda_sequence_Configuration_standard);
 
     // Free the array of pointers
