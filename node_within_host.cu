@@ -1686,7 +1686,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         {
             // cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
             progeny_Stride[parent + 1] = progeny_Stride[parent] + sequence_Configuration_standard[parent][0];
-
+            cout << sequence_Configuration_standard[parent][0] << endl;
             total_Progeny = total_Progeny + sequence_Configuration_standard[parent][0];
 
             for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
@@ -1709,7 +1709,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     // }
 
     // total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
-    cout << "Total progeny to be simulated: " << total_Progeny << endl;
+    cout << "\nTotal progeny to be simulated: " << total_Progeny << endl;
 
     cout << endl;
     for (int i = 0; i < num_Cells; i++)
