@@ -1955,6 +1955,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
             if (mutation_Hotspots > 0)
             {
                 cout << "\nProcessing " << this->mutation_Hotspots << " mutation hotspots: \n";
+                //exit(-1);
                 A_0_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
                 T_1_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
                 G_2_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);

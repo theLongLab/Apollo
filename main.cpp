@@ -26,6 +26,7 @@
 #include "simulator_Master.cuh"
 #include "hap_counter.cuh"
 #include "bfs.cuh"
+#include "mutations_T_json.cuh"
 
 using namespace std;
 
@@ -80,6 +81,13 @@ int main(int argc, char *argv[])
 
           bfs breath_first_pedigree = bfs(parameter_MASTER_file);
           breath_first_pedigree.ingress();
+     }
+     else if (function == "--sitemodel2json")
+     {
+          cout << "Converting site model file to JSON script\n\n";
+
+          mutations_T_json m2j = mutations_T_json(parameter_MASTER_file);
+          m2j.ingress();
      }
      else if (function == "--extract")
      {
