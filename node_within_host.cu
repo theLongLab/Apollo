@@ -1535,7 +1535,15 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     int *cell_Index = (int *)malloc(sizeof(int) * (num_Cells + 1));
     cell_Index[0] = 0;
 
+    int augment_Value = parents_in_Tissue[1][start_Stop_cells[start_Cell]];
+
     int check_Cell = -1;
+
+    // if (start_stops.size() > 1)
+    // {
+    //     cout << "Check: " << start_stops.size() << endl;
+    //     exit(-1);
+    // }
 
     fstream cells_of_parents_File;
     cells_of_parents_File.open(cells_of_parents_location, ios::app);
@@ -1560,22 +1568,27 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
                 {
                     if (check_Cell != current_Cell)
                     {
-                        cell_ID++;
-                        cell_Index[cell_ID] = parent;
+                        // cell_ID++;
+                        // cell_Index[cell_ID] = parent;
+                        cell_Index[current_Cell - augment_Value] = parent;
                         check_Cell = current_Cell;
                     }
-                    parent_IDs[1][parent] = cell_ID;
+                    // parent_IDs[1][parent] = cell_ID;
+                    parent_IDs[1][parent] = current_Cell - augment_Value;
                 }
                 else
                 {
-                    parent_IDs[1][parent] = cell_ID;
+                    // parent_IDs[1][parent] = cell_ID;
+                    parent_IDs[1][parent] = current_Cell - augment_Value;
                     check_Cell = current_Cell;
                 }
 
-                if (parent + 1 == start_stops[round].second)
+                if ((parent + 1) == start_stops[round].second)
                 {
-                    cell_ID++;
-                    cell_Index[cell_ID] = parent + 1;
+                    // cell_ID++;
+                    // cell_Index[cell_ID] = parent + 1;
+                    cell_Index[current_Cell - augment_Value + 1] = parent + 1;
+                    cell_ID = current_Cell - augment_Value + 1;
                 }
             }
 
@@ -1626,16 +1639,20 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         exit(-1);
     }
 
-    // for (int i = 0; i < num_Cells; i++)
-    // {
-    //     for (int parent = cell_Index[i]; parent < cell_Index[i + 1]; parent++)
-    //     {
-    //         cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
-    //     }
-    //     cout << endl;
-    // }
+    for (int i = 0; i < num_Cells; i++)
+    {
+        cout << "Cell: " << cell_Index[i] << " to " << cell_Index[i + 1] << endl;
+        for (int parent = cell_Index[i]; parent < cell_Index[i + 1]; parent++)
+        {
+            cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
+        }
+        cout << endl;
+    }
 
-    // exit(-1);
+    cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
+         << endl;
+
+    //exit(-1);
 
     // cout << endl;
 
@@ -1650,8 +1667,13 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
 
     // cout << endl;
 
-    cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
-         << endl;
+    if (cell_ID != num_Cells)
+    {
+        cout << "Check: " << start_stops.size() << endl;
+        cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
+             << endl;
+        exit(-1);
+    }
 
     // exit(-1);
 
@@ -1686,8 +1708,6 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         {
             // cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
             progeny_Stride[parent + 1] = progeny_Stride[parent] + sequence_Configuration_standard[parent][0];
-            cout << sequence_Configuration_standard[parent][0] << endl;
-            total_Progeny = total_Progeny + sequence_Configuration_standard[parent][0];
 
             for (int hotspot = 0; hotspot < recombination_Hotspots; hotspot++)
             {
@@ -1708,8 +1728,8 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     //     }
     // }
 
-    // total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
-    cout << "\nTotal progeny to be simulated: " << total_Progeny << endl;
+    total_Progeny = progeny_Stride[Total_seqeunces_to_Process];
+    cout << "Total progeny to be simulated: " << total_Progeny << endl;
 
     cout << endl;
     for (int i = 0; i < num_Cells; i++)

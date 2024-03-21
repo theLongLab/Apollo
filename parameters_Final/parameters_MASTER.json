@@ -5,7 +5,7 @@
 
   # Hardware configuration parameters
   "CPU cores":5,
-  "GPU max units":1000,
+  "GPU max units":5,
   "Process cell rate":5,
   "Multi read":"YES",
 
