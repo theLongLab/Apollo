@@ -1639,15 +1639,15 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
         exit(-1);
     }
 
-    for (int i = 0; i < num_Cells; i++)
-    {
-        cout << "Cell: " << cell_Index[i] << " to " << cell_Index[i + 1] << endl;
-        for (int parent = cell_Index[i]; parent < cell_Index[i + 1]; parent++)
-        {
-            cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
-        }
-        cout << endl;
-    }
+    // for (int i = 0; i < num_Cells; i++)
+    // {
+    //     cout << "Cell: " << cell_Index[i] << " to " << cell_Index[i + 1] << endl;
+    //     for (int parent = cell_Index[i]; parent < cell_Index[i + 1]; parent++)
+    //     {
+    //         cout << parent_IDs[1][parent] << "_" << parent_IDs[0][parent] << ",";
+    //     }
+    //     cout << endl;
+    // }
 
     cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
          << endl;
