@@ -2,13 +2,13 @@
 
 mutations_T_json::mutations_T_json(string parameter_Master_Location)
 {
-    cout << "Intializing conversion of base site model table to JSON mutations format\n";
+    cout << "Intializing conversion of to JSON mutations format\n";
 
     parameter_load Parameters = parameter_load();
     functions_library function = functions_library();
 
     vector<string> parameters_List = {
-        "\"Site model location\"",
+        "\"Convert file location\"",
         "\"Output folders\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
@@ -18,7 +18,80 @@ mutations_T_json::mutations_T_json(string parameter_Master_Location)
     function.config_Folder(output_Folder, "Output");
 }
 
-void mutations_T_json::ingress()
+void mutations_T_json::recombinations_Convert()
+{
+    cout << "\nReading recombination file: " << site_model_Location << endl;
+
+    functions_library functions = functions_library();
+
+    string file_Name = filesystem::path(site_model_Location).filename().stem().string();
+
+    string output_File_Location = output_Folder + "/" + file_Name + ".json";
+    cout << "Writing recombination JSON file to: " << output_File_Location << endl;
+
+    fstream site_model_File;
+    site_model_File.open(site_model_Location, ios::in);
+
+    if (site_model_File.is_open())
+    {
+        string line;
+        getline(site_model_File, line);
+
+        vector<string> line_Data;
+        char delim = '\t';
+        functions.split(line_Data, line, delim);
+
+        if (line_Data.size() == 1)
+        {
+            delim = ',';
+            functions.split(line_Data, line, delim);
+        }
+
+        if (line_Data.size() == 5)
+        {
+            fstream json_File;
+            json_File.open(output_File_Location, ios::out);
+
+            json_File << "    \"Recombination\":{\n\n";
+
+            vector<string> write_Lines;
+            cout << "Configuring lines\n";
+
+            while (getline(site_model_File, line))
+            {
+                functions.split(line_Data, line, delim);
+
+                string write_Line = "        \"Hotspot " + line_Data[0] + "\":{\n\n" + "            \"Region\":\"" + line_Data[1] + "_" + line_Data[2] + "\",\n\n";
+                write_Line = write_Line + "            \"Reference probability of recombination\":\"" + line_Data[3] + "\",\n";
+                write_Line = write_Line + "            \"Reference selectivity\":\"" + line_Data[4] + "\"\n";
+                write_Line = write_Line + "        },\n\n";
+                write_Lines.push_back(write_Line);
+            }
+
+            cout << "Writing lines\n";
+
+            json_File << "        \"Number of hotspots\":" << write_Lines.size() << ",\n\n";
+
+            for (int line = 0; line < write_Lines.size(); line++)
+            {
+                json_File << write_Lines[line];
+            }
+
+            json_File << "    },\n";
+
+            json_File.close();
+        }
+        else
+        {
+            cout << "ERROR: RECOMBINATION FILE DOES NOT HAVE THE CORRECT NUMBER OF COLUMNS\n\n";
+            exit(-1);
+        }
+
+        site_model_File.close();
+    }
+}
+
+void mutations_T_json::mutations_Convert()
 {
     cout << "\nReading site model file: " << site_model_Location << endl;
     functions_library functions = functions_library();
@@ -125,5 +198,17 @@ void mutations_T_json::ingress()
         }
 
         site_model_File.close();
+    }
+}
+
+void mutations_T_json::ingress(string convert_Type)
+{
+    if (convert_Type == "mutations")
+    {
+        mutations_Convert();
+    }
+    else
+    {
+        recombinations_Convert();
     }
 }

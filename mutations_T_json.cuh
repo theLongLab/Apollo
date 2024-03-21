@@ -41,5 +41,8 @@ private:
 
 public:
     mutations_T_json(string parameter_Master_Location);
-    void ingress();
+    void ingress(string convert_Type);
+
+    void mutations_Convert();
+    void recombinations_Convert();
 };

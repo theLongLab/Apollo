@@ -87,7 +87,14 @@ int main(int argc, char *argv[])
           cout << "Converting site model file to JSON script\n\n";
 
           mutations_T_json m2j = mutations_T_json(parameter_MASTER_file);
-          m2j.ingress();
+          m2j.ingress("mutations");
+     }
+     else if (function == "--recomb2json")
+     {
+          cout << "Converting recpmbination file to JSON script\n\n";
+
+          mutations_T_json m2j = mutations_T_json(parameter_MASTER_file);
+          m2j.ingress("recombinations");
      }
      else if (function == "--extract")
      {
