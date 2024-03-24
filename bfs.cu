@@ -125,7 +125,7 @@ bfs::bfs(string parameter_Master_Location)
     cout << "\nGetting index of tissue: " << tissue_Name << endl;
 
     string node_Master_location = Parameters.get_STRING(found_Parameters[6]);
-
+    cout << "Node master file: " << node_Master_location << endl;
     vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Master_location, "Tissue profiles");
     num_tissues_per_Node = Parameters.get_INT(Tissue_profiles_block_Data, "Number of tissues");
 
@@ -276,9 +276,17 @@ void bfs::ingress()
 
             // initialize this using node generational_Summary
             vector<pair<string, string>> progeny_Parent;
+            vector<pair<string, int>> generation_Line;
             vector<string> Type;
 
             int collect = -1;
+
+            int line_Count = 0;
+            int hit = 0;
+            // int gen_Track = 0;
+            string generation_Current = "-1";
+
+            vector<string> sequence_temp_Info;
 
             if (node_File.is_open())
             {
@@ -290,8 +298,30 @@ void bfs::ingress()
                 while (getline(node_File, line))
                 {
                     functions.split(line_Data, line, '\t');
+
+                    functions.split(sequence_temp_Info, line_Data[0], '_');
+                    if (generation_Current == "-1")
+                    {
+                        generation_Current = sequence_temp_Info[3];
+                        hit++;
+                    }
+                    if (generation_Current != sequence_temp_Info[3])
+                    {
+                        hit++;
+                        functions.split(sequence_temp_Info, progeny_Parent[progeny_Parent.size() - 1].second, '_');
+                        generation_Current = sequence_temp_Info[3];
+                        if (hit == 2)
+                        {
+                            generation_Line.push_back(make_pair(generation_Current, line_Count - 1));
+                            cout << "Generation index: " << generation_Current << " line: " << line_Count - 1 << endl;
+                            hit = 0;
+                        }
+                    }
+
                     if (collect == 1 && line_Data[1] != ID_Sequence)
                     {
+                        generation_Line.push_back(make_pair(generation_Current, line_Count - 1));
+                        cout << "Generation index: " << generation_Current << " line: " << line_Count - 1 << endl;
                         cout << "Captured target sequence: " << ID_Sequence << endl;
                         break;
                     }
@@ -301,6 +331,7 @@ void bfs::ingress()
                     {
                         collect = 1;
                     }
+                    line_Count++;
                 }
                 node_File.close();
             }
@@ -319,6 +350,9 @@ void bfs::ingress()
 
             fstream source_Target_pedigree;
             source_Target_pedigree.open(pedigree_Folder_location + "/" + ID_Sequence_Original + "_pedigree_Relationships.csv", ios::app);
+
+            functions.split(sequence_temp_Info, ID_Sequence, '_');
+           // generation_Current = sequence_temp_Info[3];
 
             if (source_Target_pedigree.is_open())
             {
@@ -356,11 +390,25 @@ void bfs::ingress()
                     {
                         get_Parents++;
                         catch_Check = -1;
+                        cout << "New progeny: " << progeny_List[get_Parents] << endl;
+                        functions.split(sequence_temp_Info, progeny_List[get_Parents], '_');
+                        string generation_to_Check = sequence_temp_Info[3];
+
+                        for (int gen = 0; gen < generation_Line.size(); gen++)
+                        {
+                            if (generation_Line[gen].first == generation_to_Check)
+                            {
+                                track_progeny_Parent = generation_Line[gen].second;
+                                break;
+                            }
+                        }
                     }
 
                 } while (get_Parents < progeny_List.size() && track_progeny_Parent >= 0);
 
                 source_Target_pedigree.close();
+
+                //exit(-1);
             }
             else
             {
@@ -606,6 +654,7 @@ void bfs::ingress()
                 exit(-1);
             }
         }
+        //break;
     }
 
     // retar code;
