@@ -27,6 +27,7 @@
 #include "hap_counter.cuh"
 #include "bfs.cuh"
 #include "mutations_T_json.cuh"
+#include "pedigree2r.cuh"
 
 using namespace std;
 
@@ -91,10 +92,17 @@ int main(int argc, char *argv[])
      }
      else if (function == "--recomb2json")
      {
-          cout << "Converting recpmbination file to JSON script\n\n";
+          cout << "Converting recombination file to JSON script\n\n";
 
           mutations_T_json m2j = mutations_T_json(parameter_MASTER_file);
           m2j.ingress("recombinations");
+     }
+     else if (function == "--pedigree2r")
+     {
+          cout << "Converting pedigree information to R graph format\n\n";
+
+          pedigree2r p2r = pedigree2r(parameter_MASTER_file);
+          p2r.ingress();
      }
      else if (function == "--extract")
      {
