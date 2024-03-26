@@ -178,7 +178,7 @@ void pedigree2r::ingress()
                         {
                             cout << "Writing lines\n";
                             // lines.push_back(queue[track_Queue].second + "\t" + find);
-                            converted_File << queue[track_Queue].second << "\n";
+                            converted_File << queue[track_Queue].second << "\t" << parents[round] << "\n";
                             converted_File.flush();
                         }
 

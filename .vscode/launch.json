@@ -11,7 +11,7 @@
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
                 "--pedigree2r",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Simple/parameters_MASTER.json"
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Simple_2/parameters_MASTER.json"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
