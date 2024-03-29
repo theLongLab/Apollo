@@ -182,6 +182,7 @@ private:
 
     string viral_Migration = "No";
     float **viral_Migration_Values;
+    int *migration_start_Generation;
 
     // column 0 = Yes = 1, NO =0;
     // column 1 = trials

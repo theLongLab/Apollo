@@ -5,13 +5,13 @@
 
   # Hardware configuration parameters
   "CPU cores":5,
-  "GPU max units":5,
-  "Process cell rate":5,
+  "GPU max units":1000,
+  "Process cell rate":10,
   "Multi read":"YES",
 
   # Output and Intermediate folder locations.
-  "Output folders":"resultsHIV_2",
-  "Intermediate folders":"intermediatesHIV_2",
+  "Output folders":"results",
+  "Intermediate folders":"intermediates",
 
   # The maximum number of sequences that can be stored in an intermeiate file
   "Intermediate Sequences per file":1000,

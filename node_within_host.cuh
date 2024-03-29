@@ -151,6 +151,7 @@ public:
                         float *progeny_distribution_parameters_Array,
                         string &viral_Migration,
                         float **viral_Migration_Values,
+                        int *migration_start_Generation,
                         int &overall_Generations,
                         string &infected_to_Recovered,
                         string enable_Folder_management,
@@ -269,6 +270,7 @@ public:
 
     void particle_Migration_between_Tissues(functions_library &functions,
                                             float **viral_Migration_Values,
+                                            int *migration_start_Generation,
                                             string &source_sequence_Data_folder,
                                             vector<string> &tissue_Names,
                                             string &sequence_parent_Progeny_relationships, string &sequence_Profiles,

@@ -852,6 +852,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                                                                 progeny_distribution_parameters_Array,
                                                                 viral_Migration,
                                                                 viral_Migration_Values,
+                                                                migration_start_Generation,
                                                                 overall_Generations,
                                                                 infected_to_Recovered,
                                                                 enable_Folder_management,
@@ -1955,7 +1956,7 @@ void simulator_Master::sequence_Master_Manager(functions_library &functions)
             if (mutation_Hotspots > 0)
             {
                 cout << "\nProcessing " << this->mutation_Hotspots << " mutation hotspots: \n";
-                //exit(-1);
+                // exit(-1);
                 A_0_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
                 T_1_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
                 G_2_mutation = functions.create_Fill_2D_array_FLOAT(mutation_Hotspots, 4, -1);
@@ -2579,6 +2580,12 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
             cout << "Viral migration: Activated\n";
 
             viral_Migration_Values = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * (num_tissues_per_Node - 1), 2, -1);
+            migration_start_Generation = (int *)malloc(num_tissues_per_Node * (num_tissues_per_Node - 1) * sizeof(int));
+
+            for (int fill_mig = 0; fill_mig < num_tissues_per_Node * (num_tissues_per_Node - 1); fill_mig++)
+            {
+                migration_start_Generation[fill_mig] = -1;
+            }
 
             vector<pair<string, string>> Viral_migration_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, "Viral migration");
 
@@ -2611,15 +2618,21 @@ void simulator_Master::node_Master_Manager(functions_library &functions)
                         {
                             viral_Migration_Values[migration_Check][1] = Parameters.get_FLOAT(block_Migration[i].second);
                         }
+                        else if (Parameters.get_STRING(block_Migration[i].first) == "Start generation")
+                        {
+                            migration_start_Generation[migration_Check] = Parameters.get_INT(block_Migration[i].second);
+                        }
                         else
                         {
                             cout << "ERROR INVALID ENTRY AT " << check_source_destination << endl;
                             exit(-1);
                         }
                     }
+                    cout << "Migration start generation: " << migration_start_Generation[migration_Check] << endl;
                     cout << "Cell migration Binomial trials: " << viral_Migration_Values[migration_Check][0] << endl;
                     cout << "Cell migration Binomial probability: " << viral_Migration_Values[migration_Check][1] << endl;
                     cout << endl;
+                    //exit(-1);
                 }
             }
         }

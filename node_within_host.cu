@@ -457,6 +457,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                                       float *progeny_distribution_parameters_Array,
                                       string &viral_Migration,
                                       float **viral_Migration_Values,
+                                      int *migration_start_Generation,
                                       int &overall_Generations,
                                       string &infected_to_Recovered,
                                       string enable_Folder_management,
@@ -813,6 +814,7 @@ void node_within_host::run_Generation(functions_library &functions, string &mult
                     // TEST SOME more
                     particle_Migration_between_Tissues(functions,
                                                        viral_Migration_Values,
+                                                       migration_start_Generation,
                                                        source_sequence_Data_folder,
                                                        tissue_Names,
                                                        sequence_parent_Progeny_relationships, sequence_Profiles,
@@ -1050,6 +1052,7 @@ int node_within_host::sample_Host(functions_library &functions, float &decimal_D
 
 void node_within_host::particle_Migration_between_Tissues(functions_library &functions,
                                                           float **viral_Migration_Values,
+                                                          int *migration_start_Generation,
                                                           string &source_sequence_Data_folder,
                                                           vector<string> &tissue_Names,
                                                           string &sequence_parent_Progeny_relationships, string &sequence_Profiles,
@@ -1061,122 +1064,125 @@ void node_within_host::particle_Migration_between_Tissues(functions_library &fun
     {
         if (viral_Migration_Values[migration_Check][0] != -1)
         {
-            int source = migration_Check / (num_Tissues - 1);
-            int destination = migration_Check % (num_Tissues - 1);
-
-            if (destination >= source)
+            if (current_Generation > migration_start_Generation[migration_Check])
             {
-                destination = destination + 1;
-            }
+                int source = migration_Check / (num_Tissues - 1);
+                int destination = migration_Check % (num_Tissues - 1);
 
-            int tissue_Particle_Check = current_Viral_load_per_Tissue[source] - dead_Particle_count[source] - removed_by_Transfer_Indexes[source].size();
-
-            if (tissue_Particle_Check > 0)
-            {
-                cout << "\nViral particle(s) migrating from " << tissue_Names[source] << " tissue to " << tissue_Names[destination] << " tissue" << endl;
-
-                binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
-
-                int num_viruses_to_transfer = num_Particles(gen);
-
-                if (num_viruses_to_transfer >= tissue_Particle_Check)
+                if (destination >= source)
                 {
-                    num_viruses_to_transfer = tissue_Particle_Check;
+                    destination = destination + 1;
                 }
 
-                cout << "Attempting to transfer " << num_viruses_to_transfer << " viral particle(s)\n";
+                int tissue_Particle_Check = current_Viral_load_per_Tissue[source] - dead_Particle_count[source] - removed_by_Transfer_Indexes[source].size();
 
-                set<int> potenital_Candidates_for_transfer;
-                uniform_int_distribution<> distribution_exit_Tissue(0, current_Viral_load_per_Tissue[source] - 1);
-
-                cout << "Identifying sequence(s) to transfer\n";
-                for (int trial = 0; trial < num_viruses_to_transfer; trial++)
+                if (tissue_Particle_Check > 0)
                 {
-                    potenital_Candidates_for_transfer.insert(distribution_exit_Tissue(gen));
-                }
+                    cout << "\nViral particle(s) migrating from " << tissue_Names[source] << " tissue to " << tissue_Names[destination] << " tissue" << endl;
 
-                vector<int> Candidates_for_transfer(potenital_Candidates_for_transfer.begin(), potenital_Candidates_for_transfer.end());
-                potenital_Candidates_for_transfer.clear();
+                    binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
 
-                vector<int> indexes_of_Seq_write;
+                    int num_viruses_to_transfer = num_Particles(gen);
 
-                for (int particle = 0; particle < Candidates_for_transfer.size(); particle++)
-                {
-                    auto it = removed_by_Transfer_Indexes[source].find(Candidates_for_transfer[particle]);
-
-                    if (it == removed_by_Transfer_Indexes[source].end())
+                    if (num_viruses_to_transfer >= tissue_Particle_Check)
                     {
-                        indexes_of_Seq_write.push_back(Candidates_for_transfer[particle]);
-                        removed_by_Transfer_Indexes[source].insert(Candidates_for_transfer[particle]);
+                        num_viruses_to_transfer = tissue_Particle_Check;
                     }
-                }
 
-                if (indexes_of_Seq_write.size() > 0)
-                {
-                    cout << "Collecting sequence(s) to transfer\n";
-                    vector<pair<int, int>> indexed_Source_Folder = functions.index_Source_folder(source_sequence_Data_folder, source, current_Generation);
+                    cout << "Attempting to transfer " << num_viruses_to_transfer << " viral particle(s)\n";
 
-                    int valid_Sequences = 0;
-                    vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, indexes_of_Seq_write, source, indexed_Source_Folder, current_Generation, valid_Sequences);
+                    set<int> potenital_Candidates_for_transfer;
+                    uniform_int_distribution<> distribution_exit_Tissue(0, current_Viral_load_per_Tissue[source] - 1);
 
-                    if (valid_Sequences > 0)
+                    cout << "Identifying sequence(s) to transfer\n";
+                    for (int trial = 0; trial < num_viruses_to_transfer; trial++)
                     {
-                        cout << "Transferring " << valid_Sequences << " sequence(s)\n";
-                        string destination_Path = source_sequence_Data_folder + "/" + to_string(destination) + "/generation_" + to_string(current_Generation);
-                        if (!filesystem::exists(destination_Path))
+                        potenital_Candidates_for_transfer.insert(distribution_exit_Tissue(gen));
+                    }
+
+                    vector<int> Candidates_for_transfer(potenital_Candidates_for_transfer.begin(), potenital_Candidates_for_transfer.end());
+                    potenital_Candidates_for_transfer.clear();
+
+                    vector<int> indexes_of_Seq_write;
+
+                    for (int particle = 0; particle < Candidates_for_transfer.size(); particle++)
+                    {
+                        auto it = removed_by_Transfer_Indexes[source].find(Candidates_for_transfer[particle]);
+
+                        if (it == removed_by_Transfer_Indexes[source].end())
                         {
-                            functions.config_Folder(destination_Path, "Destination tissue");
+                            indexes_of_Seq_write.push_back(Candidates_for_transfer[particle]);
+                            removed_by_Transfer_Indexes[source].insert(Candidates_for_transfer[particle]);
                         }
+                    }
 
-                        fstream sequence_parent_Progeny_relationships_File;
-                        sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
-                        fstream sequence_Profiles_File;
-                        sequence_Profiles_File.open(sequence_Profiles, ios::app);
+                    if (indexes_of_Seq_write.size() > 0)
+                    {
+                        cout << "Collecting sequence(s) to transfer\n";
+                        vector<pair<int, int>> indexed_Source_Folder = functions.index_Source_folder(source_sequence_Data_folder, source, current_Generation);
 
-                        if (sequence_parent_Progeny_relationships_File.is_open() && sequence_Profiles_File.is_open())
+                        int valid_Sequences = 0;
+                        vector<string> collected_Sequences = functions.find_Sequences_Master(source_sequence_Data_folder, indexes_of_Seq_write, source, indexed_Source_Folder, current_Generation, valid_Sequences);
+
+                        if (valid_Sequences > 0)
                         {
-                            fstream transfer_nFasta_File;
-                            transfer_nFasta_File.open(destination_Path + "/" + to_string(current_Viral_load_per_Tissue[destination]) + "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) + ".nfasta", ios::out);
-
-                            if (transfer_nFasta_File.is_open())
+                            cout << "Transferring " << valid_Sequences << " sequence(s)\n";
+                            string destination_Path = source_sequence_Data_folder + "/" + to_string(destination) + "/generation_" + to_string(current_Generation);
+                            if (!filesystem::exists(destination_Path))
                             {
-                                string viral_prefix_Progeny = get_Name() + "_" + tissue_Names[destination] + "_" + to_string(current_Generation) + "_";
-                                string viral_prefix_Parent = get_Name() + "_" + tissue_Names[source] + "_" + to_string(current_Generation) + "_";
+                                functions.config_Folder(destination_Path, "Destination tissue");
+                            }
 
-                                for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
+                            fstream sequence_parent_Progeny_relationships_File;
+                            sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
+                            fstream sequence_Profiles_File;
+                            sequence_Profiles_File.open(sequence_Profiles, ios::app);
+
+                            if (sequence_parent_Progeny_relationships_File.is_open() && sequence_Profiles_File.is_open())
+                            {
+                                fstream transfer_nFasta_File;
+                                transfer_nFasta_File.open(destination_Path + "/" + to_string(current_Viral_load_per_Tissue[destination]) + "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) + ".nfasta", ios::out);
+
+                                if (transfer_nFasta_File.is_open())
                                 {
-                                    if (collected_Sequences[sequence] != "")
+                                    string viral_prefix_Progeny = get_Name() + "_" + tissue_Names[destination] + "_" + to_string(current_Generation) + "_";
+                                    string viral_prefix_Parent = get_Name() + "_" + tissue_Names[source] + "_" + to_string(current_Generation) + "_";
+
+                                    for (int sequence = 0; sequence < collected_Sequences.size(); sequence++)
                                     {
-                                        transfer_nFasta_File << ">" << current_Viral_load_per_Tissue[destination] << "_A\n";
-                                        transfer_nFasta_File << collected_Sequences[sequence] << endl;
+                                        if (collected_Sequences[sequence] != "")
+                                        {
+                                            transfer_nFasta_File << ">" << current_Viral_load_per_Tissue[destination] << "_A\n";
+                                            transfer_nFasta_File << collected_Sequences[sequence] << endl;
 
-                                        sequence_Profiles_File << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
-                                                               << "\t" << get_Name()
-                                                               << "\t" << tissue_Names[destination] << endl;
+                                            sequence_Profiles_File << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
+                                                                   << "\t" << get_Name()
+                                                                   << "\t" << tissue_Names[destination] << endl;
 
-                                        sequence_parent_Progeny_relationships_File << viral_prefix_Parent << to_string(indexes_of_Seq_write[sequence])
-                                                                                   << "\t" << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
-                                                                                   << "\tTransmission\n";
+                                            sequence_parent_Progeny_relationships_File << viral_prefix_Parent << to_string(indexes_of_Seq_write[sequence])
+                                                                                       << "\t" << viral_prefix_Progeny << current_Viral_load_per_Tissue[destination]
+                                                                                       << "\tTransmission\n";
 
-                                        current_Viral_load_per_Tissue[destination]++;
+                                            current_Viral_load_per_Tissue[destination]++;
+                                        }
                                     }
                                 }
+                                else
+                                {
+                                    cout << "ERROR: UNABLE TO OPEN NFASTA FILE: " << destination_Path << "/" << to_string(current_Viral_load_per_Tissue[destination]) << "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) << ".nfasta" << endl;
+                                    exit(-1);
+                                }
+                                sequence_parent_Progeny_relationships_File.close();
+                                sequence_Profiles_File.close();
+                                transfer_nFasta_File.close();
                             }
                             else
                             {
-                                cout << "ERROR: UNABLE TO OPEN NFASTA FILE: " << destination_Path << "/" << to_string(current_Viral_load_per_Tissue[destination]) << "_" + to_string(current_Viral_load_per_Tissue[destination] + valid_Sequences - 1) << ".nfasta" << endl;
+                                cout << "ERROR: UNABLE TO OPEN ONE OF THE FOLLOWING FILE:\n"
+                                     << sequence_parent_Progeny_relationships << endl
+                                     << sequence_Profiles << endl;
                                 exit(-1);
                             }
-                            sequence_parent_Progeny_relationships_File.close();
-                            sequence_Profiles_File.close();
-                            transfer_nFasta_File.close();
-                        }
-                        else
-                        {
-                            cout << "ERROR: UNABLE TO OPEN ONE OF THE FOLLOWING FILE:\n"
-                                 << sequence_parent_Progeny_relationships << endl
-                                 << sequence_Profiles << endl;
-                            exit(-1);
                         }
                     }
                 }
@@ -1652,7 +1658,7 @@ void node_within_host::simulate_Cell_replication(functions_library &functions, s
     cout << "Cells check: " << cell_ID << "\t: " << num_Cells << endl
          << endl;
 
-    //exit(-1);
+    // exit(-1);
 
     // cout << endl;
 
