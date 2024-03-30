@@ -66,7 +66,7 @@ void node_within_host::print_All()
 void node_within_host::begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
                                        int entry_tissues, int *entry_array, int &max_sequences_per_File,
                                        string &output_Node_location,
-                                       vector<string> &tissue_Names)
+                                       vector<string> &tissue_Names, string first_Infection)
 {
     // FIRST NODE OF INFECTION IN THE HOST
 
@@ -78,100 +78,163 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
 
     string reference_Sequences = intermediary_Sequence_location + "/reference_Sequences";
 
-    vector<string> files;
+    cout << "\nFirst infection mode: " << first_Infection << endl;
 
-    for (const auto &entry : filesystem::directory_iterator(reference_Sequences))
+    if (first_Infection == "RANDOM")
     {
-        if (entry.is_regular_file() && entry.path().extension() == ".nfasta")
+
+        vector<string> files;
+
+        for (const auto &entry : filesystem::directory_iterator(reference_Sequences))
         {
-            files.push_back(entry.path().string());
+            if (entry.is_regular_file() && entry.path().extension() == ".nfasta")
+            {
+                files.push_back(entry.path().string());
+            }
+        }
+
+        vector<string> Sequences;
+        vector<string> Sequence_IDs;
+
+        cout << endl;
+        vector<char> seq_Status;
+        for (int file = 0; file < files.size(); file++)
+        {
+            cout << "Reading file: " << files[file] << endl;
+            fstream nfasta;
+            nfasta.open(files[file], ios::in);
+
+            if (nfasta.is_open())
+            {
+                string line;
+                string sequence = "";
+
+                while (getline(nfasta, line))
+                {
+                    if (line.at(0) != '>')
+                    {
+                        sequence.append(line);
+                    }
+                    else
+                    {
+                        Sequence_IDs.push_back(line);
+                        if (sequence != "")
+                        {
+                            Sequences.push_back(sequence);
+                            sequence = "";
+                        }
+                    }
+                }
+
+                if (sequence != "")
+                {
+                    Sequences.push_back(sequence);
+                    sequence = "";
+                }
+                nfasta.close();
+            }
+            else
+            {
+                cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << files[file] << endl;
+                exit(-1);
+            }
+        }
+
+        random_device rd; // Will be used to obtain a seed for the random number engine
+        mt19937 gen(rd());
+        uniform_int_distribution<int> entry_Tissue_select(0, entry_tissues - 1);
+
+        cout << endl;
+
+        for (int sequence = 0; sequence < Sequences.size(); sequence++)
+        {
+            int tissue_Index = entry_array[entry_Tissue_select(gen)];
+            cout << "Sequence " << sequence + 1 << " infects tissue: " << tissue_Index << endl;
+            tissue_Sequences[tissue_Index].push_back(Sequences[sequence]);
+        }
+
+        for (int tissue = 0; tissue < entry_tissues; tissue++)
+        {
+            if (tissue_Sequences[entry_array[tissue]].size() > 0)
+            {
+                current_Viral_load_per_Tissue[entry_array[tissue]] = tissue_Sequences[entry_array[tissue]].size();
+                functions.config_Folder(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(entry_array[tissue]) + " Generation 0");
+
+                if (!filesystem::exists(output_Node_location + "/" + get_Name()))
+                {
+                    functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
+                    functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
+                    functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+                }
+
+                vector<string> sequence_Write_Store_All;
+                int last_seq_Num = 0;
+                functions.sequence_Write_Configurator(sequence_Write_Store_All, tissue_Sequences[entry_array[tissue]],
+                                                      max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                                      output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
+                functions.partial_Write_Check(sequence_Write_Store_All,
+                                              host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                              output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
+            }
         }
     }
-
-    vector<string> Sequences;
-    vector<string> Sequence_IDs;
-
-    cout << endl;
-    vector<char> seq_Status;
-    for (int file = 0; file < files.size(); file++)
+    else
     {
-        cout << "Reading file: " << files[file] << endl;
-        fstream nfasta;
-        nfasta.open(files[file], ios::in);
+        cout << "\nInfecting tissues\n";
+        vector<string> line_Data;
 
-        if (nfasta.is_open())
+        //! Write to sequence profiles file
+
+        for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
         {
-            string line;
-            string sequence = "";
+            string reference_Sequences_tissue = reference_Sequences + "/" + tissue_Names[tissue];
+            int last_seq_Num = 0;
 
-            while (getline(nfasta, line))
+            if (filesystem::exists(reference_Sequences_tissue) && filesystem::is_directory(reference_Sequences_tissue))
             {
-                if (line.at(0) != '>')
+                cout << "\nTissue: " << tissue_Names[tissue] << endl;
+                for (const auto &entry : filesystem::directory_iterator(reference_Sequences_tissue))
                 {
-                    sequence.append(line);
-                }
-                else
-                {
-                    Sequence_IDs.push_back(line);
-                    if (sequence != "")
+                    if (entry.is_regular_file() && entry.path().extension() == ".nfasta")
                     {
-                        Sequences.push_back(sequence);
-                        sequence = "";
+                        string file_Name = entry.path().stem();
+                        functions.split(line_Data, file_Name, '_');
+
+                        int num_Particles_Tissue = stoi(line_Data[1]) - stoi(line_Data[0]) + 1;
+
+                        cout << "Sequences migrating: " << num_Particles_Tissue << endl;
+
+                        current_Viral_load_per_Tissue[tissue] = current_Viral_load_per_Tissue[tissue] + num_Particles_Tissue;
+
+                        functions.config_Folder(host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(tissue) + " Generation 0");
+
+                        if (!filesystem::exists(output_Node_location + "/" + get_Name()))
+                        {
+                            functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
+                            functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
+                            functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+                        }
+
+                        filesystem::copy_file(entry.path().string(), host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation) + "/" + file_Name + ".nfasta");
+
+                        fstream sequence_Profile;
+                        sequence_Profile.open(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", ios::app);
+
+                        for (int sequence_Num = 0; sequence_Num < num_Particles_Tissue; sequence_Num++)
+                        {
+                            sequence_Profile << get_Name() << "_" << tissue_Names[tissue] << "_" << current_Generation << "_" << last_seq_Num << "\t" << get_Name() << "\t" << tissue_Names[tissue] << endl;
+                            last_seq_Num++;
+                        }
+
+                        sequence_Profile.close();
                     }
                 }
             }
-
-            if (sequence != "")
-            {
-                Sequences.push_back(sequence);
-                sequence = "";
-            }
-
-            random_device rd; // Will be used to obtain a seed for the random number engine
-            mt19937 gen(rd());
-            uniform_int_distribution<int> entry_Tissue_select(0, entry_tissues - 1);
-
-            cout << endl;
-
-            for (int sequence = 0; sequence < Sequences.size(); sequence++)
-            {
-                int tissue_Index = entry_array[entry_Tissue_select(gen)];
-                cout << "Sequence " << sequence + 1 << " infects tissue: " << tissue_Index << endl;
-                tissue_Sequences[tissue_Index].push_back(Sequences[sequence]);
-            }
-
-            for (int tissue = 0; tissue < entry_tissues; tissue++)
-            {
-                if (tissue_Sequences[entry_array[tissue]].size() > 0)
-                {
-                    current_Viral_load_per_Tissue[entry_array[tissue]] = tissue_Sequences[entry_array[tissue]].size();
-                    functions.config_Folder(host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), to_string(cave_ID) + "_" + to_string(host_ID) + " Tissue " + to_string(entry_array[tissue]) + " Generation 0");
-
-                    if (!filesystem::exists(output_Node_location + "/" + get_Name()))
-                    {
-                        functions.config_Folder(output_Node_location + "/" + get_Name(), get_Name() + " node");
-                        functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", "Sequence_ID\tHost\tTissue");
-                        functions.create_File(output_Node_location + "/" + get_Name() + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
-                    }
-
-                    vector<string> sequence_Write_Store_All;
-                    int last_seq_Num = 0;
-                    functions.sequence_Write_Configurator(sequence_Write_Store_All, tissue_Sequences[entry_array[tissue]],
-                                                          max_sequences_per_File, host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
-                                                          output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
-                    functions.partial_Write_Check(sequence_Write_Store_All,
-                                                  host_Folder + "/" + to_string(entry_array[tissue]) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
-                                                  output_Node_location + "/" + get_Name() + "/sequence_Profiles.csv", get_Name(), tissue_Names[entry_array[tissue]], current_Generation);
-                }
-            }
-        }
-        else
-        {
-            cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << files[file] << endl;
-            exit(-1);
         }
     }
     set_Infected();
+
+    //exit(-1);
     // for (int tissue = 0; tissue < num_Tissues; tissue++)
     // {
     //     cout << current_Viral_load_per_Tissue[tissue] << endl;

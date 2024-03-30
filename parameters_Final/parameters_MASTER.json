@@ -20,6 +20,7 @@
 
   # Indicates the start date for the simulation
   "Start date":"2024-01-10",
+  "First infection":"Pre Defined",
 
   # Indicate whether the user wants to run the simulation for a specified period of time
   "Stop after generations":"Yes",

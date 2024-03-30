@@ -172,6 +172,8 @@ private:
     int sampling_tissues = 0;
     int *sampling_array;
 
+    string first_Infection = "Random";
+
     // rows = profiles
     // columns
     // 0 = distribution_type; 0=Binomial, -1 = Fixed
@@ -301,7 +303,7 @@ public:
     int get_first_Infected(vector<int> &susceptible_Population,
                            vector<int> &infected_Population, functions_library &functions);
 
-    vector<string> read_Reference_Sequences(int index_first_Infected);
+    vector<string> read_Reference_Sequences(vector<int> &tissue_Sequence_Count);
     vector<string> read_Reference_Sequence_Files(vector<string> &reference_Files);
 
     // void Node_search(vector<pair<int, int>> &host_Connections);

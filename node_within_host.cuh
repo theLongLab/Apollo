@@ -103,7 +103,7 @@ public:
     void begin_Infection(functions_library &functions, string &intermediary_Sequence_location,
                          int entry_tissues, int *entry_array, int &max_sequences_per_File,
                          string &output_Node_location,
-                         vector<string> &tissue_Names);
+                         vector<string> &tissue_Names, string first_Infection);
 
     vector<set<int>> removed_by_Transfer_Indexes;
 
