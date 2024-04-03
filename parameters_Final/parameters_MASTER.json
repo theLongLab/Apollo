@@ -20,7 +20,7 @@
 
   # Indicates the start date for the simulation
   "Start date":"2024-01-10",
-  "First infection":"Pre Defined",
+  "First infection":"Random",
 
   # Indicate whether the user wants to run the simulation for a specified period of time
   "Stop after generations":"Yes",
@@ -56,7 +56,7 @@
   "Pedigree get Sequences":"Yes",
 
   # Base site model or recombination hotspots to JSON script (File has to be tab delimited)
-  "Convert file location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/HIV_recomb.csv",
+  "Convert file location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/Mutation_Site_model_HIV_Full.csv",
 
   # Convert pedigree folder to R format
   "Pedigree folder location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/resultsHIV_2/node_Data/0_0/pedigree_Information/one"

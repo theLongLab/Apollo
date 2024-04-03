@@ -1668,7 +1668,10 @@ vector<node_within_host> simulator_Master::node_Profile_assignment_Manager(funct
 
     cout << "\nPurging network memory\n";
 
-    free(per_cave_Stride);
+    if (network_Model == "DCM")
+    {
+        free(per_cave_Stride);
+    }
     free(node_profile_Distributions);
 
     functions.clear_Array_float_CPU(node_sampling_effect, number_of_node_Profiles);

@@ -183,7 +183,7 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
         cout << "\nInfecting tissues\n";
         vector<string> line_Data;
 
-        //! Write to sequence profiles file
+       //// Write to sequence profiles file
 
         for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
         {
@@ -232,6 +232,7 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
             }
         }
     }
+    
     set_Infected();
 
     //exit(-1);

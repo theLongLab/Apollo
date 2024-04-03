@@ -1,0 +1,4805 @@
+    "Mutations":{
+
+        "Number of hotspots":192,
+
+        "Hotspot 1":{
+
+            "Region":" 38_ 38",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.85",
+            "AT":"0",
+            "AG":"0.15",
+            "AC":"0",
+            "TA":"0.85",
+            "TT":"0",
+            "TG":"0.15",
+            "TC":"0",
+            "GA":"0.65",
+            "GT":"0",
+            "GG":"0.35",
+            "GC":"0",
+            "CA":"0.85",
+            "CT":"0",
+            "CG":"0.15",
+            "CC":"0"
+        },
+
+        "Hotspot 2":{
+
+            "Region":" 47_ 47",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.9",
+            "AG":"0",
+            "AC":"0.1",
+            "TA":"0",
+            "TT":"0.9",
+            "TG":"0",
+            "TC":"0.1",
+            "GA":"0",
+            "GT":"0.9",
+            "GG":"0",
+            "GC":"0.1",
+            "CA":"0",
+            "CT":"0.9",
+            "CG":"0",
+            "CC":"0.1"
+        },
+
+        "Hotspot 3":{
+
+            "Region":" 49_ 49",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 4":{
+
+            "Region":" 51_ 51",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 5":{
+
+            "Region":" 53_ 53",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0",
+            "AG":"1",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0",
+            "TG":"1",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0",
+            "GG":"1",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0",
+            "CG":"1",
+            "CC":"0"
+        },
+
+        "Hotspot 6":{
+
+            "Region":" 57_ 57",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 7":{
+
+            "Region":" 60_ 60",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 8":{
+
+            "Region":" 61_ 61",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.2",
+            "AT":"0",
+            "AG":"0.8",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 9":{
+
+            "Region":" 69_ 69",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 10":{
+
+            "Region":" 77_ 77",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.8",
+            "CG":"0",
+            "CC":"0.2"
+        },
+
+        "Hotspot 11":{
+
+            "Region":" 85_ 85",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.2",
+            "AT":"0",
+            "AG":"0.8",
+            "AC":"0",
+            "TA":"0.2",
+            "TT":"0",
+            "TG":"0.8",
+            "TC":"0",
+            "GA":"0.2",
+            "GT":"0",
+            "GG":"0.8",
+            "GC":"0",
+            "CA":"0.2",
+            "CT":"0",
+            "CG":"0.8",
+            "CC":"0"
+        },
+
+        "Hotspot 12":{
+
+            "Region":" 86_ 86",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 13":{
+
+            "Region":" 87_ 87",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 14":{
+
+            "Region":" 89_ 89",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 15":{
+
+            "Region":" 90_ 90",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 16":{
+
+            "Region":"100_100",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.9",
+            "AG":"0",
+            "AC":"0.1",
+            "TA":"0",
+            "TT":"0.9",
+            "TG":"0",
+            "TC":"0.1",
+            "GA":"0",
+            "GT":"0.9",
+            "GG":"0",
+            "GC":"0.1",
+            "CA":"0",
+            "CT":"0.9",
+            "CG":"0",
+            "CC":"0.1"
+        },
+
+        "Hotspot 17":{
+
+            "Region":"101_101",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.9",
+            "CG":"0",
+            "CC":"0.1"
+        },
+
+        "Hotspot 18":{
+
+            "Region":"105_105",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 19":{
+
+            "Region":"106_106",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.2",
+            "AT":"0",
+            "AG":"0.8",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 20":{
+
+            "Region":"107_107",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 21":{
+
+            "Region":"108_108",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 22":{
+
+            "Region":"110_110",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 23":{
+
+            "Region":"115_115",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 24":{
+
+            "Region":"118_118",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 25":{
+
+            "Region":"121_121",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.34",
+            "AT":"0.46",
+            "AG":"0",
+            "AC":"0.2",
+            "TA":"0.34",
+            "TT":"0.46",
+            "TG":"0",
+            "TC":"0.2",
+            "GA":"0.34",
+            "GT":"0.46",
+            "GG":"0",
+            "GC":"0.2",
+            "CA":"0.34",
+            "CT":"0.46",
+            "CG":"0",
+            "CC":"0.2"
+        },
+
+        "Hotspot 26":{
+
+            "Region":"126_126",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 27":{
+
+            "Region":"130_130",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.2",
+            "AT":"0",
+            "AG":"0.8",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 28":{
+
+            "Region":"135_135",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.53",
+            "AT":"0",
+            "AG":"0.47",
+            "AC":"0",
+            "TA":"0.53",
+            "TT":"0",
+            "TG":"0.47",
+            "TC":"0",
+            "GA":"0.53",
+            "GT":"0",
+            "GG":"0.47",
+            "GC":"0",
+            "CA":"0.53",
+            "CT":"0",
+            "CG":"0.47",
+            "CC":"0"
+        },
+
+        "Hotspot 29":{
+
+            "Region":"136_136",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 30":{
+
+            "Region":"137_137",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 31":{
+
+            "Region":"139_139",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 32":{
+
+            "Region":"146_146",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 33":{
+
+            "Region":"149_149",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 34":{
+
+            "Region":"150_150",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0.93",
+            "AG":"0.02",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0.93",
+            "TG":"0.02",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0.93",
+            "GG":"0.02",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0.93",
+            "CG":"0.02",
+            "CC":"0"
+        },
+
+        "Hotspot 35":{
+
+            "Region":"153_153",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 36":{
+
+            "Region":"159_159",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 37":{
+
+            "Region":"168_168",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.2",
+            "AG":"0",
+            "AC":"0.8",
+            "TA":"0",
+            "TT":"0.35",
+            "TG":"0",
+            "TC":"0.65",
+            "GA":"0",
+            "GT":"0.2",
+            "GG":"0",
+            "GC":"0.8",
+            "CA":"0",
+            "CT":"0.2",
+            "CG":"0",
+            "CC":"0.8"
+        },
+
+        "Hotspot 38":{
+
+            "Region":"174_174",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 39":{
+
+            "Region":"178_178",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 40":{
+
+            "Region":"181_181",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 41":{
+
+            "Region":"186_186",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 42":{
+
+            "Region":"188_188",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 43":{
+
+            "Region":"192_192",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 44":{
+
+            "Region":"193_193",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 45":{
+
+            "Region":"194_194",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 46":{
+
+            "Region":"195_195",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 47":{
+
+            "Region":"199_199",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 48":{
+
+            "Region":"202_202",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 49":{
+
+            "Region":"204_204",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.25",
+            "CG":"0",
+            "CC":"0.75"
+        },
+
+        "Hotspot 50":{
+
+            "Region":"209_209",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0.25",
+            "GT":"0",
+            "GG":"0.75",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 51":{
+
+            "Region":"210_210",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.8",
+            "AT":"0",
+            "AG":"0.2",
+            "AC":"0",
+            "TA":"0.8",
+            "TT":"0",
+            "TG":"0.2",
+            "TC":"0",
+            "GA":"0.65",
+            "GT":"0",
+            "GG":"0.35",
+            "GC":"0",
+            "CA":"0.8",
+            "CT":"0",
+            "CG":"0.2",
+            "CC":"0"
+        },
+
+        "Hotspot 52":{
+
+            "Region":"219_219",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 53":{
+
+            "Region":"220_220",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.8",
+            "AG":"0.2",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0.8",
+            "TG":"0.2",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0.8",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.8",
+            "CG":"0.2",
+            "CC":"0"
+        },
+
+        "Hotspot 54":{
+
+            "Region":"227_227",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 55":{
+
+            "Region":"231_231",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 56":{
+
+            "Region":"235_235",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 57":{
+
+            "Region":"237_237",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 58":{
+
+            "Region":"239_239",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.8",
+            "CG":"0",
+            "CC":"0.2"
+        },
+
+        "Hotspot 59":{
+
+            "Region":"245_245",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 60":{
+
+            "Region":"246_246",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.25",
+            "AT":"0",
+            "AG":"0.75",
+            "AC":"0",
+            "TA":"0.25",
+            "TT":"0",
+            "TG":"0.75",
+            "TC":"0",
+            "GA":"0.25",
+            "GT":"0",
+            "GG":"0.75",
+            "GC":"0",
+            "CA":"0.25",
+            "CT":"0",
+            "CG":"0.75",
+            "CC":"0"
+        },
+
+        "Hotspot 61":{
+
+            "Region":"248_248",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.65",
+            "AT":"0",
+            "AG":"0.35",
+            "AC":"0",
+            "TA":"0.65",
+            "TT":"0",
+            "TG":"0.35",
+            "TC":"0",
+            "GA":"0.65",
+            "GT":"0",
+            "GG":"0.35",
+            "GC":"0",
+            "CA":"0.65",
+            "CT":"0",
+            "CG":"0.35",
+            "CC":"0"
+        },
+
+        "Hotspot 62":{
+
+            "Region":"250_250",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 63":{
+
+            "Region":"252_252",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 64":{
+
+            "Region":"256_256",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.1",
+            "AT":"0",
+            "AG":"0.9",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 65":{
+
+            "Region":"258_258",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.15",
+            "AG":"0",
+            "AC":"0.85",
+            "TA":"0",
+            "TT":"0.15",
+            "TG":"0",
+            "TC":"0.85",
+            "GA":"0",
+            "GT":"0.15",
+            "GG":"0",
+            "GC":"0.85",
+            "CA":"0",
+            "CT":"0.15",
+            "CG":"0",
+            "CC":"0.85"
+        },
+
+        "Hotspot 66":{
+
+            "Region":"259_259",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.85",
+            "CG":"0",
+            "CC":"0.15"
+        },
+
+        "Hotspot 67":{
+
+            "Region":"260_260",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 68":{
+
+            "Region":"267_267",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 69":{
+
+            "Region":"273_273",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.8",
+            "AT":"0",
+            "AG":"0.2",
+            "AC":"0",
+            "TA":"0.8",
+            "TT":"0",
+            "TG":"0.2",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.8",
+            "CT":"0",
+            "CG":"0.2",
+            "CC":"0"
+        },
+
+        "Hotspot 70":{
+
+            "Region":"276_276",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.25",
+            "GT":"0",
+            "GG":"0.75",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 71":{
+
+            "Region":"283_283",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.1",
+            "TG":"0",
+            "TC":"0.9",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 72":{
+
+            "Region":"285_285",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 73":{
+
+            "Region":"286_286",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.1",
+            "TG":"0",
+            "TC":"0.9",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 74":{
+
+            "Region":"291_291",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.1",
+            "TG":"0",
+            "TC":"0.9",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 75":{
+
+            "Region":"297_297",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.1",
+            "AT":"0",
+            "AG":"0.9",
+            "AC":"0",
+            "TA":"0.1",
+            "TT":"0",
+            "TG":"0.9",
+            "TC":"0",
+            "GA":"0.1",
+            "GT":"0",
+            "GG":"0.9",
+            "GC":"0",
+            "CA":"0.1",
+            "CT":"0",
+            "CG":"0.9",
+            "CC":"0"
+        },
+
+        "Hotspot 76":{
+
+            "Region":"301_301",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 77":{
+
+            "Region":"304_304",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 78":{
+
+            "Region":"305_305",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.85",
+            "AT":"0",
+            "AG":"0.15",
+            "AC":"0",
+            "TA":"0.85",
+            "TT":"0",
+            "TG":"0.15",
+            "TC":"0",
+            "GA":"0.85",
+            "GT":"0",
+            "GG":"0.15",
+            "GC":"0",
+            "CA":"0.85",
+            "CT":"0",
+            "CG":"0.15",
+            "CC":"0"
+        },
+
+        "Hotspot 79":{
+
+            "Region":"307_307",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 80":{
+
+            "Region":"318_318",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 81":{
+
+            "Region":"319_319",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 82":{
+
+            "Region":"322_322",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.1",
+            "AT":"0",
+            "AG":"0.9",
+            "AC":"0",
+            "TA":"0.1",
+            "TT":"0",
+            "TG":"0.9",
+            "TC":"0",
+            "GA":"0.1",
+            "GT":"0",
+            "GG":"0.9",
+            "GC":"0",
+            "CA":"0.1",
+            "CT":"0",
+            "CG":"0.9",
+            "CC":"0"
+        },
+
+        "Hotspot 83":{
+
+            "Region":"325_325",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0",
+            "AG":"0",
+            "AC":"1",
+            "TA":"0",
+            "TT":"0",
+            "TG":"0",
+            "TC":"1",
+            "GA":"0",
+            "GT":"0",
+            "GG":"0",
+            "GC":"1",
+            "CA":"0",
+            "CT":"0",
+            "CG":"0",
+            "CC":"1"
+        },
+
+        "Hotspot 84":{
+
+            "Region":"328_328",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.45",
+            "AT":"0",
+            "AG":"0.55",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 85":{
+
+            "Region":"329_329",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 86":{
+
+            "Region":"333_333",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.45",
+            "AT":"0",
+            "AG":"0.55",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 87":{
+
+            "Region":"334_334",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 88":{
+
+            "Region":"337_337",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.45",
+            "AT":"0",
+            "AG":"0.55",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 89":{
+
+            "Region":"342_342",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 90":{
+
+            "Region":"345_345",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.75",
+            "AG":"0",
+            "AC":"0.25",
+            "TA":"0",
+            "TT":"0.75",
+            "TG":"0",
+            "TC":"0.25",
+            "GA":"0",
+            "GT":"0.75",
+            "GG":"0",
+            "GC":"0.25",
+            "CA":"0",
+            "CT":"0.75",
+            "CG":"0",
+            "CC":"0.25"
+        },
+
+        "Hotspot 91":{
+
+            "Region":"348_348",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.85",
+            "CG":"0",
+            "CC":"0.15"
+        },
+
+        "Hotspot 92":{
+
+            "Region":"353_353",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.85",
+            "CG":"0",
+            "CC":"0.15"
+        },
+
+        "Hotspot 93":{
+
+            "Region":"354_354",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0.1",
+            "TG":"0.9",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 94":{
+
+            "Region":"359_359",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 95":{
+
+            "Region":"364_364",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 96":{
+
+            "Region":"368_368",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 97":{
+
+            "Region":"369_369",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.8",
+            "AT":"0",
+            "AG":"0.2",
+            "AC":"0",
+            "TA":"0.8",
+            "TT":"0",
+            "TG":"0.2",
+            "TC":"0",
+            "GA":"0.8",
+            "GT":"0",
+            "GG":"0.2",
+            "GC":"0",
+            "CA":"0.8",
+            "CT":"0",
+            "CG":"0.2",
+            "CC":"0"
+        },
+
+        "Hotspot 98":{
+
+            "Region":"372_372",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.25",
+            "AG":"0",
+            "AC":"0.75",
+            "TA":"0",
+            "TT":"0.25",
+            "TG":"0",
+            "TC":"0.75",
+            "GA":"0",
+            "GT":"0.25",
+            "GG":"0",
+            "GC":"0.75",
+            "CA":"0",
+            "CT":"0.25",
+            "CG":"0",
+            "CC":"0.75"
+        },
+
+        "Hotspot 99":{
+
+            "Region":"375_375",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 100":{
+
+            "Region":"376_376",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 101":{
+
+            "Region":"377_377",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 102":{
+
+            "Region":"378_378",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 103":{
+
+            "Region":"382_382",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 104":{
+
+            "Region":"393_393",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.25",
+            "AG":"0",
+            "AC":"0.85",
+            "TA":"0",
+            "TT":"0.25",
+            "TG":"0",
+            "TC":"0.85",
+            "GA":"0",
+            "GT":"0.25",
+            "GG":"0",
+            "GC":"0.85",
+            "CA":"0",
+            "CT":"0.25",
+            "CG":"0",
+            "CC":"0.85"
+        },
+
+        "Hotspot 105":{
+
+            "Region":"395_395",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.99",
+            "AG":"0",
+            "AC":"0.01",
+            "TA":"0",
+            "TT":"0.99",
+            "TG":"0",
+            "TC":"0.01",
+            "GA":"0",
+            "GT":"0.99",
+            "GG":"0",
+            "GC":"0.01",
+            "CA":"0",
+            "CT":"0.99",
+            "CG":"0",
+            "CC":"0.01"
+        },
+
+        "Hotspot 106":{
+
+            "Region":"396_396",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.99",
+            "AT":"0",
+            "AG":"0.01",
+            "AC":"0",
+            "TA":"0.99",
+            "TT":"0",
+            "TG":"0.01",
+            "TC":"0",
+            "GA":"0.99",
+            "GT":"0",
+            "GG":"0.01",
+            "GC":"0",
+            "CA":"0.99",
+            "CT":"0",
+            "CG":"0.01",
+            "CC":"0"
+        },
+
+        "Hotspot 107":{
+
+            "Region":"400_400",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.99",
+            "AT":"0",
+            "AG":"0.01",
+            "AC":"0",
+            "TA":"0.99",
+            "TT":"0",
+            "TG":"0.01",
+            "TC":"0",
+            "GA":"0.99",
+            "GT":"0",
+            "GG":"0.01",
+            "GC":"0",
+            "CA":"0.99",
+            "CT":"0",
+            "CG":"0.01",
+            "CC":"0"
+        },
+
+        "Hotspot 108":{
+
+            "Region":"408_408",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0",
+            "AG":"0",
+            "AC":"1",
+            "TA":"0",
+            "TT":"0",
+            "TG":"0",
+            "TC":"1",
+            "GA":"0",
+            "GT":"0",
+            "GG":"0",
+            "GC":"1",
+            "CA":"0",
+            "CT":"0",
+            "CG":"0",
+            "CC":"1"
+        },
+
+        "Hotspot 109":{
+
+            "Region":"423_423",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.01",
+            "AT":"0",
+            "AG":"0.99",
+            "AC":"0",
+            "TA":"0.01",
+            "TT":"0",
+            "TG":"0.99",
+            "TC":"0",
+            "GA":"0.01",
+            "GT":"0",
+            "GG":"0.99",
+            "GC":"0",
+            "CA":"0.01",
+            "CT":"0",
+            "CG":"0.99",
+            "CC":"0"
+        },
+
+        "Hotspot 110":{
+
+            "Region":"424_424",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 111":{
+
+            "Region":"426_426",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 112":{
+
+            "Region":"434_434",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 113":{
+
+            "Region":"439_439",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 114":{
+
+            "Region":"446_446",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 115":{
+
+            "Region":"448_448",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 116":{
+
+            "Region":"452_452",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 117":{
+
+            "Region":"462_462",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 118":{
+
+            "Region":"465_465",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 119":{
+
+            "Region":"471_471",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 120":{
+
+            "Region":"474_474",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 121":{
+
+            "Region":"480_480",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 122":{
+
+            "Region":"483_483",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 123":{
+
+            "Region":"485_485",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 124":{
+
+            "Region":"486_486",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.8",
+            "AG":"0",
+            "AC":"0.2",
+            "TA":"0",
+            "TT":"0.8",
+            "TG":"0",
+            "TC":"0.2",
+            "GA":"0",
+            "GT":"0.8",
+            "GG":"0",
+            "GC":"0.2",
+            "CA":"0",
+            "CT":"0.8",
+            "CG":"0",
+            "CC":"0.2"
+        },
+
+        "Hotspot 125":{
+
+            "Region":"487_487",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.9",
+            "AT":"0.05",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.9",
+            "TT":"0.05",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.9",
+            "GT":"0.05",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.9",
+            "CT":"0.05",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 126":{
+
+            "Region":"495_495",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 127":{
+
+            "Region":"500_500",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 128":{
+
+            "Region":"504_504",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 129":{
+
+            "Region":"510_510",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.9",
+            "CG":"0",
+            "CC":"0.1"
+        },
+
+        "Hotspot 130":{
+
+            "Region":"512_512",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0.92",
+            "AG":"0",
+            "AC":"0.03",
+            "TA":"0.05",
+            "TT":"0.92",
+            "TG":"0",
+            "TC":"0.03",
+            "GA":"0.05",
+            "GT":"0.92",
+            "GG":"0",
+            "GC":"0.03",
+            "CA":"0.05",
+            "CT":"0.92",
+            "CG":"0",
+            "CC":"0.03"
+        },
+
+        "Hotspot 131":{
+
+            "Region":"513_513",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.9",
+            "AG":"0",
+            "AC":"0.1",
+            "TA":"0",
+            "TT":"0.9",
+            "TG":"0",
+            "TC":"0.1",
+            "GA":"0",
+            "GT":"0.9",
+            "GG":"0",
+            "GC":"0.1",
+            "CA":"0",
+            "CT":"0.9",
+            "CG":"0",
+            "CC":"0.1"
+        },
+
+        "Hotspot 132":{
+
+            "Region":"515_515",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0",
+            "AG":"1",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0",
+            "TG":"1",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0",
+            "GG":"1",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0",
+            "CG":"1",
+            "CC":"0"
+        },
+
+        "Hotspot 133":{
+
+            "Region":"516_516",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 134":{
+
+            "Region":"519_519",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 135":{
+
+            "Region":"521_521",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 136":{
+
+            "Region":"528_528",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 137":{
+
+            "Region":"531_531",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 138":{
+
+            "Region":"534_534",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 139":{
+
+            "Region":"537_537",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.35",
+            "CG":"0",
+            "CC":"0.65"
+        },
+
+        "Hotspot 140":{
+
+            "Region":"538_538",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 141":{
+
+            "Region":"542_542",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 142":{
+
+            "Region":"549_549",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 143":{
+
+            "Region":"550_550",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.8",
+            "AT":"0",
+            "AG":"0.2",
+            "AC":"0",
+            "TA":"0.8",
+            "TT":"0",
+            "TG":"0.2",
+            "TC":"0",
+            "GA":"0.65",
+            "GT":"0",
+            "GG":"0.35",
+            "GC":"0",
+            "CA":"0.8",
+            "CT":"0",
+            "CG":"0.2",
+            "CC":"0"
+        },
+
+        "Hotspot 144":{
+
+            "Region":"555_555",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 145":{
+
+            "Region":"557_557",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 146":{
+
+            "Region":"559_559",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 147":{
+
+            "Region":"564_564",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"1",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0",
+            "TT":"1",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0",
+            "GT":"1",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0",
+            "CT":"1",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 148":{
+
+            "Region":"570_570",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 149":{
+
+            "Region":"571_571",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 150":{
+
+            "Region":"576_576",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 151":{
+
+            "Region":"583_583",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 152":{
+
+            "Region":"584_584",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 153":{
+
+            "Region":"585_585",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 154":{
+
+            "Region":"586_586",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.25",
+            "AT":"0",
+            "AG":"0.75",
+            "AC":"0",
+            "TA":"0.25",
+            "TT":"0",
+            "TG":"0.75",
+            "TC":"0",
+            "GA":"0.25",
+            "GT":"0",
+            "GG":"0.75",
+            "GC":"0",
+            "CA":"0.25",
+            "CT":"0",
+            "CG":"0.75",
+            "CC":"0"
+        },
+
+        "Hotspot 155":{
+
+            "Region":"587_587",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.25",
+            "AT":"0",
+            "AG":"0.75",
+            "AC":"0",
+            "TA":"0.25",
+            "TT":"0",
+            "TG":"0.75",
+            "TC":"0",
+            "GA":"0.25",
+            "GT":"0",
+            "GG":"0.75",
+            "GC":"0",
+            "CA":"0.25",
+            "CT":"0",
+            "CG":"0.75",
+            "CC":"0"
+        },
+
+        "Hotspot 156":{
+
+            "Region":"588_588",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 157":{
+
+            "Region":"589_589",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0",
+            "AG":"0",
+            "AC":"1",
+            "TA":"0",
+            "TT":"0",
+            "TG":"0",
+            "TC":"1",
+            "GA":"0",
+            "GT":"0",
+            "GG":"0",
+            "GC":"1",
+            "CA":"0",
+            "CT":"0",
+            "CG":"0",
+            "CC":"1"
+        },
+
+        "Hotspot 158":{
+
+            "Region":"590_590",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 159":{
+
+            "Region":"594_594",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 160":{
+
+            "Region":"599_599",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.49",
+            "AG":"0",
+            "AC":"0.51",
+            "TA":"0",
+            "TT":"0.49",
+            "TG":"0",
+            "TC":"0.51",
+            "GA":"0",
+            "GT":"0.49",
+            "GG":"0",
+            "GC":"0.51",
+            "CA":"0",
+            "CT":"0.49",
+            "CG":"0",
+            "CC":"0.51"
+        },
+
+        "Hotspot 161":{
+
+            "Region":"601_601",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 162":{
+
+            "Region":"609_609",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 163":{
+
+            "Region":"610_610",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 164":{
+
+            "Region":"614_614",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 165":{
+
+            "Region":"615_615",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 166":{
+
+            "Region":"616_616",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 167":{
+
+            "Region":"617_617",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.05",
+            "AT":"0",
+            "AG":"0.95",
+            "AC":"0",
+            "TA":"0.05",
+            "TT":"0",
+            "TG":"0.95",
+            "TC":"0",
+            "GA":"0.05",
+            "GT":"0",
+            "GG":"0.95",
+            "GC":"0",
+            "CA":"0.05",
+            "CT":"0",
+            "CG":"0.95",
+            "CC":"0"
+        },
+
+        "Hotspot 168":{
+
+            "Region":"618_618",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 169":{
+
+            "Region":"624_624",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.85",
+            "AG":"0",
+            "AC":"0.15",
+            "TA":"0",
+            "TT":"0.85",
+            "TG":"0",
+            "TC":"0.15",
+            "GA":"0",
+            "GT":"0.85",
+            "GG":"0",
+            "GC":"0.15",
+            "CA":"0",
+            "CT":"0.85",
+            "CG":"0",
+            "CC":"0.15"
+        },
+
+        "Hotspot 170":{
+
+            "Region":"626_626",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.95",
+            "AG":"0",
+            "AC":"0.05",
+            "TA":"0",
+            "TT":"0.95",
+            "TG":"0",
+            "TC":"0.05",
+            "GA":"0",
+            "GT":"0.95",
+            "GG":"0",
+            "GC":"0.05",
+            "CA":"0",
+            "CT":"0.95",
+            "CG":"0",
+            "CC":"0.05"
+        },
+
+        "Hotspot 171":{
+
+            "Region":"629_629",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.69",
+            "AG":"0.31",
+            "AC":"0",
+            "TA":"0",
+            "TT":"0.69",
+            "TG":"0.31",
+            "TC":"0",
+            "GA":"0",
+            "GT":"0.69",
+            "GG":"0.31",
+            "GC":"0",
+            "CA":"0",
+            "CT":"0.69",
+            "CG":"0.31",
+            "CC":"0"
+        },
+
+        "Hotspot 172":{
+
+            "Region":"630_630",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.08",
+            "AT":"0",
+            "AG":"0.92",
+            "AC":"0",
+            "TA":"0.08",
+            "TT":"0",
+            "TG":"0.92",
+            "TC":"0",
+            "GA":"0.08",
+            "GT":"0",
+            "GG":"0.92",
+            "GC":"0",
+            "CA":"0.08",
+            "CT":"0",
+            "CG":"0.92",
+            "CC":"0"
+        },
+
+        "Hotspot 173":{
+
+            "Region":"631_631",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 174":{
+
+            "Region":"632_632",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 175":{
+
+            "Region":"633_633",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.22",
+            "AT":"0",
+            "AG":"0.78",
+            "AC":"0",
+            "TA":"0.22",
+            "TT":"0",
+            "TG":"0.78",
+            "TC":"0",
+            "GA":"0.22",
+            "GT":"0",
+            "GG":"0.78",
+            "GC":"0",
+            "CA":"0.22",
+            "CT":"0",
+            "CG":"0.78",
+            "CC":"0"
+        },
+
+        "Hotspot 176":{
+
+            "Region":"639_639",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.95",
+            "AT":"0",
+            "AG":"0.05",
+            "AC":"0",
+            "TA":"0.95",
+            "TT":"0",
+            "TG":"0.05",
+            "TC":"0",
+            "GA":"0.95",
+            "GT":"0",
+            "GG":"0.05",
+            "GC":"0",
+            "CA":"0.95",
+            "CT":"0",
+            "CG":"0.05",
+            "CC":"0"
+        },
+
+        "Hotspot 177":{
+
+            "Region":"643_643",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.22",
+            "AT":"0.77",
+            "AG":"0.005",
+            "AC":"0.005",
+            "TA":"0.22",
+            "TT":"0.77",
+            "TG":"0.005",
+            "TC":"0.005",
+            "GA":"0.22",
+            "GT":"0.77",
+            "GG":"0.005",
+            "GC":"0.005",
+            "CA":"0.22",
+            "CT":"0.77",
+            "CG":"0.005",
+            "CC":"0.005"
+        },
+
+        "Hotspot 178":{
+
+            "Region":"644_644",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.77",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0.23",
+            "TA":"0.77",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0.23",
+            "GA":"0.77",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0.23",
+            "CA":"0.77",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0.23"
+        },
+
+        "Hotspot 179":{
+
+            "Region":"648_648",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0",
+            "AG":"0.03",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0",
+            "TG":"0.03",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0",
+            "GG":"0.03",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0",
+            "CG":"0.03",
+            "CC":"0"
+        },
+
+        "Hotspot 180":{
+
+            "Region":"651_651",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0.03",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0.65",
+            "TT":"0.35",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0.03",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0.03",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 181":{
+
+            "Region":"654_654",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 182":{
+
+            "Region":"655_655",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0",
+            "AG":"0.03",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0",
+            "TG":"0.03",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0",
+            "GG":"0.03",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0",
+            "CG":"0.03",
+            "CC":"0"
+        },
+
+        "Hotspot 183":{
+
+            "Region":"659_659",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0",
+            "AG":"0.03",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0",
+            "TG":"0.03",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0",
+            "GG":"0.03",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0",
+            "CG":"0.03",
+            "CC":"0"
+        },
+
+        "Hotspot 184":{
+
+            "Region":"660_660",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.3",
+            "AT":"0",
+            "AG":"0.7",
+            "AC":"0",
+            "TA":"0.3",
+            "TT":"0",
+            "TG":"0.7",
+            "TC":"0",
+            "GA":"0.3",
+            "GT":"0",
+            "GG":"0.7",
+            "GC":"0",
+            "CA":"0.3",
+            "CT":"0",
+            "CG":"0.7",
+            "CC":"0"
+        },
+
+        "Hotspot 185":{
+
+            "Region":"661_661",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.05",
+            "AG":"0",
+            "AC":"0.95",
+            "TA":"0",
+            "TT":"0.05",
+            "TG":"0",
+            "TC":"0.95",
+            "GA":"0",
+            "GT":"0.05",
+            "GG":"0",
+            "GC":"0.95",
+            "CA":"0",
+            "CT":"0.05",
+            "CG":"0",
+            "CC":"0.95"
+        },
+
+        "Hotspot 186":{
+
+            "Region":"662_662",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 187":{
+
+            "Region":"668_668",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0",
+            "AG":"0.03",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0",
+            "TG":"0.03",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0",
+            "GG":"0.03",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0",
+            "CG":"0.03",
+            "CC":"0"
+        },
+
+        "Hotspot 188":{
+
+            "Region":"669_669",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0.03",
+            "AG":"0",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0.03",
+            "TG":"0",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0.03",
+            "GG":"0",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0.03",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 189":{
+
+            "Region":"671_671",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"1",
+            "AT":"0",
+            "AG":"0",
+            "AC":"0",
+            "TA":"1",
+            "TT":"0",
+            "TG":"0",
+            "TC":"0",
+            "GA":"1",
+            "GT":"0",
+            "GG":"0",
+            "GC":"0",
+            "CA":"1",
+            "CT":"0",
+            "CG":"0",
+            "CC":"0"
+        },
+
+        "Hotspot 190":{
+
+            "Region":"672_672",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0.97",
+            "AT":"0",
+            "AG":"0.03",
+            "AC":"0",
+            "TA":"0.97",
+            "TT":"0",
+            "TG":"0.03",
+            "TC":"0",
+            "GA":"0.97",
+            "GT":"0",
+            "GG":"0.03",
+            "GC":"0",
+            "CA":"0.97",
+            "CT":"0",
+            "CG":"0.03",
+            "CC":"0"
+        },
+
+        "Hotspot 191":{
+
+            "Region":"675_675",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.3",
+            "AG":"0",
+            "AC":"0.7",
+            "TA":"0",
+            "TT":"0.3",
+            "TG":"0",
+            "TC":"0.7",
+            "GA":"0",
+            "GT":"0.3",
+            "GG":"0",
+            "GC":"0.7",
+            "CA":"0",
+            "CT":"0.3",
+            "CG":"0",
+            "CC":"0.7"
+        },
+
+        "Hotspot 192":{
+
+            "Region":"679_679",
+
+            "Clock model":"Poisson",
+            "Clock model Poisson mean":"0.33333",
+
+            "AA":"0",
+            "AT":"0.97",
+            "AG":"0",
+            "AC":"0.03",
+            "TA":"0",
+            "TT":"0.97",
+            "TG":"0",
+            "TC":"0.03",
+            "GA":"0",
+            "GT":"0.97",
+            "GG":"0",
+            "GC":"0.03",
+            "CA":"0",
+            "CT":"0.97",
+            "CG":"0",
+            "CC":"0.03"
+        },
+
+    },
