@@ -447,7 +447,7 @@ void hap_counter::ingress()
 
                                 // track_Seq = 0;
                             }
-                            exit(-1);
+                            // exit(-1);
                         }
                     }
                 }
