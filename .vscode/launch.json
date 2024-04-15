@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "--sitemodel2json",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/parameters_MASTER.json"
+                "--segmatch",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_HIV_full/parameters_MASTER.json"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

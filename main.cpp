@@ -28,6 +28,7 @@
 #include "bfs.cuh"
 #include "mutations_T_json.cuh"
 #include "pedigree2r.cuh"
+#include "segmatch.cuh"
 
 using namespace std;
 
@@ -103,6 +104,13 @@ int main(int argc, char *argv[])
 
           pedigree2r p2r = pedigree2r(parameter_MASTER_file);
           p2r.ingress();
+     }
+     else if (function == "--segmatch")
+     {
+          cout << "Finding sequences matching segregating sites\n\n";
+
+          segmatch segM = segmatch(parameter_MASTER_file);
+          segM.ingress();
      }
      else if (function == "--extract")
      {

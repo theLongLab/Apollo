@@ -5721,6 +5721,27 @@ string functions_library::clean_Line(string &line)
     return output_Line;
 }
 
+string functions_library::clean_Invisible(string line)
+{
+    string output_Line = "";
+
+    for (int i = 0; i < line.size(); i++)
+    {
+        char ch = line.at(i);
+        if (ch == '\t' || ch == '\r' || ch == '\n' || ch == '\v' ||
+            ch == '\f' || ch == '\b' || ch == '\a' || ch == '\0')
+        {
+            // Skip invisible characters
+        }
+        else
+        {
+            output_Line = output_Line + line[i];
+        }
+    }
+
+    return output_Line;
+}
+
 __global__ void cuda_Sequences_to_INT(int num_Sequences, int **sequence_INT, int genome_Length, char *sites)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;

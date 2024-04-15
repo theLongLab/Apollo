@@ -59,5 +59,8 @@
   "Convert file location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/Mutation_Site_model_HIV_Full.csv",
 
   # Convert pedigree folder to R format
-  "Pedigree folder location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/resultsHIV_2/node_Data/0_0/pedigree_Information/one"
+  "Pedigree folder location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/resultsHIV_2/node_Data/0_0/pedigree_Information/one",
+
+  "Segregating match tissue":"Plasma",
+  "Segregaring match cutoff":"0.50"
 }

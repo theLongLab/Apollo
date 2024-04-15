@@ -298,4 +298,6 @@ public:
 
     float date_to_Decimal(int year, int month, int day);
     void decimal_to_Date(float decimal_Date, int &year, int &month, int &day);
+
+    string clean_Invisible(string line);
 };

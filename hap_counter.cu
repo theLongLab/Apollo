@@ -185,7 +185,7 @@ void hap_counter::ingress()
                     if (filesystem::exists(intermediary_Sequence_location + "/" + to_string(index)))
                     {
                         string intermediary_Folder = intermediary_Sequence_location + "/" + to_string(index);
-                        cout << "Intermediary directory found: " << intermediary_Folder << endl;
+                        cout << "\nIntermediary directory found: " << intermediary_Folder << endl;
 
                         cout << "\nLoading Parent sequence data: ";
 
