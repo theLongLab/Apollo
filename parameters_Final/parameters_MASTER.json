@@ -61,6 +61,8 @@
   # Convert pedigree folder to R format
   "Pedigree folder location":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/resultsHIV_2/node_Data/0_0/pedigree_Information/one",
 
+  "Segregating match sequences":"/mnt/d/Deshan/Books/University of Calgary/Experiments/HIV Simulation/patient_14/Full_analysis/Clean_name/last_Gen/merged.fasta",
+  "Segregating match Node ID":"0_0",
   "Segregating match tissue":"Plasma",
-  "Segregaring match cutoff":"0.50"
+  "Segregating match cutoff":"0.96875"
 }

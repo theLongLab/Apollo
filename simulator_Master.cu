@@ -475,8 +475,13 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
     // exit(-1);
 
+    fstream time_Track;
+    functions.create_File(output_Folder_location + "/run_Time_track.csv", "Generation\tTime");
+    time_Track.open(output_Folder_location + "/run_Time_track.csv", ios::app);
+
     do
     {
+        auto start_Time = chrono::high_resolution_clock::now();
         // check dead and remove from infected
         cout << "\nDetermining removed/ dead and newly infectious hosts\n";
         vector<int> temp;
@@ -864,6 +869,14 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
 
             cout << "\nCompleted simulating hosts\n";
             decimal_Date = decimal_Date + date_Increment;
+
+            auto stop_Time = chrono::high_resolution_clock::now();
+
+            // Calculate the duration
+            auto duration_Time = chrono::duration_cast<chrono::milliseconds>(stop_Time - start_Time);
+
+            time_Track << to_string(overall_Generations) << "\t" << to_string(duration_Time.count()) << "\n";
+
             overall_Generations++;
             cout << "\nMoved generation forward\n";
 
@@ -1020,6 +1033,8 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
     } while (stop == 0);
 
     cout << "\nSimulation has concluded: ";
+
+    time_Track.close();
 
     functions.clear_Array_int_CPU(cell_Distribution_Type, number_of_node_Profiles);
 
