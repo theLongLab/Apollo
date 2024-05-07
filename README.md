@@ -21,11 +21,11 @@ Apollo is a stochastic evolutionary simulator for haploid viruses, designed to s
 
 #### How to INSTALL
 
-To install CATE you may have to compile the code using an nvcc compiler. If so execute the following on the terminal:
+To install Apollo you may have to compile the code using an nvcc compiler. If so execute the following on the terminal:
 
 Download the repository:
 ````
-git clone "https://github.com/theLongLab/CATE/"
+git clone "https://github.com/theLongLab/Apollo/"
 ````
 ````
 cd CATE/
@@ -37,6 +37,6 @@ module load cuda/11.3.0
 
 Finally, compile the project:
 ````
-nvcc -std=c++17 *.cu *.cpp -o "CATE"
+nvcc -std=c++17 *.cu *.cpp -o "Apollo"
 ````
 ---
