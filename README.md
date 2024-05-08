@@ -32,7 +32,7 @@ Download the repository:
 git clone "https://github.com/theLongLab/Apollo/"
 ````
 ````
-cd CATE/
+cd Apollo/
 ````
 *cuda 11.3.0 or higher*
 ````
