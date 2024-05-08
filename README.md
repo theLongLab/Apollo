@@ -44,3 +44,10 @@ Finally, compile the project:
 nvcc -std=c++17 *.cu *.cpp -o "Apollo"
 ````
 ---
+#### How to RUN
+
+Apollo is a command-line-based software that is currently under testing. After the configuration of the parameter files, it can be executed by running the executable and pointing to the location of the main parameter file.
+
+> Apollo --simulator parameter_file
+
+---
