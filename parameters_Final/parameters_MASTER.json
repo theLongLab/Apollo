@@ -43,7 +43,7 @@
   "Enable folder management":"Yes",
   "Compress folders":"No",
 
-  # Haplotype frequency and count extractor
+  # Haplotype retriever and count extractor
   # ALL for NODE ID to get the sequence haplotypes for all infected individual_Profiles
   # OR list the nodes seperated by a comma to get the haplotype frequency for those individuals
   "Haplotype Node IDs":"8_8",
