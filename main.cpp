@@ -24,6 +24,7 @@
 #include "extract_seq.cuh"
 
 #include "simulator_Master.cuh"
+#include "cancer.cuh"
 #include "hap_counter.cuh"
 #include "bfs.cuh"
 #include "mutations_T_json.cuh"
@@ -69,6 +70,13 @@ int main(int argc, char *argv[])
 
           simulator_Master simulator = simulator_Master(parameter_MASTER_file);
           simulator.ingress();
+     }
+     else if (function == "--cancer")
+     {
+          cout << "Simualting cancer migration\n\n";
+
+          cancer can_Sim = cancer(parameter_MASTER_file);
+          can_Sim.ingress();
      }
      else if (function == "--hapcounter")
      {
