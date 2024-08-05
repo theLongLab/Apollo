@@ -1,0 +1,81 @@
+{
+  # Contains all intial sequences
+  "Parent sequences folder":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/reference_Genomes",
+
+  "Mutation availability":"Yes",
+  "Proof reading availability":"Yes",
+
+  "Reference Fitness":"1",
+  "Reference Survivability":"0.5",
+  "Reference Proof Reading":"0.75",
+
+  "Mutations":{
+
+    "Number of hotspots":2,
+
+    "Hotspot 1":{
+
+      "Region":"100_2000",
+      # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
+      "Clock model":"Poisson",
+
+      "Clock model Poisson mean":"2",
+      "Clock model Negative Binomial sucesses":"10",
+      "Clock model Negative Binomial probability":"0.5",
+      "Clock model Fixed probability":"0.5",
+
+      "AA":"0.25",
+      "AG":"0.25",
+      "AT":"0.25",
+      "AC":"0.25",
+
+      "GA":"0.25",
+      "GG":"0.25",
+      "GT":"0.25",
+      "GC":"0.25",
+
+      "TT":"0.25",
+      "TC":"0.25",
+      "TA":"0.25",
+      "TG":"0.25",
+
+      "CT":"0.25",
+      "CC":"0.25",
+      "CA":"0.25",
+      "CG":"0.25"
+    },
+
+    "Hotspot 2":{
+
+      "Region":"10000_20000",
+      # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
+      "Clock model":"Negative Binomial",
+
+      "Clock model Poisson mean":"2",
+      "Clock model Negative Binomial sucesses":"10",
+      "Clock model Negative Binomial probability":"0.5",
+      "Clock model Fixed probability":"0.5",
+
+      "AA":"0.25",
+      "AG":"0.25",
+      "AT":"0.25",
+      "AC":"0.25",
+
+      "GA":"0.25",
+      "GG":"0.25",
+      "GT":"0.25",
+      "GC":"0.25",
+
+      "TT":"0.25",
+      "TC":"0.25",
+      "TA":"0.25",
+      "TG":"0.25",
+
+      "CT":"0.10",
+      "CC":"0.40",
+      "CA":"0.20",
+      "CG":"0.30"
+    },
+  },
+
+}

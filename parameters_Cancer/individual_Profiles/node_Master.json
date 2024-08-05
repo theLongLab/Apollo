@@ -1,0 +1,48 @@
+{
+  # In days the time taken for viral replication, from cell entry to progeny generation
+  "Shape replication time":"20.0",
+  "Scale replication time":"0.020",
+
+  # MITOSIS THERFORE BINARY FISSION
+
+  "Location of node profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/all_Profiles/profile_1.json",
+
+  "Tissue profiles":{
+
+    "Number of tissues":3,
+
+    "Tissue 1 Name":"Blood",
+    "Tissue 2 Name":"Lung",
+    "Tissue 3 Name":"Gut",
+
+    "Metastatic migration":"Yes",
+
+    "Cell migration":{
+
+      "1_2":{
+        "Start generation":2,
+        "Cell migration Binomial trials":100,
+        "Cell migration Binomial probability":"0.10",
+      },
+
+      "2_1":{
+        "Start generation":10,
+        "Cell migration Binomial trials":100,
+        "Cell migration Binomial probability":"0.10",
+      },
+
+      "2_3":{
+        "Start generation":10,
+        "Cell migration Binomial trials":50,
+        "Cell migration Binomial probability":"0.01",
+      },
+
+      "3_1":{
+        "Start generation":2,
+        "Cell migration Binomial trials":10,
+        "Cell migration Binomial probability":"0.9",
+      },
+
+    },
+  }
+}

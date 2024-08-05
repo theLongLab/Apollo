@@ -49,7 +49,7 @@ private:
     int max_Cells_at_a_time = 0;
 
     string start_Date;
-    string stop_after_generations = "NO";
+    // string stop_after_generations = "NO";
     string first_Infection = "Random";
 
     string node_Master_location;
@@ -68,8 +68,26 @@ private:
     int *tot_Blocks;
     int *tot_ThreadsperBlock;
 
+    string parent_Sequence_Folder;
+    float *Reference_fitness_survivability_proof_reading;
+    int *mutation_proof_Reading_availability;
+
+    int mutation_Hotspots = 0;
+
+    float **A_0_mutation;
+    float **T_1_mutation;
+    float **G_2_mutation;
+    float **C_3_mutation;
+
+    float **mutation_hotspot_parameters;
+
+    int num_tissues_per_Node = -1;
+
 public:
     cancer(string parameter_Master_Location);
 
     void ingress();
+
+    void node_Master_Manager(functions_library &functions);
+    void sequence_Master_Manager(functions_library &functions);
 };

@@ -27,10 +27,10 @@
   "End date":"2024-01-12",
 
   # Node profile parameter file location
-  "Nodes master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/node_Master.json",
+  "Nodes master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/node_Master.json",
 
   # Sequence profiles parameter file location
-  "Sequence master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/sequence_Profiles/sequence_Master.json",
+  "Sequence master profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/sequence_Master.json",
 
   # Folder management controls
   # Compresses folders to a TAR.GZ or reduces them to a single TAR file
