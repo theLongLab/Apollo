@@ -153,7 +153,9 @@ void cancer::ingress()
     cout << "STEP 1: Configuring node profile and within host mechanics\n\n";
     node_Master_Manager(functions);
 
-    cout << "STEP 1: Configuring sequence profiles\n\n";
+    // exit(-1);
+
+    cout << "STEP 2: Configuring sequence profiles\n\n";
     sequence_Master_Manager(functions);
 }
 
@@ -193,6 +195,7 @@ void cancer::node_Master_Manager(functions_library &functions)
     //     cout << Tissue_profiles_block_Data[i].first << " : " << Tissue_profiles_block_Data[i].second << endl;
     // }
 
+    cout << "\nConfiguring tissues:\n";
     num_tissues_per_Node = Parameters.get_INT(Tissue_profiles_block_Data, "Number of tissues");
 
     if (num_tissues_per_Node > 0)
@@ -213,9 +216,305 @@ void cancer::node_Master_Manager(functions_library &functions)
 
     cout << endl;
 
+    string viral_Terminal = Parameters.get_STRING(Tissue_profiles_block_Data, "Terminal load tissues");
+
+    vector<string> viral_tissue_Split;
+
+    functions.split(viral_tissue_Split, viral_Terminal, ',');
+    this->terminal_tissues = viral_tissue_Split.size();
+    this->terminal_array = (int *)malloc(terminal_tissues * sizeof(int));
+    cout << this->terminal_tissues << " tissue(s) determine node termination (death): ";
+    for (size_t i = 0; i < terminal_tissues; i++)
+    {
+        terminal_array[i] = stoi(viral_tissue_Split[i]) - 1;
+        cout << tissue_Names[terminal_array[i]];
+
+        if ((i + 1) != terminal_tissues)
+        {
+            cout << ", ";
+        }
+        else
+        {
+            cout << endl;
+        }
+    }
+
+    viral_Migration = Parameters.get_STRING(Tissue_profiles_block_Data, "Metastatic migration");
+    transform(viral_Migration.begin(), viral_Migration.end(), viral_Migration.begin(), ::toupper);
+
+    if (viral_Migration == "YES")
+    {
+        cout << "Metastatic migration: Activated\n";
+
+        viral_Migration_Values = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * (num_tissues_per_Node - 1), 2, -1);
+        migration_start_Generation = (int *)malloc(num_tissues_per_Node * (num_tissues_per_Node - 1) * sizeof(int));
+
+        for (int fill_mig = 0; fill_mig < num_tissues_per_Node * (num_tissues_per_Node - 1); fill_mig++)
+        {
+            migration_start_Generation[fill_mig] = -1;
+        }
+
+        vector<pair<string, string>> Viral_migration_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, "Cell migration");
+
+        cout << "Configuring tissue to tissue migrations:\n\n";
+
+        for (int migration_Check = 0; migration_Check < (num_tissues_per_Node * (num_tissues_per_Node - 1)); migration_Check++)
+        {
+            int source = migration_Check / (num_tissues_per_Node - 1);
+            int destination = migration_Check % (num_tissues_per_Node - 1);
+
+            if (destination >= source)
+            {
+                destination = destination + 1;
+            }
+
+            string check_source_destination = to_string(source + 1) + "_" + to_string(destination + 1);
+
+            vector<pair<string, string>> block_Migration = Parameters.check_block_from_block(Viral_migration_block_Data, check_source_destination);
+
+            if (block_Migration.size() > 0)
+            {
+                cout << "From " << tissue_Names[source] << " to " << tissue_Names[destination] << endl;
+                for (int i = 0; i < block_Migration.size(); i++)
+                {
+                    if (Parameters.get_STRING(block_Migration[i].first) == "Cell migration Binomial trials")
+                    {
+                        viral_Migration_Values[migration_Check][0] = Parameters.get_INT(block_Migration[i].second);
+                    }
+                    else if (Parameters.get_STRING(block_Migration[i].first) == "Cell migration Binomial probability")
+                    {
+                        viral_Migration_Values[migration_Check][1] = Parameters.get_FLOAT(block_Migration[i].second);
+                    }
+                    else if (Parameters.get_STRING(block_Migration[i].first) == "Start generation")
+                    {
+                        migration_start_Generation[migration_Check] = Parameters.get_INT(block_Migration[i].second);
+                    }
+                    else
+                    {
+                        cout << "ERROR INVALID ENTRY AT " << check_source_destination << endl;
+                        exit(-1);
+                    }
+                }
+                cout << "Migration start generation: " << migration_start_Generation[migration_Check] << endl;
+                cout << "Cell migration Binomial trials: " << viral_Migration_Values[migration_Check][0] << endl;
+                cout << "Cell migration Binomial probability: " << viral_Migration_Values[migration_Check][1] << endl;
+                cout << endl;
+                // exit(-1);
+            }
+        }
+    }
+    else
+    {
+        cout << "Viral migration: Does not occur\n";
+    }
+
+    // EXTRACT NODE PROFILE INFORMATION
+    cout << "\nExtracting host profile information\n";
+    parameters_List = {"\"Location of node profile\""};
+
+    found_Parameters = Parameters.get_parameters(node_Master_location, parameters_List);
+    parameters_List.clear();
+
+    string node_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+    cout << "Extracting profiles from: " << node_Profile_Location << endl
+         << endl;
+
+    if (filesystem::exists(node_Profile_Location))
+    {
+        cout << "Configuring profile:\n";
+
+        parameters_List = {"\"Profile name\""};
+
+        vector<string> profile_Parameters = Parameters.get_parameters(node_Profile_Location, parameters_List);
+
+        profile_Name = Parameters.get_STRING(profile_Parameters[0]);
+        cout << "Profile name: " << profile_Name << endl;
+
+        if (terminal_tissues > 0)
+        {
+            parameters_List = {"\"Terminal load distribution type\""};
+
+            terminal_load_Profiles_param = functions.create_Fill_2D_array_FLOAT(1, 3, -1);
+
+            vector<string> terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
+            transform(terminal_Tissue_distribution[0].begin(), terminal_Tissue_distribution[0].end(), terminal_Tissue_distribution[0].begin(), ::toupper);
+
+            cout << "\nTerminal viral load distribution: " << terminal_Tissue_distribution[0] << endl;
+
+            if (terminal_Tissue_distribution[0] == "\"BINOMIAL\"")
+            {
+                parameters_List = {"\"Terminal load Binomial trials\"",
+                                   "\"Terminal load Binomial probability\""};
+                terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
+
+                terminal_load_Profiles_param[0][0] = 0;
+                terminal_load_Profiles_param[0][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
+                terminal_load_Profiles_param[0][2] = Parameters.get_FLOAT(terminal_Tissue_distribution[1]);
+
+                cout << "Terminal load Binomial trials: " << terminal_load_Profiles_param[0][1] << endl;
+                cout << "Terminal load Binomial probability: " << terminal_load_Profiles_param[0][2] << endl;
+            }
+            else if (terminal_Tissue_distribution[0] == "\"FIXED\"")
+            {
+                parameters_List = {"\"Terminal load Fixed\""};
+                terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
+
+                terminal_load_Profiles_param[0][0] = -1;
+                terminal_load_Profiles_param[0][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
+
+                cout << "Terminal load Fixed: " << terminal_load_Profiles_param[0][1] << endl;
+            }
+            else
+            {
+                cout << "PROFILE ERROR TERMINAL TISSUE DISTRIBUTION SHOULD BE FIXED OR BINOMIAL.\n";
+                exit(-1);
+            }
+        }
+
+        cout << "\nCollecting tissue data\n";
+        vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Profile_Location, "Tissue profiles");
+
+        profile_tissue_Limits = (int *)malloc(sizeof(int) * num_tissues_per_Node);
+
+        for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+        {
+            vector<float> time_Ratios;
+            vector<string> phase_Type;
+            vector<pair<float, float>> phase_paramaters;
+
+            string get_Tissue = "Tissue " + to_string(tissue + 1);
+            cout << "Processing: " << get_Tissue << endl;
+
+            vector<pair<string, string>> current_tissue_Profile_block_Data = Parameters.get_block_from_block(Tissue_profiles_block_Data, get_Tissue);
+
+            string cell_Limit = Parameters.get_STRING(current_tissue_Profile_block_Data, "Cell limit");
+            transform(cell_Limit.begin(), cell_Limit.end(), cell_Limit.begin(), ::toupper);
+
+            cout << tissue_Names[tissue] << " tissue cell limit: ";
+
+            if (cell_Limit == "YES")
+            {
+                cout << "YES\n";
+                // profile_tissue_Limits[tissue] = 1;
+                // cout << functions.to_Upper_Case(Parameters.get_STRING(current_tissue_Profile_block_Data, "Cell limit")) << endl;
+
+                if (functions.to_Upper_Case(Parameters.get_STRING(current_tissue_Profile_block_Data, "Cell limit type")) == "BINOMIAL")
+                {
+                    cout << "Distribution type: BINOMIAL\n";
+                    int trials_Cell_count = Parameters.get_INT(current_tissue_Profile_block_Data, "Cell limit Binomial trials");
+                    float prob_Cell_count = Parameters.get_FLOAT(current_tissue_Profile_block_Data, "Cell limit Binomial probability");
+
+                    cout << "Cell limit Binomial trials: " << trials_Cell_count << endl
+                         << "Cell limit Binomial probability: " << prob_Cell_count << endl;
+
+                    binomial_distribution<int> distribution(trials_Cell_count, prob_Cell_count);
+                    profile_tissue_Limits[tissue] = distribution(gen);
+                }
+                else
+                {
+                    cout << "Distribution type: FIXED\n";
+                    profile_tissue_Limits[tissue] = Parameters.get_INT(current_tissue_Profile_block_Data, "Cell limit Fixed");
+                }
+
+                cout << "Max cell count: " << profile_tissue_Limits[tissue] << endl;
+            }
+            else
+            {
+                cout << " NO\n";
+                profile_tissue_Limits[tissue] = -1;
+            }
+
+            cout << endl;
+
+            cout << "Configuring Tissue " << tissue + 1 << " replication phases: \n";
+            vector<pair<string, string>> replication_Phases_Block = Parameters.get_block_from_block(current_tissue_Profile_block_Data, "Replication phases");
+            int num_Phases = Parameters.get_INT(replication_Phases_Block, "Number of phases");
+
+            if (num_Phases > 0)
+            {
+                replication_phases_tissues.push_back(num_Phases);
+                cout << "Number of phases: " << replication_phases_tissues[replication_phases_tissues.size() - 1] << endl;
+
+                float time_Check = 0;
+
+                for (int rep_Phase = 0; rep_Phase < num_Phases; rep_Phase++)
+                {
+                    string phase_keyword = "Phase " + to_string(rep_Phase + 1);
+                    string phase_Mode = phase_keyword + " Mode";
+                    string phase_Time_ratio = phase_keyword + " Time ratio";
+
+                    phase_Type.push_back(Parameters.get_STRING(replication_Phases_Block, phase_Mode));
+                    time_Ratios.push_back(Parameters.get_FLOAT(replication_Phases_Block, phase_Time_ratio));
+
+                    time_Check = time_Check + time_Ratios[time_Ratios.size() - 1];
+
+                    transform(phase_Type[phase_Type.size() - 1].begin(), phase_Type[phase_Type.size() - 1].end(), phase_Type[phase_Type.size() - 1].begin(), ::toupper);
+
+                    if (phase_Type[phase_Type.size() - 1] == "NEUTRAL")
+                    {
+                        phase_paramaters.push_back(make_pair(-1, -1));
+                    }
+                    else if (phase_Type[phase_Type.size() - 1] == "STATIONARY")
+                    {
+                        phase_paramaters.push_back(make_pair(Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Variance"), -1));
+                    }
+                    else if (phase_Type[phase_Type.size() - 1] == "DEPRICIATION")
+                    {
+                        phase_paramaters.push_back(make_pair(Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Alpha"), Parameters.get_FLOAT(replication_Phases_Block, phase_keyword + " Beta")));
+                    }
+                    else
+                    {
+                        cout << "ERROR  PROFILE TISSUE: " << tissue + 1 << "TISSUE REPLICATION MODE HAS TO BE ONE OF NEUTRAL, STATIONARY OT DEPRICIATION.\n";
+                        exit(-1);
+                    }
+
+                    cout << "\nPhase " << rep_Phase + 1 << ": \n";
+                    cout << "Mode: " << phase_Type[phase_Type.size() - 1] << endl;
+                    // CHECK TIME RATIO ADDITIONS
+                    cout << "Time ratio: " << time_Ratios[time_Ratios.size() - 1] << endl;
+
+                    if (phase_paramaters[phase_paramaters.size() - 1].first != -1 && phase_paramaters[phase_paramaters.size() - 1].second == -1)
+                    {
+                        cout << "Variance of Stationary: " << phase_paramaters[phase_paramaters.size() - 1].first << endl;
+                    }
+                    else if (phase_paramaters[phase_paramaters.size() - 1].first != -1 && phase_paramaters[phase_paramaters.size() - 1].second != -1)
+                    {
+                        cout << "Alpha of Depriciation: " << phase_paramaters[phase_paramaters.size() - 1].first;
+                        cout << " ; Beta of Depriciation: " << phase_paramaters[phase_paramaters.size() - 1].second << endl;
+                    }
+                }
+
+                cout << "\nPerforming time ratio check:";
+                if (time_Check != 1)
+                {
+                    cout << " FAILED\nERROR: TIME RATIOS MUST SUM UPTO 1, NOW THEY SUM UPTO: " << time_Check << endl;
+                    exit(-1);
+                }
+                else
+                {
+                    phase_Type_per_tissue.push_back(phase_Type);
+                    phase_paramaters_per_Tissue.push_back(phase_paramaters);
+                    time_Ratios_per_Tissue.push_back(time_Ratios);
+                    cout << " PASSED\n";
+                }
+            }
+            else
+            {
+                cout << "ERROR: PROFILE TISSUE: " << tissue + 1 << " CANNOT HAVE LESS THAN ONE PHASES." << endl;
+                exit(-1);
+            }
+        }
+    }
+    else
+    {
+        cout << "ERROR: PROFILE NOT FOUND, PLEASE CHECK LOCATION: " << node_Profile_Location << endl;
+        exit(-1);
+    }
+
+    cout << "\nCompleted host profile configuration\n";
     cout << endl;
 
-    exit(-1);
+    // exit(-1);
 }
 
 void cancer::sequence_Master_Manager(functions_library &functions)
@@ -226,7 +525,6 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     vector<string> parameters_List = {
         "\"Parent sequences folder\"",
         "\"Mutation availability\"",
-        "\"Recombination availability\"",
         "\"Reference Fitness\"",
         "\"Reference Survivability\""};
 
@@ -239,14 +537,14 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     Reference_fitness_survivability_proof_reading = (float *)malloc(sizeof(float) * 3);
 
     cout << "Reference Fitness: ";
-    Reference_fitness_survivability_proof_reading[0] = Parameters.get_FLOAT(found_Parameters[3]);
+    Reference_fitness_survivability_proof_reading[0] = Parameters.get_FLOAT(found_Parameters[2]);
     cout << Reference_fitness_survivability_proof_reading[0] << endl;
 
     cout << "Reference Survivability: ";
-    Reference_fitness_survivability_proof_reading[1] = Parameters.get_FLOAT(found_Parameters[4]);
+    Reference_fitness_survivability_proof_reading[1] = Parameters.get_FLOAT(found_Parameters[3]);
     cout << Reference_fitness_survivability_proof_reading[1] << endl;
 
-    mutation_proof_Reading_availability = (int *)malloc(sizeof(int) * 3);
+    mutation_proof_Reading_availability = (int *)malloc(sizeof(int) * 2);
     cout << "\nSequence mechanisms: \n";
 
     string status = Parameters.get_STRING(found_Parameters[1]);
@@ -404,4 +702,250 @@ void cancer::sequence_Master_Manager(functions_library &functions)
             cout << "No mutational hotspots present to configure.\n";
         }
     }
+
+    parameters_List = {
+        "\"Fitness profile file\"",
+        "\"Survivability profile file\""};
+
+    found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+
+    string fitness_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+    string survivability_Profile_Location = Parameters.get_STRING(found_Parameters[1]);
+
+    num_effect_Segregating_sites = (int *)malloc(sizeof(int) * 3);
+
+    if (fitness_Profile_Location != "NA")
+    {
+        sequence_Fitness_changes = Parameters.get_Profile_Array(fitness_Profile_Location, num_effect_Segregating_sites[0], functions);
+
+        cout << "Printing Fitness matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_Fitness_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No fitness profile\n\n";
+        num_effect_Segregating_sites[0] = 0;
+    }
+
+    if (survivability_Profile_Location != "NA")
+    {
+        sequence_Survivability_changes = Parameters.get_Profile_Array(survivability_Profile_Location, num_effect_Segregating_sites[1], functions);
+
+        cout << "Printing Survivability matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites[1]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_Survivability_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No survivability profile\n\n";
+        num_effect_Segregating_sites[1] = 0;
+    }
+
+    if (mutation_proof_Reading_availability[1] == 1)
+    {
+        parameters_List = {
+            "\"Proof reading profile file\""};
+
+        found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+        string proof_Reading_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+
+        if (proof_Reading_Profile_Location != "NA")
+        {
+            sequence_Proof_reading_changes = Parameters.get_Profile_Array(proof_Reading_Profile_Location, num_effect_Segregating_sites[2], functions);
+
+            cout << "Printing Proof reading matrix:\n";
+
+            for (int row = 0; row < num_effect_Segregating_sites[2]; row++)
+            {
+                for (int col = 0; col < 5; col++)
+                {
+                    cout << sequence_Proof_reading_changes[row][col] << "\t";
+                }
+                cout << endl;
+            }
+        }
+        else
+        {
+            cout << "No proof reading profile\n\n";
+            num_effect_Segregating_sites[2] = 0;
+        }
+    }
+    else
+    {
+        num_effect_Segregating_sites[2] = 0;
+    }
+
+    cout << "\nCancer parameters\n\n";
+
+    parameters_List = {
+        "\"Reference_replication_factor\"",
+        "\"Reference_mutation_rate_factor\"",
+        "\"Reference_generation_death_prob\"",
+        "\"Reference_replication_prob\"",
+        "\"Reference_metastatic_prob\""};
+
+    found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+
+    Reference_cancer_parameters = (float *)malloc(sizeof(float) * 5);
+
+    Reference_cancer_parameters[0] = Parameters.get_FLOAT(found_Parameters[0]);
+    cout << "Reference replication factor: " << Reference_cancer_parameters[0] << endl;
+
+    Reference_cancer_parameters[1] = Parameters.get_FLOAT(found_Parameters[1]);
+    cout << "Reference mutation rate factor: " << Reference_cancer_parameters[1] << endl;
+
+    Reference_cancer_parameters[2] = Parameters.get_FLOAT(found_Parameters[2]);
+    cout << "Reference generational death: " << Reference_cancer_parameters[2] << endl;
+
+    Reference_cancer_parameters[3] = Parameters.get_FLOAT(found_Parameters[3]);
+    cout << "Reference replication probability: " << Reference_cancer_parameters[3] << endl;
+
+    Reference_cancer_parameters[4] = Parameters.get_FLOAT(found_Parameters[4]);
+    cout << "Reference metastatic probability: " << Reference_cancer_parameters[4] << endl;
+
+    parameters_List = {
+        "\"Replication_factor profile file\"",
+        "\"Mutation_rate_factor profile file\"",
+        "\"Generation_death profile file\"",
+        "\"Replication_prob profile file\"",
+        "\"Reference_metastatic profile file\""};
+
+    found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
+
+    string Replication_factor_Profile_Location = Parameters.get_STRING(found_Parameters[0]);
+    string Mutation_rate_factor_Profile_Location = Parameters.get_STRING(found_Parameters[1]);
+    string Generation_death_Profile_Location = Parameters.get_STRING(found_Parameters[2]);
+    string Replication_prob_Profile_Location = Parameters.get_STRING(found_Parameters[3]);
+    string Reference_metastatic_Profile_Location = Parameters.get_STRING(found_Parameters[4]);
+
+    num_effect_Segregating_sites_Cancer = (int *)malloc(sizeof(int) * 5);
+
+    if (Replication_factor_Profile_Location != "NA")
+    {
+        sequence_replication_factor_changes = Parameters.get_Profile_Array(Replication_factor_Profile_Location, num_effect_Segregating_sites_Cancer[0], functions);
+
+        cout << "\nPrinting replication factor matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_replication_factor_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No replication factor profile\n\n";
+        num_effect_Segregating_sites_Cancer[0] = 0;
+    }
+
+    if (Mutation_rate_factor_Profile_Location != "NA")
+    {
+        sequence_mutation_rate_changes = Parameters.get_Profile_Array(Mutation_rate_factor_Profile_Location, num_effect_Segregating_sites_Cancer[1], functions);
+
+        cout << "Printing mutation rateF factor matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_mutation_rate_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No mutation rate factor profile\n\n";
+        num_effect_Segregating_sites_Cancer[0] = 0;
+    }
+
+    if (Generation_death_Profile_Location != "NA")
+    {
+        sequence_generation_death_changes = Parameters.get_Profile_Array(Generation_death_Profile_Location, num_effect_Segregating_sites_Cancer[2], functions);
+
+        cout << "Printing geerational death matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_generation_death_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No generational death profile\n\n";
+        num_effect_Segregating_sites_Cancer[0] = 0;
+    }
+
+    if (Replication_prob_Profile_Location != "NA")
+    {
+        sequence_replication_prob_changes = Parameters.get_Profile_Array(Replication_prob_Profile_Location, num_effect_Segregating_sites_Cancer[3], functions);
+
+        cout << "Printing replication probability matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_replication_prob_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No replication probability profile\n\n";
+        num_effect_Segregating_sites_Cancer[0] = 0;
+    }
+
+    if (Reference_metastatic_Profile_Location != "NA")
+    {
+        sequence_metastatic_prob_changes = Parameters.get_Profile_Array(Reference_metastatic_Profile_Location, num_effect_Segregating_sites_Cancer[4], functions);
+
+        cout << "Printing metastasis probability matrix:\n";
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        {
+            for (int col = 0; col < 5; col++)
+            {
+                cout << sequence_metastatic_prob_changes[row][col] << "\t";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No metastasis probability profile\n\n";
+        num_effect_Segregating_sites_Cancer[0] = 0;
+    }
+
+    cout << "\nCompleted sequence configuration\n";
 }

@@ -81,7 +81,54 @@ private:
 
     float **mutation_hotspot_parameters;
 
-    int num_tissues_per_Node = -1;
+    int num_tissues_per_Node = 0;
+    vector<string> tissue_Names;
+
+    int terminal_tissues = 0;
+    int *terminal_array;
+
+    string viral_Migration = "No";
+    float **viral_Migration_Values;
+    int *migration_start_Generation;
+
+    string profile_Name = "";
+
+    float **terminal_load_Profiles_param;
+
+    // column 0 = Yes = 1, NO =0;
+    // column 1 = trials
+    // column 2 = prob
+    int *profile_tissue_Limits;
+
+    vector<int> replication_phases_tissues;
+    vector<vector<float>> time_Ratios_per_Tissue;
+    vector<vector<string>> phase_Type_per_tissue;
+    vector<vector<pair<float, float>>> phase_paramaters_per_Tissue;
+
+    // columns
+    // 0 = position-1;
+    // 1 = A
+    // 2 = T
+    // 3 = G
+    // 4 = C
+    float **sequence_Fitness_changes;
+    float **sequence_Survivability_changes;
+    float **sequence_Proof_reading_changes;
+
+    float **sequence_replication_factor_changes;
+    float **sequence_mutation_rate_changes;
+    float **sequence_generation_death_changes;
+    float **sequence_replication_prob_changes;
+    float **sequence_metastatic_prob_changes;
+
+    float *Reference_cancer_parameters;
+
+    // 0 = fitness
+    // 1 = survivability
+    // 2 = proof reading
+    int *num_effect_Segregating_sites;
+
+    int *num_effect_Segregating_sites_Cancer;
 
 public:
     cancer(string parameter_Master_Location);

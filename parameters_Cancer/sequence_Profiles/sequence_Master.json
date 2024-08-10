@@ -5,6 +5,25 @@
   "Mutation availability":"Yes",
   "Proof reading availability":"Yes",
 
+  # IF LOCATIONS EQUAL NA THEN NO PROFILES WILL BE CREATED
+  "Fitness profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/sequence_Fitness_Profile.csv",
+  "Survivability profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/sequence_Survivability_Profile.csv",
+
+  "Proof reading availability":"Yes",
+  "Proof reading profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/sequence_Proof_Reading_Profile.csv",
+
+  "Reference_replication_factor":"1",
+  "Reference_mutation_rate_factor":"1",
+  "Reference_generation_death_prob":"1",
+  "Reference_replication_prob":"1",
+  "Reference_metastatic_prob":"0",
+
+  "Replication_factor profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_replication_factor.csv",
+  "Mutation_rate_factor profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_mutation_rate_factor.csv",
+  "Generation_death profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_generation_death_prob.csv",
+  "Replication_prob profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_replication_prob.csv",
+  "Reference_metastatic profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_metastatic_prob.csv",
+
   "Reference Fitness":"1",
   "Reference Survivability":"0.5",
   "Reference Proof Reading":"0.75",

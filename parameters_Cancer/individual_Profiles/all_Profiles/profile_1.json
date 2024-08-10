@@ -10,6 +10,7 @@
 
     "Tissue 1":{
       "Cell limit":"YES",
+      "Cell limit type":"Binomial",
       "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.50",
 
@@ -42,7 +43,9 @@
     },
 
     "Tissue 3":{
-      "Cell limit":"NO",
+      "Cell limit":"Yes",
+      "Cell limit type":"FIXED",
+      "Cell limit Fixed":100000,
       "Cell limit Binomial trials":100000,
       "Cell limit Binomial probability":"0.10",
 

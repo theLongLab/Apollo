@@ -5,7 +5,7 @@
 
   # MITOSIS THERFORE BINARY FISSION
 
-  "Location of node profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Final/individual_Profiles/all_Profiles/profile_1.json",
+  "Location of node profile":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_Profiles/profile_1.json",
 
   "Tissue profiles":{
 
@@ -14,6 +14,8 @@
     "Tissue 1 Name":"Blood",
     "Tissue 2 Name":"Lung",
     "Tissue 3 Name":"Gut",
+
+    "Terminal load tissues":"1,2,3",
 
     "Metastatic migration":"Yes",
 
