@@ -1,5 +1,7 @@
 #include "simulator_Master.cuh"
 
+simulator_Master::simulator_Master() {}
+
 simulator_Master::simulator_Master(string parameter_Master_Location)
 {
     cout << "Intializing Simulator (based on CATE's architecture)\n";
@@ -960,7 +962,7 @@ void simulator_Master::apollo(functions_library &functions, vector<node_within_h
                             }
                         }
                     }
-                    
+
                     if (success_Sampling == 1)
                     {
                         count_Sampling_instances++;

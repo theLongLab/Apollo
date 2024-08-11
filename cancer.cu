@@ -33,6 +33,7 @@ cancer::cancer(string parameter_Master_Location)
 
     max_sequences_per_File = Parameters.get_INT(found_Parameters[7]);
     max_Cells_at_a_time = Parameters.get_INT(found_Parameters[8]);
+    gpu_Limit = max_Cells_at_a_time;
     start_Date = Parameters.get_STRING(found_Parameters[9]);
     first_Infection = function.to_Upper_Case(Parameters.get_STRING(found_Parameters[11]));
 
@@ -153,10 +154,304 @@ void cancer::ingress()
     cout << "STEP 1: Configuring node profile and within host mechanics\n\n";
     node_Master_Manager(functions);
 
-    // exit(-1);
-
     cout << "STEP 2: Configuring sequence profiles\n\n";
     sequence_Master_Manager(functions);
+
+    cout << "\nSTEP 3: Configuring parent sequences\n\n";
+    vector<int> tissue_Sequence_Count;
+    vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
+    write_Reference_Sequences(collect_Sequences, tissue_Sequence_Count, functions);
+
+    cout << "STEP 3: Configuring infection temporal data\n\n";
+    cout << "Configuring infection start date: " << start_Date << endl;
+
+    vector<string> split_Date;
+    functions.split(split_Date, start_Date, '-');
+
+    float decimal_Date = functions.date_to_Decimal(stoi(split_Date[0]), stoi(split_Date[1]), stoi(split_Date[2]));
+    float date_Increment = generation_Time / (float)365.25;
+
+    cout << "Decimal date: " << decimal_Date << endl;
+    cout << "Date increment by generation: " << date_Increment << endl;
+
+    cancer_Host host = cancer_Host();
+}
+
+void cancer::write_Reference_Sequences(vector<string> &collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions)
+{
+    int total_Sequences = collect_Sequences.size();
+
+    cout << "\nProcessing " << total_Sequences << " collected sequence(s)\n";
+
+    intermediary_Sequence_location = intermediate_Folder_location + "/sequence_Data";
+    functions.config_Folder(intermediary_Sequence_location, "Intermediary sequence data");
+
+    intermediary_Index_location = intermediate_Folder_location + "/index_Data";
+    functions.config_Folder(intermediary_Index_location, "Node index data");
+
+    reference_Sequences = intermediary_Sequence_location + "/reference_Sequences";
+    functions.config_Folder(reference_Sequences, "Converted reference sequence(s)");
+
+    if (first_Infection == "RANDOM")
+    {
+        int full_Rounds = total_Sequences / this->gpu_Limit;
+        int partial_Rounds = total_Sequences % this->gpu_Limit;
+
+        vector<pair<int, int>> start_stops;
+
+        for (int full = 0; full < full_Rounds; full++)
+        {
+            int start = full * this->gpu_Limit;
+            int stop = start + this->gpu_Limit;
+            start_stops.push_back(make_pair(start, stop));
+        }
+
+        if (partial_Rounds != 0)
+        {
+            int start = total_Sequences - partial_Rounds;
+            start_stops.push_back(make_pair(start, total_Sequences));
+        }
+
+        vector<string> sequence_Write_Store_All;
+        int last_seq_Num = 0;
+
+        vector<char> seq_Status;
+
+        for (int round = 0; round < start_stops.size(); round++)
+        {
+            cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
+
+            int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
+            // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
+
+            int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, num_of_Sequences_current);
+
+            vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
+
+            functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+
+            functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
+                                                  max_sequences_per_File, reference_Sequences, last_seq_Num, seq_Status);
+
+            // for (int row = 0; row < num_of_Sequences_current; row++)
+            // {
+            //     for (size_t c = 0; c < genome_Length; c++)
+            //     {
+            //         cout << sequence[row][c];
+            //     }
+            //     cout << "\n\n";
+            // }
+
+            // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+        }
+
+        functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num, seq_Status);
+        collect_Sequences.clear();
+    }
+    else
+    {
+        vector<vector<string>> collect_Sequences_Tissue;
+        for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
+        {
+            vector<string> tissue_Sequences;
+            for (int start = tissue_Sequence_Count[tissue]; start < tissue_Sequence_Count[tissue + 1]; start++)
+            {
+                tissue_Sequences.push_back(collect_Sequences[start]);
+            }
+            collect_Sequences_Tissue.push_back(tissue_Sequences);
+        }
+        collect_Sequences.clear();
+        tissue_Sequence_Count.clear();
+
+        for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
+        {
+            cout << "\nConverting sequences of tissue: " << tissue_Names[tissue] << endl;
+
+            string reference_Sequences_Tissue = reference_Sequences + "/" + tissue_Names[tissue];
+            functions.config_Folder(reference_Sequences_Tissue, tissue_Names[tissue] + " converted reference sequence(s)");
+
+            int full_Rounds = collect_Sequences_Tissue[tissue].size() / this->gpu_Limit;
+            int partial_Rounds = collect_Sequences_Tissue[tissue].size() % this->gpu_Limit;
+
+            vector<pair<int, int>> start_stops;
+
+            for (int full = 0; full < full_Rounds; full++)
+            {
+                int start = full * this->gpu_Limit;
+                int stop = start + this->gpu_Limit;
+                start_stops.push_back(make_pair(start, stop));
+            }
+
+            if (partial_Rounds != 0)
+            {
+                int start = collect_Sequences_Tissue[tissue].size() - partial_Rounds;
+                start_stops.push_back(make_pair(start, collect_Sequences_Tissue[tissue].size()));
+            }
+
+            vector<string> sequence_Write_Store_All;
+            int last_seq_Num = 0;
+
+            vector<char> seq_Status;
+
+            for (int round = 0; round < start_stops.size(); round++)
+            {
+                cout << "\nExecuting " << round + 1 << " of " << start_stops.size() << " rounds\n";
+
+                int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
+                // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
+
+                int **sequences = functions.process_Reference_Sequences(collect_Sequences_Tissue[tissue], genome_Length, num_of_Sequences_current);
+
+                vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
+
+                functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+
+                functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
+                                                      max_sequences_per_File, reference_Sequences_Tissue, last_seq_Num, seq_Status);
+            }
+            functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences_Tissue, last_seq_Num, seq_Status);
+        }
+    }
+
+    cout << endl;
+}
+
+vector<string> cancer::read_Reference_Sequences(vector<int> &tissue_Sequence_Count)
+{
+    // parent_Sequence_Folder
+    cout << "Reading parent sequence folder: " << parent_Sequence_Folder << endl;
+
+    if (filesystem::exists(parent_Sequence_Folder) && filesystem::is_directory(parent_Sequence_Folder))
+    {
+        simulator_Master sim_Mas = simulator_Master();
+
+        if (first_Infection == "RANDOM")
+        {
+            vector<string> sequences_Paths;
+            for (const auto &entry : filesystem::directory_iterator(parent_Sequence_Folder))
+            {
+                if (filesystem::is_regular_file(entry))
+                {
+                    string check_Extenstion = entry.path().extension();
+                    if (check_Extenstion == ".fasta" || check_Extenstion == ".fa" || check_Extenstion == ".nfa" || check_Extenstion == ".nfasta")
+                    {
+                        // cout << "Found sequence: " << entry.path() << endl;
+                        sequences_Paths.push_back(entry.path().string());
+                        // cout << "Found sequence: " << sequences_Paths[sequences_Paths.size() - 1] << endl;
+                    }
+                }
+            }
+
+            if (sequences_Paths.size() > 0)
+            {
+
+                cout << "Identified " << sequences_Paths.size() << " parent sequence file(s)\n\n";
+
+                vector<string> collect_Sequences = sim_Mas.read_Reference_Sequence_Files(sequences_Paths);
+                if (collect_Sequences.size() > 0)
+                {
+                    cout << "\nIdentified " << collect_Sequences.size() << " parent sequences\n";
+
+                    cout << "Validating collected parent sequences\n";
+                    genome_Length = collect_Sequences[0].size();
+
+                    for (int genome = 1; genome < collect_Sequences.size(); genome++)
+                    {
+                        if (collect_Sequences[genome].size() != genome_Length)
+                        {
+                            cout << "ERROR ALL GENOMES MUST BE OF EQUAL LENGTH\n";
+                            exit(-1);
+                        }
+                    }
+                    cout << "All sequences are of valid lenth: " << genome_Length << endl;
+                    return collect_Sequences;
+                }
+                else
+                {
+                    cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCES.\n";
+                    exit(-1);
+                }
+            }
+            else
+            {
+                cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCE FILES.\n";
+                exit(-1);
+            }
+        }
+        else
+        {
+            tissue_Sequence_Count.push_back(0);
+            vector<string> collect_Sequences_Full;
+            for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
+            {
+                vector<string> sequences_Paths;
+                vector<string> collect_Sequences;
+
+                if (filesystem::exists(parent_Sequence_Folder + "/" + tissue_Names[tissue]) && filesystem::is_directory(parent_Sequence_Folder + "/" + tissue_Names[tissue]))
+                {
+                    cout << "\nReading reference tissue: " << tissue_Names[tissue] << endl;
+                    for (const auto &entry : filesystem::directory_iterator(parent_Sequence_Folder + "/" + tissue_Names[tissue]))
+                    {
+                        if (filesystem::is_regular_file(entry))
+                        {
+                            string check_Extenstion = entry.path().extension();
+                            if (check_Extenstion == ".fasta" || check_Extenstion == ".fa" || check_Extenstion == ".nfa" || check_Extenstion == ".nfasta")
+                            {
+                                // cout << "Found sequence: " << entry.path() << endl;
+                                sequences_Paths.push_back(entry.path().string());
+                                // cout << "Found sequence: " << sequences_Paths[sequences_Paths.size() - 1] << endl;
+                            }
+                        }
+                    }
+                    if (sequences_Paths.size() > 0)
+                    {
+                        cout << "Identified " << sequences_Paths.size() << " parent sequence file(s)\n\n";
+                        collect_Sequences = sim_Mas.read_Reference_Sequence_Files(sequences_Paths);
+
+                        if (collect_Sequences.size() > 0)
+                        {
+                            cout << "\nIdentified " << collect_Sequences.size() << " parent sequences\n";
+                            cout << "Validating collected parent sequences\n";
+                            if (genome_Length == 0)
+                            {
+                                genome_Length = collect_Sequences[0].size();
+                            }
+                            for (int genome = 0; genome < collect_Sequences.size(); genome++)
+                            {
+                                if (collect_Sequences[genome].size() != genome_Length)
+                                {
+                                    cout << "ERROR ALL GENOMES MUST BE OF EQUAL LENGTH\n";
+                                    exit(-1);
+                                }
+                                else
+                                {
+                                    collect_Sequences_Full.push_back(collect_Sequences[genome]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCES.\n";
+                            exit(-1);
+                        }
+                    }
+                    else
+                    {
+                        cout << "ERROR: THERE SHOULD BE MORE THAN ZERO PARENT SEQUENCE FILES.\n";
+                        exit(-1);
+                    }
+                }
+                tissue_Sequence_Count.push_back(collect_Sequences_Full.size());
+            }
+            cout << "\nAll sequences are of valid lenth: " << genome_Length << endl;
+            return collect_Sequences_Full;
+        }
+    }
+    else
+    {
+        cout << "ERROR: PARENT SEQUENCE FOLDER DOES NOT EXIST AT THE GIVEN PATH: " << parent_Sequence_Folder << endl;
+        exit(-1);
+    }
 }
 
 void cancer::node_Master_Manager(functions_library &functions)
@@ -175,7 +470,7 @@ void cancer::node_Master_Manager(functions_library &functions)
     mt19937 gen(rd());
 
     gamma_distribution<float> generation_Time_dis(Parameters.get_FLOAT(found_Parameters[0]), Parameters.get_FLOAT(found_Parameters[1]));
-    float generation_Time = generation_Time_dis(gen);
+    generation_Time = generation_Time_dis(gen);
 
     if (generation_Time > 0)
     {
@@ -863,7 +1158,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     {
         sequence_mutation_rate_changes = Parameters.get_Profile_Array(Mutation_rate_factor_Profile_Location, num_effect_Segregating_sites_Cancer[1], functions);
 
-        cout << "Printing mutation rateF factor matrix:\n";
+        cout << "Printing mutation rate factor matrix:\n";
 
         for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
         {

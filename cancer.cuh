@@ -3,6 +3,8 @@
 
 #include "functions_library.cuh"
 #include "parameter_load.h"
+#include "cancer_Host.cuh"
+#include "simulator_Master.cuh"
 
 #include <cstdlib>
 
@@ -58,6 +60,8 @@ private:
     int stop_gen_Mode = 0;
     int stop_generations_Count = 0;
     float stop_Date = 0;
+
+    float generation_Time = 0;
 
     int CPU_cores;
     string multi_Read;
@@ -130,6 +134,12 @@ private:
 
     int *num_effect_Segregating_sites_Cancer;
 
+    int genome_Length = 0;
+
+    string intermediary_Sequence_location;
+    string intermediary_Index_location;
+    string reference_Sequences;
+
 public:
     cancer(string parameter_Master_Location);
 
@@ -137,4 +147,7 @@ public:
 
     void node_Master_Manager(functions_library &functions);
     void sequence_Master_Manager(functions_library &functions);
+
+    vector<string> read_Reference_Sequences(vector<int> &tissue_Sequence_Count);
+    void write_Reference_Sequences(vector<string> &collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions);
 };
