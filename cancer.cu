@@ -30,6 +30,8 @@ cancer::cancer(string parameter_Master_Location)
 
     function.config_Folder(intermediate_Folder_location, "Intermediate");
     function.config_Folder(output_Folder_location, "Output");
+    output_Node_location = this->output_Folder_location + "/node_Data";
+    function.config_Folder(output_Node_location, "Node");
 
     max_sequences_per_File = Parameters.get_INT(found_Parameters[7]);
     max_Cells_at_a_time = Parameters.get_INT(found_Parameters[8]);
@@ -159,10 +161,10 @@ void cancer::ingress()
 
     cout << "\nSTEP 3: Configuring parent sequences\n\n";
     vector<int> tissue_Sequence_Count;
-    vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
-    write_Reference_Sequences(collect_Sequences, tissue_Sequence_Count, functions);
+    // vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
+    write_Reference_Sequences(read_Reference_Sequences(tissue_Sequence_Count), tissue_Sequence_Count, functions);
 
-    cout << "STEP 3: Configuring infection temporal data\n\n";
+    cout << "STEP 4: Configuring infection temporal data\n\n";
     cout << "Configuring infection start date: " << start_Date << endl;
 
     vector<string> split_Date;
@@ -174,10 +176,19 @@ void cancer::ingress()
     cout << "Decimal date: " << decimal_Date << endl;
     cout << "Date increment by generation: " << date_Increment << endl;
 
+    int overall_Generation = 0;
+
     cancer_Host host = cancer_Host();
+
+    host.initialize(functions,
+                    tissue_Names,
+                    intermediary_Sequence_location, first_Infection,
+                    overall_Generation,
+                    output_Node_location,
+                    max_sequences_per_File);
 }
 
-void cancer::write_Reference_Sequences(vector<string> &collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions)
+void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions)
 {
     int total_Sequences = collect_Sequences.size();
 

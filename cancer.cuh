@@ -43,6 +43,7 @@ private:
 
     string output_Folder_location;
     string intermediate_Folder_location;
+    string output_Node_location;
 
     string enable_Folder_management = "NO";
     string enable_Compression = "NO";
@@ -99,9 +100,8 @@ private:
 
     float **terminal_load_Profiles_param;
 
-    // column 0 = Yes = 1, NO =0;
-    // column 1 = trials
-    // column 2 = prob
+    // per tissue number of cells;
+    // Inactive = -1;
     int *profile_tissue_Limits;
 
     vector<int> replication_phases_tissues;
@@ -149,5 +149,5 @@ public:
     void sequence_Master_Manager(functions_library &functions);
 
     vector<string> read_Reference_Sequences(vector<int> &tissue_Sequence_Count);
-    void write_Reference_Sequences(vector<string> &collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions);
+    void write_Reference_Sequences(vector<string> collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions);
 };
