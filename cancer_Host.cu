@@ -2,7 +2,255 @@
 
 cancer_Host::cancer_Host()
 {
-    cout << "\nCancer host intialization\n";
+    cout << "\nSTEP 5: Cancer host intialization\n";
+}
+
+void cancer_Host::simulate_Generations(functions_library &functions,
+                                       int &overall_Generations, float &date_Increment,
+                                       int &stop_Type,
+                                       int &stop_gen_Mode,
+                                       int &stop_generations_Count, float &decimal_Date, float &stop_Date,
+                                       vector<string> &tissue_Names,
+                                       int &terminal_tissues, int *terminal_array,
+                                       string source_sequence_Data_folder,
+                                       string &enable_Folder_management, string &enable_Compression,
+                                       int &terminal_Load,
+                                       string &output_Node_location,
+                                       vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue)
+{
+    cout << "\nSTEP 6: Conducting simulation\n";
+
+    // this->terminal_Load = terminal_Load;
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    string generational_Summary = output_Node_location + "/cancer_Host/node_generational_Summary.csv";
+    functions.create_File(generational_Summary, "overall_Generation\tTissue\tnum_Parents\tnum_Progeny\tdead_Progeny");
+
+    string sequence_Profiles = output_Node_location + "/cancer_Host/sequence_Profiles.csv";
+    string sequence_parent_Progeny_relationships = output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv";
+
+    do
+    {
+        cout << "Calculating actual particles in each tissue: \n";
+        ////clear array
+        int *real_Particle_count_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
+        int sum_Check = 0;
+        for (int tissue = 0; tissue < num_Tissues; tissue++)
+        {
+            real_Particle_count_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size() - dead_Particle_count[tissue];
+            cout << tissue_Names[tissue] << " tissue: " << real_Particle_count_per_Tissue[tissue] << endl;
+            sum_Check = sum_Check + real_Particle_count_per_Tissue[tissue];
+        }
+
+        if (sum_Check > 0)
+        {
+            if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder, enable_Folder_management, enable_Compression, terminal_Load) != 1)
+            {
+                for (int tissue = 0; tissue < num_Tissues; tissue++)
+                {
+                    if (real_Particle_count_per_Tissue[tissue] > 0)
+                    {
+                        cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
+                             << endl;
+
+                        cout << "Identifying indexes to remove\n";
+                        set<int> check_to_Remove;
+
+                        if (dead_Particle_count[tissue] > 0)
+                        {
+                            cout << "\nIdentifying dead viral indexe(s)\n";
+                            // indexes_of_Dead = (int *)malloc(sizeof(int) * dead_Particle_count[tissue]);
+
+                            fstream dead_File;
+                            dead_File.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt");
+                            if (dead_File.is_open())
+                            {
+                                string line;
+                                // int index = 0;
+                                while (getline(dead_File, line))
+                                {
+                                    check_to_Remove.insert(stoi(line));
+                                    // index++;
+                                }
+                                dead_File.close();
+                            }
+                            else
+                            {
+                                cout << "ERROR: UNABLE TO OPEN DEAD LIST FILE: " << source_sequence_Data_folder << "/" << tissue << "/generation_" << overall_Generations << "/dead_List.txt" << endl;
+                                exit(-1);
+                            }
+                        }
+
+                        if (removed_by_Transfer_Indexes[tissue].size() > 0)
+                        {
+                            cout << "Identifying transferred viral indexe(s)\n";
+                            for (auto it = removed_by_Transfer_Indexes[tissue].begin(); it != removed_by_Transfer_Indexes[tissue].end(); ++it)
+                            {
+                                int value = *it; // Dereference the iterator to get the value
+                                check_to_Remove.insert(value);
+                            }
+                        }
+
+                        float variable_1, variable_2;
+                        string generation_Type = get_generation_Phase(overall_Generations,
+                                                                      time_Ratios_per_Tissue[tissue],
+                                                                      phase_Type_per_tissue[tissue],
+                                                                      phase_paramaters_per_Tissue[tissue],
+                                                                      variable_1, variable_2);
+                    }
+                }
+            }
+            else
+            {
+                stop_gen_Mode = 5;
+            }
+        }
+        else
+        {
+            stop_gen_Mode = 4;
+        }
+
+        decimal_Date = decimal_Date + date_Increment;
+        overall_Generations++;
+
+        cout << "\nCompleted generation " << overall_Generations << " of time: " << decimal_Date << endl;
+
+        if (stop_gen_Mode == 0)
+        {
+            if (overall_Generations >= stop_generations_Count)
+            {
+                stop_Type = 2;
+            }
+        }
+        else
+        {
+            if (decimal_Date >= stop_Date)
+            {
+                stop_Type = 3;
+            }
+        }
+
+    } while (stop_Type == 0);
+
+    cout << "\nSimulation has concluded: ";
+}
+
+string cancer_Host::get_generation_Phase(int &overall_Generations,
+                                         vector<float> time_Generation,
+                                         vector<string> phase_Type,
+                                         vector<pair<float, float>> phase_paramaters,
+                                         float &variable_1, float &variable_2)
+{
+    cout << "\nGetting current tissue generation phase\n";
+
+    int index = -1;
+    if (time_Generation[0] > overall_Generations)
+    {
+        index = 0;
+    }
+    else if (time_Generation[time_Generation.size() - 1] <= overall_Generations)
+    {
+        index = time_Generation.size() - 1;
+    }
+    else
+    {
+        for (int get_Index = 1; get_Index < time_Generation.size(); get_Index++)
+        {
+            if (overall_Generations >= time_Generation[get_Index - 1] && overall_Generations < time_Generation[get_Index])
+            {
+                index = get_Index;
+                break;
+            }
+        }
+    }
+
+    if (index != -1)
+    {
+
+        cout << "Phase: " << phase_Type[index] << endl
+             << endl;
+
+        variable_1 = phase_paramaters[index].first;
+        variable_2 = phase_paramaters[index].second;
+
+        return phase_Type[index];
+    }
+    else
+    {
+        cout << "\nERROR: Generation not found\n";
+        exit(-1);
+    }
+}
+
+int cancer_Host::terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
+                                 string &enable_Folder_management, string &enable_Compression, int &terminal_Load)
+{
+
+    if (get_Load(num_tissues, tissue_array) >= terminal_Load)
+    {
+        if (enable_Folder_management == "YES")
+        {
+            compress_Folder(source_sequence_Data_folder, enable_Compression);
+        }
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void cancer_Host::compress_Folder(string path, string &enable_Compression)
+{
+    if (filesystem::exists(path))
+    {
+        cout << "\nCompressing folder: " << path << endl;
+
+        string tar_Folder;
+        string command_Tar;
+
+        if (enable_Compression == "YES")
+        {
+            tar_Folder = path + ".tar.gz";
+            command_Tar = "tar -czf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
+        else
+        {
+            tar_Folder = path + ".tar";
+            command_Tar = "tar -cf " + tar_Folder + " " + path + " && rm -R " + path;
+        }
+
+        int result = system(command_Tar.c_str());
+
+        if (result == 0)
+        {
+            cout << "Compression successful" << endl;
+        }
+        else
+        {
+            cout << "Failed to compress the folder: " << path << endl;
+            exit(-1);
+        }
+    }
+    else
+    {
+        cout << "COMPRESSION ERROR: UNABLE TO FIND THE FOLDER: " << path << endl;
+        exit(-1);
+    }
+}
+
+int cancer_Host::get_Load(int &num_tissues_Calc, int *tissue_array)
+{
+    int sum = 0;
+
+    for (int tissue = 0; tissue < num_tissues_Calc; tissue++)
+    {
+        sum = sum + (current_cell_load_per_Tissue[tissue_array[tissue]] - dead_Particle_count[tissue_array[tissue]] - removed_by_Transfer_Indexes[tissue_array[tissue]].size());
+    }
+
+    return sum;
 }
 
 void cancer_Host::initialize(functions_library &functions,
@@ -94,7 +342,7 @@ void cancer_Host::initialize(functions_library &functions,
         for (int sequence = 0; sequence < Sequences.size(); sequence++)
         {
             int tissue_Index = entry_Tissue_select(gen);
-            cout << "Sequence " << sequence + 1 << " infects tissue: " << tissue_Index << endl;
+            cout << "Sequence " << sequence + 1 << " infects " << tissue_Names[tissue_Index] << " tissue of index: " << tissue_Index << endl;
             tissue_Sequences[tissue_Index].push_back(Sequences[sequence]);
         }
 
@@ -259,9 +507,9 @@ void cancer_Host::sequence_Write_Configurator(vector<string> &sequence_Write_Sto
 }
 
 void cancer_Host::partial_Write_Check(vector<string> &sequence_Write_Store_All,
-                                            const string &folder_Location, int &last_seq_Num,
-                                            vector<char> &seq_Status,
-                                            string sequence_Profiles_Location, string tissue, int current_Generation)
+                                      const string &folder_Location, int &last_seq_Num,
+                                      vector<char> &seq_Status,
+                                      string sequence_Profiles_Location, string tissue, int current_Generation)
 {
     if (sequence_Write_Store_All.size() > 0)
     {

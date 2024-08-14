@@ -165,6 +165,7 @@ void cancer::ingress()
     write_Reference_Sequences(read_Reference_Sequences(tissue_Sequence_Count), tissue_Sequence_Count, functions);
 
     cout << "STEP 4: Configuring infection temporal data\n\n";
+
     cout << "Configuring infection start date: " << start_Date << endl;
 
     vector<string> split_Date;
@@ -176,16 +177,69 @@ void cancer::ingress()
     cout << "Decimal date: " << decimal_Date << endl;
     cout << "Date increment by generation: " << date_Increment << endl;
 
-    int overall_Generation = 0;
+    int generations_to_Run = -1;
+    if (stop_gen_Mode != 0)
+    {
+        float start_Decimal;
+        vector<string> split_Date;
+        functions.split(split_Date, start_Date, '-');
+        start_Decimal = functions.date_to_Decimal(stoi(split_Date[0]), stoi(split_Date[1]), stoi(split_Date[2]));
+
+        generations_to_Run = (int)((stop_Date - start_Decimal) / date_Increment + 0.5);
+        cout << "Generations in total: " << generations_to_Run << endl;
+    }
+
+    // exit(-1);
+
+    int overall_Generations = 0;
+
+    // cout << "STEP 5: Configuring infection temporal data\n\n";
 
     cancer_Host host = cancer_Host();
 
     host.initialize(functions,
                     tissue_Names,
                     intermediary_Sequence_location, first_Infection,
-                    overall_Generation,
+                    overall_Generations,
                     output_Node_location,
                     max_sequences_per_File);
+
+    functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
+
+    int stop = 0;
+    host.simulate_Generations(functions,
+                              overall_Generations, date_Increment,
+                              stop,
+                              stop_gen_Mode,
+                              stop_generations_Count, decimal_Date, stop_Date,
+                              tissue_Names,
+                              terminal_tissues, terminal_array,
+                              intermediary_Sequence_location + "/cancer_Host",
+                              enable_Folder_management, enable_Compression,
+                              terminal_Load,
+                              output_Node_location,
+                              time_Ratios_per_Tissue, phase_Type_per_tissue, phase_paramaters_per_Tissue);
+
+    if (stop == 1)
+    {
+        cout << "GOD Mode STOP\n";
+    }
+    else if (stop == 2)
+    {
+        cout << "Maximum generations of " << overall_Generations << " reached\n";
+    }
+    else if (stop == 3)
+    {
+        cout << "Maximum time of " << decimal_Date << " has been reached\n";
+    }
+    else if (stop == 4)
+    {
+        cout << "No cells remaining to simulate\n";
+    }
+    else if (stop == 5)
+    {
+        cout << "Terminal load has been reached\n";
+    }
 }
 
 void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions)
@@ -640,8 +694,6 @@ void cancer::node_Master_Manager(functions_library &functions)
         {
             parameters_List = {"\"Terminal load distribution type\""};
 
-            terminal_load_Profiles_param = functions.create_Fill_2D_array_FLOAT(1, 3, -1);
-
             vector<string> terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
             transform(terminal_Tissue_distribution[0].begin(), terminal_Tissue_distribution[0].end(), terminal_Tissue_distribution[0].begin(), ::toupper);
 
@@ -653,28 +705,32 @@ void cancer::node_Master_Manager(functions_library &functions)
                                    "\"Terminal load Binomial probability\""};
                 terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
 
-                terminal_load_Profiles_param[0][0] = 0;
-                terminal_load_Profiles_param[0][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
-                terminal_load_Profiles_param[0][2] = Parameters.get_FLOAT(terminal_Tissue_distribution[1]);
+                // terminal_load_Profiles_param[0][0] = 0;
+                int trials_terminal_Load = Parameters.get_INT(terminal_Tissue_distribution[0]);
+                float prob_terminal_Load = Parameters.get_FLOAT(terminal_Tissue_distribution[1]);
 
-                cout << "Terminal load Binomial trials: " << terminal_load_Profiles_param[0][1] << endl;
-                cout << "Terminal load Binomial probability: " << terminal_load_Profiles_param[0][2] << endl;
+                cout << "Terminal load Binomial trials: " << trials_terminal_Load << endl;
+                cout << "Terminal load Binomial probability: " << prob_terminal_Load << endl;
+
+                binomial_distribution<> dist_terminal_Load(trials_terminal_Load, prob_terminal_Load);
+                terminal_Load = dist_terminal_Load(gen);
             }
             else if (terminal_Tissue_distribution[0] == "\"FIXED\"")
             {
                 parameters_List = {"\"Terminal load Fixed\""};
                 terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
 
-                terminal_load_Profiles_param[0][0] = -1;
-                terminal_load_Profiles_param[0][1] = Parameters.get_INT(terminal_Tissue_distribution[0]);
-
-                cout << "Terminal load Fixed: " << terminal_load_Profiles_param[0][1] << endl;
+                // terminal_load_Profiles_param[0][0] = -1;
+                terminal_Load = Parameters.get_INT(terminal_Tissue_distribution[0]);
             }
             else
             {
                 cout << "PROFILE ERROR TERMINAL TISSUE DISTRIBUTION SHOULD BE FIXED OR BINOMIAL.\n";
                 exit(-1);
             }
+            cout << "Terminal load: " << terminal_Load << endl;
+
+            // exit(-1);
         }
 
         cout << "\nCollecting tissue data\n";
@@ -741,18 +797,22 @@ void cancer::node_Master_Manager(functions_library &functions)
                 replication_phases_tissues.push_back(num_Phases);
                 cout << "Number of phases: " << replication_phases_tissues[replication_phases_tissues.size() - 1] << endl;
 
-                float time_Check = 0;
+                // float time_Check = 0;
+
+                int total_Generations = 0;
 
                 for (int rep_Phase = 0; rep_Phase < num_Phases; rep_Phase++)
                 {
                     string phase_keyword = "Phase " + to_string(rep_Phase + 1);
                     string phase_Mode = phase_keyword + " Mode";
-                    string phase_Time_ratio = phase_keyword + " Time ratio";
+                    string phase_Time_ratio = phase_keyword + " Generations";
+
+                    total_Generations = total_Generations + Parameters.get_FLOAT(replication_Phases_Block, phase_Time_ratio);
 
                     phase_Type.push_back(Parameters.get_STRING(replication_Phases_Block, phase_Mode));
-                    time_Ratios.push_back(Parameters.get_FLOAT(replication_Phases_Block, phase_Time_ratio));
+                    time_Ratios.push_back(total_Generations);
 
-                    time_Check = time_Check + time_Ratios[time_Ratios.size() - 1];
+                    // time_Check = time_Check + time_Ratios[time_Ratios.size() - 1];
 
                     transform(phase_Type[phase_Type.size() - 1].begin(), phase_Type[phase_Type.size() - 1].end(), phase_Type[phase_Type.size() - 1].begin(), ::toupper);
 
@@ -777,7 +837,7 @@ void cancer::node_Master_Manager(functions_library &functions)
                     cout << "\nPhase " << rep_Phase + 1 << ": \n";
                     cout << "Mode: " << phase_Type[phase_Type.size() - 1] << endl;
                     // CHECK TIME RATIO ADDITIONS
-                    cout << "Time ratio: " << time_Ratios[time_Ratios.size() - 1] << endl;
+                    cout << "Upto generation: " << time_Ratios[time_Ratios.size() - 1] << endl;
 
                     if (phase_paramaters[phase_paramaters.size() - 1].first != -1 && phase_paramaters[phase_paramaters.size() - 1].second == -1)
                     {
@@ -790,19 +850,19 @@ void cancer::node_Master_Manager(functions_library &functions)
                     }
                 }
 
-                cout << "\nPerforming time ratio check:";
-                if (time_Check != 1)
-                {
-                    cout << " FAILED\nERROR: TIME RATIOS MUST SUM UPTO 1, NOW THEY SUM UPTO: " << time_Check << endl;
-                    exit(-1);
-                }
-                else
-                {
-                    phase_Type_per_tissue.push_back(phase_Type);
-                    phase_paramaters_per_Tissue.push_back(phase_paramaters);
-                    time_Ratios_per_Tissue.push_back(time_Ratios);
-                    cout << " PASSED\n";
-                }
+                // cout << "\nPerforming time ratio check:";
+                // if (time_Check != 1)
+                // {
+                //     cout << " FAILED\nERROR: TIME RATIOS MUST SUM UPTO 1, NOW THEY SUM UPTO: " << time_Check << endl;
+                //     exit(-1);
+                // }
+                // else
+                // {
+                phase_Type_per_tissue.push_back(phase_Type);
+                phase_paramaters_per_Tissue.push_back(phase_paramaters);
+                time_Ratios_per_Tissue.push_back(time_Ratios);
+                // cout << " PASSED\n";
+                //}
             }
             else
             {

@@ -98,7 +98,7 @@ private:
 
     string profile_Name = "";
 
-    float **terminal_load_Profiles_param;
+    int terminal_Load = -1;
 
     // per tissue number of cells;
     // Inactive = -1;

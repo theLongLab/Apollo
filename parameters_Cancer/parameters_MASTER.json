@@ -23,7 +23,7 @@
   "Stop after generations":"Yes",
   # Generations or Date can be used to stop the simulation as well
   "Mode to stop":"Generations",
-  "Number of generations":3,
+  "Number of generations":10,
   "End date":"2024-01-12",
 
   # Node profile parameter file location
