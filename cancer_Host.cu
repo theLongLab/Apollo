@@ -16,7 +16,9 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        string &enable_Folder_management, string &enable_Compression,
                                        int &terminal_Load,
                                        string &output_Node_location,
-                                       vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue)
+                                       vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue,
+                                       int &max_Cells_at_a_time,
+                                       string &multi_Read, int &CPU_cores, int &num_Cuda_devices)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -91,7 +93,30 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                 int value = *it; // Dereference the iterator to get the value
                                 check_to_Remove.insert(value);
                             }
+                            removed_by_Transfer_Indexes[tissue].clear();
                         }
+
+                        cout << "\nFilling parent vector: ";
+                        int *parents_in_Tissue = (int *)malloc(real_Particle_count_per_Tissue[tissue] * sizeof(int));
+
+                        int fill_Count = 0;
+                        int index = 0;
+                        do
+                        {
+                            if (check_to_Remove.find(index) == check_to_Remove.end())
+                            {
+                                parents_in_Tissue[fill_Count] = index;
+                                fill_Count++;
+                            }
+                            index++;
+                        } while (fill_Count < real_Particle_count_per_Tissue[tissue]);
+
+                        cout << "Completed\n";
+
+                        cout << "Shuffling parent vector: ";
+                        default_random_engine rng(time(nullptr)); // Seed the random number generator with current time
+                        shuffle(parents_in_Tissue, parents_in_Tissue + real_Particle_count_per_Tissue[tissue], rng);
+                        cout << "Complete\n";
 
                         float variable_1, variable_2;
                         string generation_Type = get_generation_Phase(overall_Generations,
@@ -99,6 +124,55 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                                       phase_Type_per_tissue[tissue],
                                                                       phase_paramaters_per_Tissue[tissue],
                                                                       variable_1, variable_2);
+
+                        int parent_population_Count = real_Particle_count_per_Tissue[tissue];
+
+                        if (overall_Generations != 0)
+                        {
+                            int new_Parent_Count = -1;
+                            if (generation_Type == "STATIONARY")
+                            {
+                                cout << "\nStationary phase\n";
+                                if (parent_population_Count >= parents_Prev_generation[tissue])
+                                {
+                                    normal_distribution<float> distribution(parents_Prev_generation[tissue], variable_1);
+                                    new_Parent_Count = (int)(distribution(gen) + 0.5);
+
+                                    if (new_Parent_Count < parent_population_Count && new_Parent_Count >= 0)
+                                    {
+                                        parent_population_Count = new_Parent_Count;
+                                        cout << "Parent population maintained at: " << parent_population_Count << endl;
+                                    }
+                                }
+                            }
+                            else if (generation_Type == "DEPRICIATION")
+                            {
+                                cout << "\nDepriciation phase\n";
+                                if (parent_population_Count >= parents_Prev_generation[tissue])
+                                {
+                                    new_Parent_Count = functions.beta_Distribution(variable_1, variable_2, gen) * parents_Prev_generation[tissue];
+                                    new_Parent_Count = parents_Prev_generation[tissue] - new_Parent_Count;
+                                    parent_population_Count = new_Parent_Count;
+                                    cout << "Parent population reduced to: " << parent_population_Count << endl;
+                                }
+                            }
+                        }
+
+                        vector<pair<int, int>> cells_Rounds_start_stop = get_Rounds(parent_population_Count, max_Cells_at_a_time);
+
+                        for (int cell_Round = 0; cell_Round < cells_Rounds_start_stop.size(); cell_Round++)
+                        {
+                            int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
+                            cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
+
+                            simulate_cell_Round(functions, multi_Read, CPU_cores, num_Cuda_devices,
+                                                num_of_Cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second,
+                                                parents_in_Tissue);
+                        }
+
+                        exit(-1);
+
+                        free(parents_in_Tissue);
                     }
                 }
             }
@@ -132,9 +206,85 @@ void cancer_Host::simulate_Generations(functions_library &functions,
             }
         }
 
+        // ! STOP after testing
+        stop_Type = 1;
+
     } while (stop_Type == 0);
 
     cout << "\nSimulation has concluded: ";
+}
+
+void cancer_Host::simulate_cell_Round(functions_library &functions, string &multi_Read, int CPU_cores, int &num_Cuda_devices,
+                                      int &num_of_Cells, int &start, int &stop,
+                                      int *parents_in_Tissue)
+{
+    cout << "GPU CPU parallel processing configuration\n";
+    int cpus_to_GPU = 1;
+    vector<pair<int, int>> perGPU_start_stop;
+
+    if (num_Cuda_devices > 1 && multi_Read == "YES" && CPU_cores >= num_Cuda_devices)
+    {
+        cpus_to_GPU = num_Cuda_devices;
+        int per_Block = num_of_Cells / cpus_to_GPU;
+        int remainder_Last = num_of_Cells % cpus_to_GPU;
+
+        for (int cpu_Index = 0; cpu_Index < cpus_to_GPU; cpu_Index++)
+        {
+            int start_From = (cpu_Index * per_Block) + start;
+            int stop_To = start_From + per_Block;
+
+            perGPU_start_stop.push_back(make_pair(start_From, stop_To));
+        }
+        perGPU_start_stop[perGPU_start_stop.size() - 1].second = perGPU_start_stop[perGPU_start_stop.size() - 1].second + remainder_Last;
+    }
+    else
+    {
+        perGPU_start_stop.push_back(make_pair(start, stop));
+    }
+
+    cout << "Using " << perGPU_start_stop.size() << " core(s) per GPU\n";
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < cpus_to_GPU; core_ID++)
+    {
+        cout << "Initializing CPU core " << core_ID + 1 << endl;
+
+        
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+}
+
+vector<pair<int, int>> cancer_Host::get_Rounds(int &total_Count, int &gpu_Max_Limit)
+{
+    vector<pair<int, int>> Rounds_start_stop;
+
+    int full_Rounds = total_Count / gpu_Max_Limit;
+    int partial_Rounds = total_Count % gpu_Max_Limit;
+
+    for (int full = 0; full < full_Rounds; full++)
+    {
+        int start = full * gpu_Max_Limit;
+        int stop = start + gpu_Max_Limit;
+        Rounds_start_stop.push_back(make_pair(start, stop));
+    }
+
+    if (partial_Rounds != 0)
+    {
+        int start = total_Count - partial_Rounds;
+        Rounds_start_stop.push_back(make_pair(start, total_Count));
+    }
+
+    return Rounds_start_stop;
 }
 
 string cancer_Host::get_generation_Phase(int &overall_Generations,
@@ -169,8 +319,7 @@ string cancer_Host::get_generation_Phase(int &overall_Generations,
     if (index != -1)
     {
 
-        cout << "Phase: " << phase_Type[index] << endl
-             << endl;
+        cout << "Phase: " << phase_Type[index] << endl;
 
         variable_1 = phase_paramaters[index].first;
         variable_2 = phase_paramaters[index].second;

@@ -218,7 +218,9 @@ void cancer::ingress()
                               enable_Folder_management, enable_Compression,
                               terminal_Load,
                               output_Node_location,
-                              time_Ratios_per_Tissue, phase_Type_per_tissue, phase_paramaters_per_Tissue);
+                              time_Ratios_per_Tissue, phase_Type_per_tissue, phase_paramaters_per_Tissue,
+                              max_Cells_at_a_time,
+                              multi_Read, CPU_cores, num_Cuda_devices);
 
     if (stop == 1)
     {

@@ -83,7 +83,9 @@ public:
                               string &enable_Folder_management, string &enable_Compression,
                               int &terminal_Load,
                               string &output_Node_location,
-                              vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue);
+                              vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue,
+                              int &max_Cells_at_a_time,
+                              string &multi_Read, int &CPU_cores, int &num_Cuda_devices);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);
@@ -97,4 +99,10 @@ public:
                                 vector<string> phase_Type,
                                 vector<pair<float, float>> phase_paramaters_per_Tissue,
                                 float &variable_1, float &variable_2);
+
+    vector<pair<int, int>> get_Rounds(int &total_Count, int &gpu_Max_Limit);
+
+    void simulate_cell_Round(functions_library &functions, string &multi_Read, int CPU_cores, int &num_Cuda_devices,
+                             int &num_of_Cells, int &start, int &stop,
+                             int *parents_in_Tissue);
 };
