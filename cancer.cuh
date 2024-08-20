@@ -140,6 +140,8 @@ private:
     string intermediary_Index_location;
     string reference_Sequences;
 
+    vector<pair<string, string>> all_sequences_String;
+
 public:
     cancer(string parameter_Master_Location);
 
@@ -148,6 +150,17 @@ public:
     void node_Master_Manager(functions_library &functions);
     void sequence_Master_Manager(functions_library &functions);
 
+    int **process_Reference_Sequences(functions_library &functions, vector<string> collect_Sequences, int &genome_Length, int &num_of_Sequences_current, float *replication_probs, float *gen_Death_probs);
+
     vector<string> read_Reference_Sequences(vector<int> &tissue_Sequence_Count);
     void write_Reference_Sequences(vector<string> collect_Sequences, vector<int> &tissue_Sequence_Count, functions_library &functions);
+
+    vector<pair<string, string>> convert_Sequences_Master(int **sequences, int &genome_Length, int &num_of_Sequences_current, float *replication_probs, float *gen_Death_probs);
+    void sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length, float *replication_probs, float *gen_Death_probs);
+
+    void sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> sequence_Write_Store,
+                                     int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num);
+
+    void partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
+                             const string &folder_Location, int &last_seq_Num);
 };

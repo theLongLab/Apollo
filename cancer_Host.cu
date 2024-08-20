@@ -18,7 +18,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        string &output_Node_location,
                                        vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue,
                                        int &max_Cells_at_a_time,
-                                       string &multi_Read, int &CPU_cores, int &num_Cuda_devices)
+                                       string &multi_Read, int &CPU_cores, int &num_Cuda_devices,
+                                       int &genome_Length)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -27,11 +28,23 @@ void cancer_Host::simulate_Generations(functions_library &functions,
     random_device rd;
     mt19937 gen(rd());
 
-    string generational_Summary = output_Node_location + "/cancer_Host/node_generational_Summary.csv";
+    this->CPU_cores = CPU_cores;
+    this->genome_Length = genome_Length;
+
+    generational_Summary = output_Node_location + "/cancer_Host/node_generational_Summary.csv";
     functions.create_File(generational_Summary, "overall_Generation\tTissue\tnum_Parents\tnum_Progeny\tdead_Progeny");
 
-    string sequence_Profiles = output_Node_location + "/cancer_Host/sequence_Profiles.csv";
-    string sequence_parent_Progeny_relationships = output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv";
+    sequence_Profiles = output_Node_location + "/cancer_Host/sequence_Profiles.csv";
+    // functions.create_File(sequence_Profiles, "Sequence_ID\tTissue");
+
+    sequence_parent_Progeny_relationships = output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv";
+    // functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
+
+    // cells_of_parents_location = output_Node_location + "/cancer_Host/cells_of_Parents.csv";
+    // functions.create_File(cells_of_parents_location, "Sequence_ID\tParent_Cell_ID");
+
+    // cells_of_progeny_location = output_Node_location + "/cancer_Host/cells_of_Progeny.csv";
+    // functions.create_File(cells_of_progeny_location, "Sequence_ID\tProgeny_Cell_ID");
 
     do
     {
@@ -50,6 +63,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         {
             if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder, enable_Folder_management, enable_Compression, terminal_Load) != 1)
             {
+                vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, overall_Generations, multi_Read);
+
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
                     if (real_Particle_count_per_Tissue[tissue] > 0)
@@ -63,7 +78,6 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         if (dead_Particle_count[tissue] > 0)
                         {
                             cout << "\nIdentifying dead viral indexe(s)\n";
-                            // indexes_of_Dead = (int *)malloc(sizeof(int) * dead_Particle_count[tissue]);
 
                             fstream dead_File;
                             dead_File.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt");
@@ -158,6 +172,13 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                             }
                         }
 
+                        check_to_Remove.clear();
+                        removed_by_Transfer_Indexes[tissue].clear();
+                        dead_Particle_count[tissue] = 0;
+                        current_cell_load_per_Tissue[tissue] = 0;
+
+                        int last_index_Seq_Written = 0;
+
                         vector<pair<int, int>> cells_Rounds_start_stop = get_Rounds(parent_population_Count, max_Cells_at_a_time);
 
                         for (int cell_Round = 0; cell_Round < cells_Rounds_start_stop.size(); cell_Round++)
@@ -165,9 +186,14 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                             int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
                             cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
 
-                            simulate_cell_Round(functions, multi_Read, CPU_cores, num_Cuda_devices,
+                            simulate_cell_Round(functions, multi_Read, num_Cuda_devices,
                                                 num_of_Cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second,
-                                                parents_in_Tissue);
+                                                parents_in_Tissue, tissue, tissue_Names[tissue],
+                                                indexed_Source_Folders[tissue],
+                                                source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations),
+                                                overall_Generations,
+                                                last_index_Seq_Written,
+                                                gen);
                         }
 
                         exit(-1);
@@ -214,43 +240,138 @@ void cancer_Host::simulate_Generations(functions_library &functions,
     cout << "\nSimulation has concluded: ";
 }
 
-void cancer_Host::simulate_cell_Round(functions_library &functions, string &multi_Read, int CPU_cores, int &num_Cuda_devices,
+void cancer_Host::simulate_cell_Round(functions_library &functions, string &multi_Read, int &num_Cuda_devices,
                                       int &num_of_Cells, int &start, int &stop,
-                                      int *parents_in_Tissue)
+                                      int *parents_in_Tissue, int &tissue, string tissue_Name,
+                                      vector<pair<int, int>> &indexed_Tissue_Folder,
+                                      string source_sequence_Data_folder,
+                                      int &overall_Generations,
+                                      int &last_index_Seq_Written,
+                                      mt19937 &gen)
 {
-    cout << "GPU CPU parallel processing configuration\n";
-    int cpus_to_GPU = 1;
-    vector<pair<int, int>> perGPU_start_stop;
 
-    if (num_Cuda_devices > 1 && multi_Read == "YES" && CPU_cores >= num_Cuda_devices)
+    sort(parents_in_Tissue + start, parents_in_Tissue + stop);
+
+    vector<int> parent_IDs;
+    vector<string> collected_Sequences = find_Sequences_Master(start, tissue, tissue_Name, functions, source_sequence_Data_folder, parents_in_Tissue, num_of_Cells, indexed_Tissue_Folder, overall_Generations, parent_IDs, last_index_Seq_Written, gen);
+
+    if (parent_IDs.size() == collected_Sequences.size())
     {
-        cpus_to_GPU = num_Cuda_devices;
-        int per_Block = num_of_Cells / cpus_to_GPU;
-        int remainder_Last = num_of_Cells % cpus_to_GPU;
+        int parent_Cells_Found = parent_IDs.size();
+        cout << "Number of parents found: " << parent_Cells_Found << endl;
+        cout << "Potential mitotic progeny produced: " << to_string(parent_Cells_Found * 2) << endl;
 
-        for (int cpu_Index = 0; cpu_Index < cpus_to_GPU; cpu_Index++)
+        cout << "\nMain Progeny generation\n";
+
+        int **parent_Sequences;
+        parent_Sequences = (int **)malloc(parent_Cells_Found * sizeof(int *));
+        for (int row = 0; row < parent_Cells_Found; row++)
         {
-            int start_From = (cpu_Index * per_Block) + start;
-            int stop_To = start_From + per_Block;
-
-            perGPU_start_stop.push_back(make_pair(start_From, stop_To));
+            parent_Sequences[row] = (int *)malloc(genome_Length * sizeof(int));
         }
-        perGPU_start_stop[perGPU_start_stop.size() - 1].second = perGPU_start_stop[perGPU_start_stop.size() - 1].second + remainder_Last;
+
+        string all_Sequences = "";
+
+        for (int sequence = 0; sequence < parent_Cells_Found; sequence++)
+        {
+            all_Sequences.append(collected_Sequences[sequence]);
+        }
+
+        char *full_Char;
+        full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+        strcpy(full_Char, all_Sequences.c_str());
+        all_Sequences = "";
+
+        cudaStream_t streams[num_Cuda_devices];
+        cudaDeviceProp deviceProp;
+
+        char *cuda_full_Char[num_Cuda_devices];
+
+        cout << "\nGPU CPU parallel processing configuration\n";
+        int cpus_to_GPU = 1;
+        vector<pair<int, int>> perGPU_start_stop;
+
+        if (num_Cuda_devices > 1 && multi_Read == "YES" && CPU_cores >= num_Cuda_devices)
+        {
+            cpus_to_GPU = num_Cuda_devices;
+            int per_Block = parent_Cells_Found / cpus_to_GPU;
+            int remainder_Last = parent_Cells_Found % cpus_to_GPU;
+
+            for (int cpu_Index = 0; cpu_Index < cpus_to_GPU; cpu_Index++)
+            {
+                int start_From = (cpu_Index * per_Block) + start;
+                int stop_To = start_From + per_Block;
+
+                perGPU_start_stop.push_back(make_pair(start_From, stop_To));
+            }
+            perGPU_start_stop[perGPU_start_stop.size() - 1].second = perGPU_start_stop[perGPU_start_stop.size() - 1].second + remainder_Last;
+        }
+        else
+        {
+            perGPU_start_stop.push_back(make_pair(start, stop));
+        }
+
+        cout << "Using " << perGPU_start_stop.size() << " core(s) per GPU\n";
+
+        vector<thread> threads_vec;
+
+        for (int core_ID = 0; core_ID < cpus_to_GPU; core_ID++)
+        {
+            cout << "Initializing CPU core " << core_ID + 1 << endl;
+
+            // threads_vec.push_back(thread{&cancer_Host::replication_Generation_thread, this, core_ID, parents_in_Tissue, ref(perGPU_start_stop[core_ID].first), ref(perGPU_start_stop[core_ID].second), perGPU_start_stop[core_ID].second - perGPU_start_stop[core_ID].first});
+        }
+
+        for (thread &t : threads_vec)
+        {
+            if (t.joinable())
+            {
+                t.join();
+            }
+        }
+
+        threads_vec.clear();
     }
     else
     {
-        perGPU_start_stop.push_back(make_pair(start, stop));
+        cout << "CRITICAL ERROR: SEQUENCE IDs (" << parent_IDs.size() << ") AND SEQUENCES COLLECTED (" << collected_Sequences.size() << ") DO NOT MATCH\n";
+        exit(-1);
     }
 
-    cout << "Using " << perGPU_start_stop.size() << " core(s) per GPU\n";
+    exit(-1);
+}
+
+void cancer_Host::replication_Generation_thread(int core_ID,
+                                                vector<int> &parent_IDs, vector<string> &collected_Sequences,
+                                                int &start, int &stop, int cell_Count)
+{
+}
+
+vector<string> cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, int &last_index_Seq_Written, mt19937 &gen)
+{
+
+    cout << "Collecting " << num_Sequences << " sequence(s)\n";
+    // string folder_Path = source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation);
+
+    int num_per_Core = num_Sequences / this->CPU_cores;
+    int remainder = num_Sequences % this->CPU_cores;
 
     vector<thread> threads_vec;
 
-    for (int core_ID = 0; core_ID < cpus_to_GPU; core_ID++)
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
     {
-        cout << "Initializing CPU core " << core_ID + 1 << endl;
+        int start_Cell = core_ID * num_per_Core;
+        int stop_Cell = start_Cell + num_per_Core;
 
-        
+        threads_vec.push_back(thread{&cancer_Host::thread_find_Files, this, offset, start_Cell, stop_Cell, parents_in_Tissue, ref(indexed_Tissue_Folder)});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Cell = num_Sequences - remainder;
+        int stop_Cell = num_Sequences;
+
+        threads_vec.push_back(thread{&cancer_Host::thread_find_Files, this, offset, start_Cell, stop_Cell, parents_in_Tissue, ref(indexed_Tissue_Folder)});
     }
 
     for (thread &t : threads_vec)
@@ -262,6 +383,175 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
     }
 
     threads_vec.clear();
+
+    vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
+    found_Tissue_Folder_Indexes.clear();
+
+    cout << Tissue_files.size() << " file(s) identified\n";
+
+    // exit(-1);
+
+    // vector<pair<int, int>> sequence_FileIndex_Position_list;
+    vector<string> collected_Sequences;
+    // for (int index = 0; index < num_Sequences; index++)
+    // {
+    //     sequence_FileIndex_Position_list.push_back(make_pair(parents_in_Tissue[index], index));
+    //     collected_Sequences.push_back("");
+    // }
+
+    // sort(sequence_FileIndex_Position_list.begin(), sequence_FileIndex_Position_list.end());
+
+    fstream nfasta;
+    int index_Files = 0;
+    int line_current = 0;
+
+    cout << "Retrieving sequence(s)\n";
+
+    // valid_Sequences = 0;
+
+    nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+
+    uniform_real_distribution<float> check_Replicate_Dis(0.0, 1.0);
+
+    fstream sequence_Profiles_File;
+    sequence_Profiles_File.open(sequence_Profiles, ios::app);
+    fstream sequence_parent_Progeny_relationships_File;
+    sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
+
+    for (int find = 0; find < num_Sequences; find++)
+    {
+        // cout << "Looking for " << sequence_FileIndex_Position_list[find].first << "\n";
+
+        while ((indexed_Tissue_Folder[Tissue_files[index_Files]].first <= parents_in_Tissue[find + offset] && indexed_Tissue_Folder[Tissue_files[index_Files]].second >= parents_in_Tissue[find + offset]) == 0)
+        {
+            nfasta.close();
+            index_Files++;
+            nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Tissue_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+            line_current = 0;
+        }
+
+        if (nfasta.is_open())
+        {
+            int line_t0_check = (parents_in_Tissue[find + offset] - indexed_Tissue_Folder[Tissue_files[index_Files]].first) * 2;
+
+            string line;
+            string sequence = "";
+
+            while (getline(nfasta, line))
+            {
+                if (line_t0_check == line_current)
+                {
+                    // cout << line << endl;
+                    vector<string> line_Data;
+                    functions.split(line_Data, line, '_');
+
+                    int check_replicate = 0;
+
+                    if (stof(line_Data[2]) < 1)
+                    {
+                        float val = check_Replicate_Dis(gen);
+                        check_replicate = (val < stof(line_Data[2])) ? 0 : 1;
+                    }
+
+                    if (stoi(line_Data[0].substr(1)) == parents_in_Tissue[find + offset] && check_replicate == 0)
+                    {
+                        getline(nfasta, line);
+                        collected_Sequences.push_back(line);
+                        parent_IDs.push_back(parents_in_Tissue[find + offset]);
+                        line_current++;
+                    }
+                    else if (stoi(line_Data[0].substr(1)) == parents_in_Tissue[find + offset] && check_replicate == 1)
+                    {
+                        // check if it survives to the next generation
+                        int check_Survival = 0;
+                        if (stof(line_Data[3]) < 1)
+                        {
+                            float val = check_Replicate_Dis(gen);
+                            check_Survival = (val < stof(line_Data[3])) ? 0 : 1;
+                        }
+                        if (check_Survival == 0)
+                        {
+                            getline(nfasta, line);
+                            to_write_Sequence_Store.push_back(make_pair(last_index_Seq_Written + "_A_" + line_Data[2] + "_" + line_Data[3], line));
+                            sequence_Profiles_File << tissue_Name << "_" << to_string(current_Generation + 1) << "_" << last_index_Seq_Written << "\t" << tissue_Name << endl;
+                            sequence_parent_Progeny_relationships_File << tissue_Name << "_" << to_string(current_Generation) << "_" << parents_in_Tissue[find + offset] << "\t"
+                                                                       << tissue_Name << "_" << to_string(current_Generation + 1) << "_" << last_index_Seq_Written
+                                                                       << "\tgeneration_Forward" << endl;
+
+                            current_cell_load_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] + 1;
+                            last_index_Seq_Written++;
+
+                            line_current++;
+                        }
+                    }
+                    else
+                    {
+                        cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                        cout << "Looking for: " << parents_in_Tissue[find + offset] << endl
+                             << "Sequence ID at location: " << line << endl
+                             << "File: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first
+                             << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                        exit(-1);
+                    }
+                    line_current++;
+                    break;
+                }
+                line_current++;
+            }
+        }
+        else
+        {
+            cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << folder_Path << "/" << indexed_Tissue_Folder[Tissue_files[index_Files]].first << "_" << indexed_Tissue_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+            exit(-1);
+        }
+    }
+
+    nfasta.close();
+
+    sequence_Profiles_File.close();
+    sequence_parent_Progeny_relationships_File.close();
+
+    // cout << valid_Sequences << " live sequence(s) collected\n";
+
+    return collected_Sequences;
+}
+
+void cancer_Host::thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder)
+{
+    vector<int> caught_Indexes;
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        int top = 0;
+        int bottom = indexed_Tissue_Folder.size() - 1;
+        int middle = top + ((bottom - top) / 2);
+
+        while (top <= bottom)
+        {
+            if ((indexed_Tissue_Folder[middle].first <= parents_in_Tissue[sequence + offset]) && (indexed_Tissue_Folder[middle].second >= parents_in_Tissue[sequence + offset]))
+            {
+                caught_Indexes.push_back(middle);
+                // found = 'Y';
+                break;
+            }
+            else if (indexed_Tissue_Folder[middle].first < parents_in_Tissue[sequence + offset])
+            {
+                top = middle + 1;
+            }
+            else
+            {
+                bottom = middle - 1;
+            }
+            middle = top + ((bottom - top) / 2);
+        }
+    }
+
+    // int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int index = 0; index < caught_Indexes.size(); index++)
+    {
+        found_Tissue_Folder_Indexes.insert(caught_Indexes[index]);
+        //   index++;
+    }
 }
 
 vector<pair<int, int>> cancer_Host::get_Rounds(int &total_Count, int &gpu_Max_Limit)
@@ -416,7 +706,7 @@ void cancer_Host::initialize(functions_library &functions,
     string host_Folder = intermediary_Sequence_location + "/cancer_Host";
     functions.config_Folder(host_Folder, "Cancer host sequence data");
 
-    vector<vector<string>> tissue_Sequences;
+    vector<vector<pair<string, string>>> tissue_Sequences;
     intialize_Tissues(host_Folder, tissue_Sequences, functions, current_Generation);
 
     string reference_Sequences = intermediary_Sequence_location + "/reference_Sequences";
@@ -438,8 +728,10 @@ void cancer_Host::initialize(functions_library &functions,
         vector<string> Sequences;
         vector<string> Sequence_IDs;
 
+        vector<string> line_Data;
+
         cout << endl;
-        vector<char> seq_Status;
+        // vector<char> seq_Status;
         for (int file = 0; file < files.size(); file++)
         {
             cout << "Reading file: " << files[file] << endl;
@@ -459,7 +751,8 @@ void cancer_Host::initialize(functions_library &functions,
                     }
                     else
                     {
-                        Sequence_IDs.push_back(line);
+                        functions.split(line_Data, line, '_');
+                        Sequence_IDs.push_back(line_Data[2] + "_" + line_Data[3]);
                         if (sequence != "")
                         {
                             Sequences.push_back(sequence);
@@ -492,7 +785,7 @@ void cancer_Host::initialize(functions_library &functions,
         {
             int tissue_Index = entry_Tissue_select(gen);
             cout << "Sequence " << sequence + 1 << " infects " << tissue_Names[tissue_Index] << " tissue of index: " << tissue_Index << endl;
-            tissue_Sequences[tissue_Index].push_back(Sequences[sequence]);
+            tissue_Sequences[tissue_Index].push_back(make_pair(Sequences[sequence], Sequence_IDs[sequence]));
         }
 
         for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
@@ -506,16 +799,16 @@ void cancer_Host::initialize(functions_library &functions,
                 {
                     functions.config_Folder(output_Node_location + "/cancer_Host", "Cancer host node");
                     functions.create_File(output_Node_location + "/cancer_Host/sequence_Profiles.csv", "Sequence_ID\tTissue");
-                    functions.create_File(output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv", "Source\tTarget");
+                    functions.create_File(output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
                 }
 
-                vector<string> sequence_Write_Store_All;
+                vector<pair<string, string>> sequence_Write_Store_All;
                 int last_seq_Num = 0;
                 sequence_Write_Configurator(sequence_Write_Store_All, tissue_Sequences[tissue],
-                                            max_sequences_per_File, host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                            max_sequences_per_File, host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), last_seq_Num,
                                             output_Node_location + "/cancer_Host/sequence_Profiles.csv", tissue_Names[tissue], current_Generation);
                 partial_Write_Check(sequence_Write_Store_All,
-                                    host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), last_seq_Num, seq_Status,
+                                    host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation), last_seq_Num,
                                     output_Node_location + "/cancer_Host/sequence_Profiles.csv", tissue_Names[tissue], current_Generation);
             }
         }
@@ -554,7 +847,7 @@ void cancer_Host::initialize(functions_library &functions,
                         {
                             functions.config_Folder(output_Node_location + "/cancer_Host", "Cancer host node");
                             functions.create_File(output_Node_location + "/cancer_Host" + "/sequence_Profiles.csv", "Sequence_ID\tTissue");
-                            functions.create_File(output_Node_location + "/cancer_Host" + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget");
+                            functions.create_File(output_Node_location + "/cancer_Host" + "/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
                         }
 
                         filesystem::copy_file(entry.path().string(), host_Folder + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation) + "/" + file_Name + ".nfasta");
@@ -576,14 +869,13 @@ void cancer_Host::initialize(functions_library &functions,
     }
 }
 
-void cancer_Host::sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+void cancer_Host::sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> &sequence_Write_Store,
                                               int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
-                                              vector<char> &seq_Status,
                                               string sequence_Profiles_Location, string tissue, int current_Generation)
 {
     for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
     {
-        sequence_Write_Store_All.push_back(sequence_Write_Store[sequence_Collect]);
+        sequence_Write_Store_All.push_back(make_pair(sequence_Write_Store[sequence_Collect].first, sequence_Write_Store[sequence_Collect].second));
     }
 
     sequence_Write_Store.clear();
@@ -606,17 +898,18 @@ void cancer_Host::sequence_Write_Configurator(vector<string> &sequence_Write_Sto
             {
                 for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
                 {
-                    fasta_File << ">" << last_seq_Num;
-                    if (seq_Status.size() == 0)
-                    {
-                        fasta_File << "_A";
-                    }
-                    else
-                    {
-                        fasta_File << "_" << seq_Status[write_Seq];
-                    }
+                    fasta_File << ">" << last_seq_Num << "_A_";
+                    // if (seq_Status.size() == 0)
+                    // {
+                    //     fasta_File << "_A";
+                    // }
+                    // else
+                    // {
+                    //     fasta_File << "_" << seq_Status[write_Seq];
+                    // }
+                    fasta_File << sequence_Write_Store_All[write_Seq].second;
                     fasta_File << endl;
-                    fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                    fasta_File << sequence_Write_Store_All[write_Seq].first << endl;
                     sequence_Profile << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << tissue << endl;
                     last_seq_Num++;
                 }
@@ -633,31 +926,20 @@ void cancer_Host::sequence_Write_Configurator(vector<string> &sequence_Write_Sto
         }
 
         // int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
-        vector<string> sequence_Write_Store_temp;
+        vector<pair<string, string>> sequence_Write_Store_temp;
         vector<char> temp_seq_Status;
         for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
         {
-            sequence_Write_Store_temp.push_back(sequence_Write_Store_All[fill]);
-            if (seq_Status.size() > 0)
-            {
-                temp_seq_Status.push_back(seq_Status[fill]);
-            }
+            sequence_Write_Store_temp.push_back(make_pair(sequence_Write_Store_All[fill].first, sequence_Write_Store_All[fill].second));
         }
 
         sequence_Write_Store_All.clear();
         sequence_Write_Store_All = sequence_Write_Store_temp;
-
-        if (seq_Status.size() > 0)
-        {
-            seq_Status.clear();
-            seq_Status = temp_seq_Status;
-        }
     }
 }
 
-void cancer_Host::partial_Write_Check(vector<string> &sequence_Write_Store_All,
+void cancer_Host::partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
                                       const string &folder_Location, int &last_seq_Num,
-                                      vector<char> &seq_Status,
                                       string sequence_Profiles_Location, string tissue, int current_Generation)
 {
     if (sequence_Write_Store_All.size() > 0)
@@ -671,17 +953,18 @@ void cancer_Host::partial_Write_Check(vector<string> &sequence_Write_Store_All,
         {
             for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
             {
-                fasta_File << ">" << last_seq_Num;
-                if (seq_Status.size() == 0)
-                {
-                    fasta_File << "_A";
-                }
-                else
-                {
-                    fasta_File << "_" << seq_Status[write_Seq];
-                }
+                fasta_File << ">" << last_seq_Num << "_A_";
+                // if (seq_Status.size() == 0)
+                // {
+                //     fasta_File << "_A";
+                // }
+                // else
+                // {
+                //     fasta_File << "_" << seq_Status[write_Seq];
+                // }
+                fasta_File << sequence_Write_Store_All[write_Seq].second;
                 fasta_File << endl;
-                fasta_File << sequence_Write_Store_All[write_Seq] << endl;
+                fasta_File << sequence_Write_Store_All[write_Seq].first << endl;
                 sequence_Profile << tissue << "_" << current_Generation << "_" << last_seq_Num << "\t" << tissue << endl;
                 last_seq_Num++;
             }
@@ -698,7 +981,7 @@ void cancer_Host::partial_Write_Check(vector<string> &sequence_Write_Store_All,
     }
 }
 
-void cancer_Host::intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions, int &current_Generation)
+void cancer_Host::intialize_Tissues(string &host_Folder, vector<vector<pair<string, string>>> &tissue_Sequences, functions_library &functions, int &current_Generation)
 {
     current_cell_load_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
     dead_Particle_count = (int *)malloc(sizeof(int) * num_Tissues);
@@ -709,7 +992,7 @@ void cancer_Host::intialize_Tissues(string &host_Folder, vector<vector<string>> 
 
     for (int tissue = 0; tissue < num_Tissues; tissue++)
     {
-        vector<string> tissue_Sequence;
+        vector<pair<string, string>> tissue_Sequence;
         functions.config_Folder(host_Folder + "/" + to_string(tissue), "Tissue " + to_string(tissue + 1));
 
         tissue_Sequences.push_back(tissue_Sequence);

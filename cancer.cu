@@ -161,10 +161,12 @@ void cancer::ingress()
 
     cout << "\nSTEP 3: Configuring parent sequences\n\n";
     vector<int> tissue_Sequence_Count;
-    // vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
+    // exit(-1);
+    //  vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
     write_Reference_Sequences(read_Reference_Sequences(tissue_Sequence_Count), tissue_Sequence_Count, functions);
 
     cout << "STEP 4: Configuring infection temporal data\n\n";
+    // exit(-1);
 
     cout << "Configuring infection start date: " << start_Date << endl;
 
@@ -220,7 +222,8 @@ void cancer::ingress()
                               output_Node_location,
                               time_Ratios_per_Tissue, phase_Type_per_tissue, phase_paramaters_per_Tissue,
                               max_Cells_at_a_time,
-                              multi_Read, CPU_cores, num_Cuda_devices);
+                              multi_Read, CPU_cores, num_Cuda_devices,
+                              genome_Length);
 
     if (stop == 1)
     {
@@ -241,6 +244,315 @@ void cancer::ingress()
     else if (stop == 5)
     {
         cout << "Terminal load has been reached\n";
+    }
+}
+
+__global__ void cuda_Sequences_to_INT_replication_Factor(int num_Sequences, int **sequence_INT, int genome_Length, char *sites,
+                                                         float *cuda_gen_Death_probabilities, float *cuda_Replication_probabilities,
+                                                         float **cuda_sequence_replication_prob_changes, float **cuda_sequence_generation_death_changes,
+                                                         int num_replication_prob_seg_Sites, int num_generation_death_seg_Sites,
+                                                         float reference_generation_Death_prob, float reference_replication_prob)
+{
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+    while (tid < num_Sequences)
+    {
+        int site_Start = tid * genome_Length;
+        int site_End = site_Start + genome_Length;
+
+        int bp_Pos = 0;
+
+        for (int site = site_Start; site < site_End; site++)
+        {
+            if (sites[site] == 'A' || sites[site] == 'a' || sites[site] == '0')
+            {
+                sequence_INT[tid][bp_Pos] = 0;
+            }
+            else if (sites[site] == 'T' || sites[site] == 't' || sites[site] == '1')
+            {
+                sequence_INT[tid][bp_Pos] = 1;
+            }
+            else if (sites[site] == 'G' || sites[site] == 'g' || sites[site] == '2')
+            {
+                sequence_INT[tid][bp_Pos] = 2;
+            }
+            else if (sites[site] == 'C' || sites[site] == 'c' || sites[site] == '3')
+            {
+                sequence_INT[tid][bp_Pos] = 3;
+            }
+
+            bp_Pos++;
+        }
+
+        float replication_Probability = reference_replication_prob;
+
+        for (int site_Check = 0; site_Check < num_replication_prob_seg_Sites; site_Check++)
+        {
+            replication_Probability = replication_Probability + cuda_sequence_replication_prob_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_replication_prob_changes[site_Check][0]] + 1];
+        }
+
+        if (replication_Probability > 1)
+        {
+            replication_Probability = 1;
+        }
+        else if (replication_Probability < 0)
+        {
+            replication_Probability = 0;
+        }
+
+        cuda_Replication_probabilities[tid] = replication_Probability;
+
+        float death_Gen_Prob = reference_generation_Death_prob;
+
+        for (int site_Check = 0; site_Check < num_generation_death_seg_Sites; site_Check++)
+        {
+            death_Gen_Prob = death_Gen_Prob + cuda_sequence_generation_death_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_generation_death_changes[site_Check][0]] + 1];
+        }
+
+        if (death_Gen_Prob > 1)
+        {
+            death_Gen_Prob = 1;
+        }
+        else if (death_Gen_Prob < 0)
+        {
+            death_Gen_Prob = 0;
+        }
+
+        cuda_gen_Death_probabilities[tid] = death_Gen_Prob;
+
+        tid += blockDim.x * gridDim.x;
+    }
+}
+
+int **cancer::process_Reference_Sequences(functions_library &functions, vector<string> collect_Sequences, int &genome_Length, int &num_of_Sequences_current, float *replication_probs, float *gen_Death_probs)
+{
+
+    cout << "Configuring multi gpu distribution of " << num_of_Sequences_current << " sequence(s)\n";
+
+    int standard_num_per_GPU = num_of_Sequences_current / num_Cuda_devices;
+    int remainder = num_of_Sequences_current % num_Cuda_devices;
+
+    vector<pair<int, int>> start_stop_Per_GPU;
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        int start = gpu * standard_num_per_GPU;
+        int stop = start + standard_num_per_GPU;
+
+        start_stop_Per_GPU.push_back(make_pair(start, stop));
+    }
+
+    start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+
+    string all_Sequences = "";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        for (int sequence = start_stop_Per_GPU[gpu].first; sequence < start_stop_Per_GPU[gpu].second; sequence++)
+        {
+            all_Sequences.append(collect_Sequences[sequence]);
+        }
+    }
+
+    char *full_Char;
+    full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
+
+    strcpy(full_Char, all_Sequences.c_str());
+
+    cudaStream_t streams[num_Cuda_devices];
+    cudaDeviceProp deviceProp;
+
+    char *cuda_full_Char[num_Cuda_devices];
+    int **cuda_Sequence[num_Cuda_devices];
+
+    float *cuda_Replication_probabilities[num_Cuda_devices];
+    float *cuda_gen_Death_probabilities[num_Cuda_devices];
+
+    float **cuda_sequence_replication_prob_changes[num_Cuda_devices];
+    float **cuda_sequence_generation_death_changes[num_Cuda_devices];
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaGetDeviceProperties(&deviceProp, gpu);
+        cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
+        // cout << start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first << endl;
+
+        cudaMalloc(&cuda_full_Char[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char));
+        cudaMemcpy(cuda_full_Char[gpu], full_Char + (start_stop_Per_GPU[gpu].first * genome_Length), (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * genome_Length * sizeof(char), cudaMemcpyHostToDevice);
+
+        cudaMallocManaged(&cuda_Replication_probabilities[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(float));
+        cudaMallocManaged(&cuda_gen_Death_probabilities[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(float));
+
+        cudaMallocManaged(&cuda_sequence_generation_death_changes[gpu], num_effect_Segregating_sites_Cancer[2] * sizeof(float *));
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[2]; row++)
+        {
+            cudaMalloc((void **)&cuda_sequence_generation_death_changes[gpu][row], 5 * sizeof(float));
+            cudaMemcpy(cuda_sequence_generation_death_changes[gpu][row], sequence_generation_death_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+        }
+
+        cudaMallocManaged(&cuda_sequence_replication_prob_changes[gpu], num_effect_Segregating_sites_Cancer[3] * sizeof(float *));
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[3]; row++)
+        {
+            cudaMalloc((void **)&cuda_sequence_replication_prob_changes[gpu][row], 5 * sizeof(float));
+            cudaMemcpy(cuda_sequence_replication_prob_changes[gpu][row], sequence_replication_prob_changes[row], 5 * sizeof(float), cudaMemcpyHostToDevice);
+        }
+
+        cudaMallocManaged(&cuda_Sequence[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(int *));
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaMalloc((void **)&cuda_Sequence[gpu][row], genome_Length * sizeof(int));
+        }
+
+        cudaStreamCreate(&streams[gpu]);
+    }
+
+    cout << "Loaded " << num_of_Sequences_current << " sequence(s) to the GPU(s)\n";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cuda_Sequences_to_INT_replication_Factor<<<tot_Blocks[gpu], tot_ThreadsperBlock[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu],
+                                                                                                                 cuda_gen_Death_probabilities[gpu], cuda_Replication_probabilities[gpu],
+                                                                                                                 cuda_sequence_replication_prob_changes[gpu], cuda_sequence_generation_death_changes[gpu],
+                                                                                                                 num_effect_Segregating_sites_Cancer[3], num_effect_Segregating_sites_Cancer[2],
+                                                                                                                 Reference_cancer_parameters[2], Reference_cancer_parameters[3]);
+    }
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaStreamSynchronize(streams[gpu]);
+
+        cudaError_t err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            fprintf(stderr, "CUDA error after synchronizing stream on GPU %d: %s\n", gpu, cudaGetErrorString(err));
+            exit(-1);
+        }
+    }
+
+    cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
+
+    // exit(-1);
+
+    int **sequence;
+    // cout << "Done\n";
+    sequence = functions.create_INT_2D_arrays(num_of_Sequences_current, genome_Length);
+    // cout << "Done\n";
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        // cout << "Done\n";
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaMemcpy(sequence[start_stop_Per_GPU[gpu].first + row], cuda_Sequence[gpu][row], genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
+        }
+        // cout << "DONE: " << gpu << endl;
+        cudaMemcpy(replication_probs + start_stop_Per_GPU[gpu].first, cuda_Replication_probabilities[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(gen_Death_probs + start_stop_Per_GPU[gpu].first, cuda_gen_Death_probabilities[gpu], (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) * sizeof(float), cudaMemcpyDeviceToHost);
+    }
+
+    cout << "Data received by host\n";
+
+    for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+    {
+        cudaSetDevice(CUDA_device_IDs[gpu]);
+        cudaFree(cuda_full_Char[gpu]);
+
+        cudaFree(cuda_Replication_probabilities[gpu]);
+        cudaFree(cuda_gen_Death_probabilities[gpu]);
+
+        for (int row = 0; row < (start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first); row++)
+        {
+            cudaFree(cuda_Sequence[gpu][row]);
+        }
+        cudaFree(cuda_Sequence[gpu]);
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[2]; row++)
+        {
+            cudaFree(cuda_sequence_generation_death_changes[gpu][row]);
+        }
+        cudaFree(cuda_sequence_generation_death_changes[gpu]);
+
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[3]; row++)
+        {
+            cudaFree(cuda_sequence_replication_prob_changes[gpu][row]);
+        }
+        cudaFree(cuda_sequence_replication_prob_changes[gpu]);
+
+        cudaStreamDestroy(streams[gpu]);
+    }
+
+    return sequence;
+}
+
+vector<pair<string, string>> cancer::convert_Sequences_Master(int **sequences, int &genome_Length, int &num_of_Sequences_current, float *replication_probs, float *gen_Death_probs)
+{
+    cout << "Converting sequences to strings\n";
+    for (int sequence = 0; sequence < num_of_Sequences_current; sequence++)
+    {
+        all_sequences_String.push_back(make_pair("", ""));
+    }
+
+    int num_per_Core = num_of_Sequences_current / this->CPU_cores;
+    int remainder = num_of_Sequences_current % this->CPU_cores;
+
+    vector<thread> threads_vec;
+
+    for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+    {
+        int start_Cell = core_ID * num_per_Core;
+        int stop_Cell = start_Cell + num_per_Core;
+
+        threads_vec.push_back(thread{&cancer::sequence_to_string_Threads, this, start_Cell, stop_Cell, sequences, genome_Length, replication_probs, gen_Death_probs});
+    }
+
+    if (remainder != 0)
+    {
+        int start_Cell = num_of_Sequences_current - remainder;
+        int stop_Cell = num_of_Sequences_current;
+
+        threads_vec.push_back(thread{&cancer::sequence_to_string_Threads, this, start_Cell, stop_Cell, sequences, genome_Length, replication_probs, gen_Death_probs});
+    }
+
+    for (thread &t : threads_vec)
+    {
+        if (t.joinable())
+        {
+            t.join();
+        }
+    }
+
+    threads_vec.clear();
+
+    vector<pair<string, string>> return_Vector = all_sequences_String;
+    all_sequences_String.clear();
+
+    return return_Vector;
+}
+
+void cancer::sequence_to_string_Threads(int start, int stop, int **sequences, int genome_Length, float *replication_probs, float *gen_Death_probs)
+{
+    vector<pair<string, string>> sequences_Converted;
+
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        string sequence_String = "";
+        for (int base = 0; base < genome_Length; base++)
+        {
+            sequence_String.append(to_string(sequences[sequence][base]));
+        }
+        sequences_Converted.push_back(make_pair(sequence_String, to_string(replication_probs[sequence]) + "_" + to_string(gen_Death_probs[sequence])));
+    }
+
+    int index = 0;
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        all_sequences_String[sequence].first = sequences_Converted[index].first;
+        all_sequences_String[sequence].second = sequences_Converted[index].second;
+        index++;
     }
 }
 
@@ -279,10 +591,8 @@ void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<
             start_stops.push_back(make_pair(start, total_Sequences));
         }
 
-        vector<string> sequence_Write_Store_All;
+        vector<pair<string, string>> sequence_Write_Store_All;
         int last_seq_Num = 0;
-
-        vector<char> seq_Status;
 
         for (int round = 0; round < start_stops.size(); round++)
         {
@@ -291,28 +601,21 @@ void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<
             int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
             // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
 
-            int **sequences = functions.process_Reference_Sequences(collect_Sequences, genome_Length, num_of_Sequences_current);
+            float *replication_probs = (float *)malloc(sizeof(float) * num_of_Sequences_current);
+            float *gen_Death_probs = (float *)malloc(sizeof(float) * num_of_Sequences_current);
+            int **sequences = process_Reference_Sequences(functions, collect_Sequences, genome_Length, num_of_Sequences_current, replication_probs, gen_Death_probs);
 
-            vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
+            vector<pair<string, string>> sequence_Write_Store = convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current, replication_probs, gen_Death_probs);
 
             functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+            free(replication_probs);
+            free(gen_Death_probs);
 
-            functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
-                                                  max_sequences_per_File, reference_Sequences, last_seq_Num, seq_Status);
-
-            // for (int row = 0; row < num_of_Sequences_current; row++)
-            // {
-            //     for (size_t c = 0; c < genome_Length; c++)
-            //     {
-            //         cout << sequence[row][c];
-            //     }
-            //     cout << "\n\n";
-            // }
-
-            // functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+            sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
+                                        max_sequences_per_File, reference_Sequences, last_seq_Num);
         }
 
-        functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num, seq_Status);
+        partial_Write_Check(sequence_Write_Store_All, reference_Sequences, last_seq_Num);
         collect_Sequences.clear();
     }
     else
@@ -355,10 +658,8 @@ void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<
                 start_stops.push_back(make_pair(start, collect_Sequences_Tissue[tissue].size()));
             }
 
-            vector<string> sequence_Write_Store_All;
+            vector<pair<string, string>> sequence_Write_Store_All;
             int last_seq_Num = 0;
-
-            vector<char> seq_Status;
 
             for (int round = 0; round < start_stops.size(); round++)
             {
@@ -366,21 +667,112 @@ void cancer::write_Reference_Sequences(vector<string> collect_Sequences, vector<
 
                 int num_of_Sequences_current = start_stops[round].second - start_stops[round].first;
                 // vector<string> collect_Sequences, int &genome_Length, int &round, vector<pair<int, int>> &start_stops, int num_of_Sequences_current
+                float *replication_probs = (float *)malloc(sizeof(float) * num_of_Sequences_current);
+                float *gen_Death_probs = (float *)malloc(sizeof(float) * num_of_Sequences_current);
 
-                int **sequences = functions.process_Reference_Sequences(collect_Sequences_Tissue[tissue], genome_Length, num_of_Sequences_current);
+                int **sequences = process_Reference_Sequences(functions, collect_Sequences_Tissue[tissue], genome_Length, num_of_Sequences_current, replication_probs, gen_Death_probs);
 
-                vector<string> sequence_Write_Store = functions.convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current);
+                vector<pair<string, string>> sequence_Write_Store = convert_Sequences_Master(sequences, genome_Length, num_of_Sequences_current, replication_probs, gen_Death_probs);
 
                 functions.clear_Array_int_CPU(sequences, num_of_Sequences_current);
+                free(replication_probs);
+                free(gen_Death_probs);
 
-                functions.sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
-                                                      max_sequences_per_File, reference_Sequences_Tissue, last_seq_Num, seq_Status);
+                sequence_Write_Configurator(sequence_Write_Store_All, sequence_Write_Store,
+                                            max_sequences_per_File, reference_Sequences_Tissue, last_seq_Num);
             }
-            functions.partial_Write_Check(sequence_Write_Store_All, reference_Sequences_Tissue, last_seq_Num, seq_Status);
+            partial_Write_Check(sequence_Write_Store_All, reference_Sequences_Tissue, last_seq_Num);
         }
     }
 
     cout << endl;
+}
+
+void cancer::sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> sequence_Write_Store,
+                                         int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num)
+{
+    for (int sequence_Collect = 0; sequence_Collect < sequence_Write_Store.size(); sequence_Collect++)
+    {
+        sequence_Write_Store_All.push_back(make_pair(sequence_Write_Store[sequence_Collect].first, sequence_Write_Store[sequence_Collect].second));
+    }
+
+    sequence_Write_Store.clear();
+
+    if (sequence_Write_Store_All.size() >= max_sequences_per_File)
+    {
+        int full_Write_Count = sequence_Write_Store_All.size() / max_sequences_per_File;
+
+        for (int full = 0; full < full_Write_Count; full++)
+        {
+
+            string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + max_sequences_per_File - 1) + ".nfasta";
+            fstream fasta_File;
+            fasta_File.open(fasta_file_Location, ios::out);
+
+            if (fasta_File.is_open())
+            {
+                for (int write_Seq = (full * max_sequences_per_File); write_Seq < ((full * max_sequences_per_File) + max_sequences_per_File); write_Seq++)
+                {
+                    fasta_File << ">" << last_seq_Num;
+                    fasta_File << "_A_";
+
+                    fasta_File << sequence_Write_Store_All[write_Seq].second << endl;
+                    fasta_File << sequence_Write_Store_All[write_Seq].first << endl;
+
+                    last_seq_Num++;
+                }
+
+                fasta_File.close();
+            }
+            else
+            {
+                cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+                exit(-1);
+            }
+            // last_seq_Num = last_seq_Num + max_sequences_per_File;
+        }
+
+        // int parital_Write_Count = sequence_Write_Store_All.size() % max_sequences_per_File;
+        vector<pair<string, string>> sequence_Write_Store_temp;
+        for (int fill = full_Write_Count * max_sequences_per_File; fill < sequence_Write_Store_All.size(); fill++)
+        {
+            sequence_Write_Store_temp.push_back(make_pair(sequence_Write_Store_All[fill].first, sequence_Write_Store_All[fill].second));
+        }
+
+        sequence_Write_Store_All.clear();
+        sequence_Write_Store_All = sequence_Write_Store_temp;
+    }
+}
+
+void cancer::partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
+                                 const string &folder_Location, int &last_seq_Num)
+{
+    if (sequence_Write_Store_All.size() > 0)
+    {
+        string fasta_file_Location = folder_Location + "/" + to_string(last_seq_Num) + "_" + to_string(last_seq_Num + sequence_Write_Store_All.size() - 1) + ".nfasta";
+        fstream fasta_File;
+        fasta_File.open(fasta_file_Location, ios::out);
+        if (fasta_File.is_open())
+        {
+            for (int write_Seq = 0; write_Seq < sequence_Write_Store_All.size(); write_Seq++)
+            {
+                fasta_File << ">" << last_seq_Num;
+
+                fasta_File << "_A_" << sequence_Write_Store_All[write_Seq].second << endl;
+                fasta_File << sequence_Write_Store_All[write_Seq].first << endl;
+
+                last_seq_Num++;
+            }
+
+            fasta_File.close();
+        }
+        else
+        {
+            cout << "ERROR: COULD NOT CREATE NFASTA FILE: " << fasta_file_Location << endl;
+            exit(-1);
+        }
+        sequence_Write_Store_All.clear();
+    }
 }
 
 vector<string> cancer::read_Reference_Sequences(vector<int> &tissue_Sequence_Count)
@@ -1233,7 +1625,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
 
         cout << "Printing mutation rate factor matrix:\n";
 
-        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[1]; row++)
         {
             for (int col = 0; col < 5; col++)
             {
@@ -1246,7 +1638,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     else
     {
         cout << "No mutation rate factor profile\n\n";
-        num_effect_Segregating_sites_Cancer[0] = 0;
+        num_effect_Segregating_sites_Cancer[1] = 0;
     }
 
     if (Generation_death_Profile_Location != "NA")
@@ -1255,7 +1647,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
 
         cout << "Printing geerational death matrix:\n";
 
-        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[2]; row++)
         {
             for (int col = 0; col < 5; col++)
             {
@@ -1268,7 +1660,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     else
     {
         cout << "No generational death profile\n\n";
-        num_effect_Segregating_sites_Cancer[0] = 0;
+        num_effect_Segregating_sites_Cancer[2] = 0;
     }
 
     if (Replication_prob_Profile_Location != "NA")
@@ -1277,7 +1669,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
 
         cout << "Printing replication probability matrix:\n";
 
-        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[3]; row++)
         {
             for (int col = 0; col < 5; col++)
             {
@@ -1290,7 +1682,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     else
     {
         cout << "No replication probability profile\n\n";
-        num_effect_Segregating_sites_Cancer[0] = 0;
+        num_effect_Segregating_sites_Cancer[3] = 0;
     }
 
     if (Reference_metastatic_Profile_Location != "NA")
@@ -1299,7 +1691,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
 
         cout << "Printing metastasis probability matrix:\n";
 
-        for (int row = 0; row < num_effect_Segregating_sites_Cancer[0]; row++)
+        for (int row = 0; row < num_effect_Segregating_sites_Cancer[4]; row++)
         {
             for (int col = 0; col < 5; col++)
             {
@@ -1312,7 +1704,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
     else
     {
         cout << "No metastasis probability profile\n\n";
-        num_effect_Segregating_sites_Cancer[0] = 0;
+        num_effect_Segregating_sites_Cancer[4] = 0;
     }
 
     cout << "\nCompleted sequence configuration\n";

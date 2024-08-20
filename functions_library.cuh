@@ -300,4 +300,6 @@ public:
     void decimal_to_Date(float decimal_Date, int &year, int &month, int &day);
 
     string clean_Invisible(string line);
+
+    // int draw_Dead_or_Aline(float &prob);
 };

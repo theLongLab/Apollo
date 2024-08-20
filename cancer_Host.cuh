@@ -37,6 +37,9 @@ using namespace std;
 class cancer_Host
 {
 private:
+    shared_mutex g_mutex;
+    mutex gi_mutex;
+
     int *current_cell_load_per_Tissue;
 
     int *dead_Particle_count;
@@ -47,6 +50,18 @@ private:
     vector<string> converted_Sequences;
 
     int num_Tissues = 0;
+
+    string generational_Summary;
+    string sequence_Profiles;
+    // string cells_of_parents_location;
+    // string cells_of_progeny_location;
+    string sequence_parent_Progeny_relationships;
+
+    int CPU_cores = 0;
+
+    set<int> found_Tissue_Folder_Indexes;
+
+    int genome_Length;
 
 public:
     cancer_Host();
@@ -60,16 +75,14 @@ public:
                     string &output_Node_location,
                     int &max_sequences_per_File);
 
-    void intialize_Tissues(string &host_Folder, vector<vector<string>> &tissue_Sequences, functions_library &functions, int &current_Generation);
+    void intialize_Tissues(string &host_Folder, vector<vector<pair<string, string>>> &tissue_Sequences, functions_library &functions, int &current_Generation);
 
-    void sequence_Write_Configurator(vector<string> &sequence_Write_Store_All, vector<string> &sequence_Write_Store,
+    void sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> &sequence_Write_Store,
                                      int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
-                                     vector<char> &seq_Status,
                                      string sequence_Profiles_Location, string tissue, int current_Generation);
 
-    void partial_Write_Check(vector<string> &sequence_Write_Store_All,
+    void partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
                              const string &folder_Location, int &last_seq_Num,
-                             vector<char> &seq_Status,
                              string sequence_Profiles_Location, string tissue, int current_Generation);
 
     void simulate_Generations(functions_library &functions,
@@ -85,7 +98,8 @@ public:
                               string &output_Node_location,
                               vector<vector<float>> &time_Ratios_per_Tissue, vector<vector<string>> &phase_Type_per_tissue, vector<vector<pair<float, float>>> &phase_paramaters_per_Tissue,
                               int &max_Cells_at_a_time,
-                              string &multi_Read, int &CPU_cores, int &num_Cuda_devices);
+                              string &multi_Read, int &CPU_cores, int &num_Cuda_devices,
+                              int &genome_Length);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);
@@ -102,7 +116,19 @@ public:
 
     vector<pair<int, int>> get_Rounds(int &total_Count, int &gpu_Max_Limit);
 
-    void simulate_cell_Round(functions_library &functions, string &multi_Read, int CPU_cores, int &num_Cuda_devices,
+    void simulate_cell_Round(functions_library &functions, string &multi_Read, int &num_Cuda_devices,
                              int &num_of_Cells, int &start, int &stop,
-                             int *parents_in_Tissue);
+                             int *parents_in_Tissue, int &tissue, string tissue_Name,
+                             vector<pair<int, int>> &indexed_Tissue_Folder,
+                             string source_sequence_Data_folder,
+                             int &overall_Generations,
+                             int &last_index_Seq_Written,
+                             mt19937 &gen);
+
+    void replication_Generation_thread(int core_ID,
+                                       vector<int> &parent_IDs, vector<string> &collected_Sequences,
+                                       int &start, int &stop, int cell_Count);
+
+    vector<string> find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, int &last_index_Seq_Written, mt19937 &gen);
+    void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 };
