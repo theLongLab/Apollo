@@ -300,6 +300,7 @@ public:
     void decimal_to_Date(float decimal_Date, int &year, int &month, int &day);
 
     string clean_Invisible(string line);
+    vector<pair<int, int>> index_sequence_Folder(string &source_Target_file_Location);
 
     // int draw_Dead_or_Aline(float &prob);
 };

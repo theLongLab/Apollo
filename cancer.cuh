@@ -125,6 +125,11 @@ private:
     float **sequence_replication_prob_changes;
     float **sequence_metastatic_prob_changes;
 
+    // 0 = Reference replication factor
+    // 1 = Reference mutation rate factor
+    // 2 = Reference generational death
+    // 3 = Reference replication probability
+    // 4 = Reference metastatic probability
     float *Reference_cancer_parameters;
 
     // 0 = fitness
@@ -132,6 +137,11 @@ private:
     // 2 = proof reading
     int *num_effect_Segregating_sites;
 
+    // 0 = Reference replication factor
+    // 1 = Reference mutation rate factor
+    // 2 = Reference generational death
+    // 3 = Reference replication probability
+    // 4 = Reference metastatic probability
     int *num_effect_Segregating_sites_Cancer;
 
     int genome_Length = 0;

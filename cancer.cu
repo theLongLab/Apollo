@@ -222,8 +222,25 @@ void cancer::ingress()
                               output_Node_location,
                               time_Ratios_per_Tissue, phase_Type_per_tissue, phase_paramaters_per_Tissue,
                               max_Cells_at_a_time,
-                              multi_Read, CPU_cores, num_Cuda_devices,
-                              genome_Length);
+                              multi_Read, CPU_cores, num_Cuda_devices, CUDA_device_IDs,
+                              genome_Length,
+                              Reference_fitness_survivability_proof_reading, Reference_cancer_parameters,
+                              A_0_mutation,
+                              T_1_mutation,
+                              G_2_mutation,
+                              C_3_mutation,
+                              mutation_Hotspots,
+                              mutation_hotspot_parameters,
+                              num_effect_Segregating_sites,
+                              sequence_Survivability_changes,
+                              sequence_Proof_reading_changes,
+                              num_effect_Segregating_sites_Cancer,
+                              sequence_replication_factor_changes,
+                              sequence_mutation_rate_changes,
+                              sequence_generation_death_changes,
+                              sequence_replication_prob_changes,
+                              sequence_metastatic_prob_changes,
+                              max_sequences_per_File);
 
     if (stop == 1)
     {
@@ -288,7 +305,7 @@ __global__ void cuda_Sequences_to_INT_replication_Factor(int num_Sequences, int 
 
         for (int site_Check = 0; site_Check < num_replication_prob_seg_Sites; site_Check++)
         {
-            replication_Probability = replication_Probability + cuda_sequence_replication_prob_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_replication_prob_changes[site_Check][0]] + 1];
+            replication_Probability = replication_Probability + cuda_sequence_replication_prob_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_replication_prob_changes[site_Check][0] - 1] + 1];
         }
 
         if (replication_Probability > 1)
@@ -306,7 +323,7 @@ __global__ void cuda_Sequences_to_INT_replication_Factor(int num_Sequences, int 
 
         for (int site_Check = 0; site_Check < num_generation_death_seg_Sites; site_Check++)
         {
-            death_Gen_Prob = death_Gen_Prob + cuda_sequence_generation_death_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_generation_death_changes[site_Check][0]] + 1];
+            death_Gen_Prob = death_Gen_Prob + cuda_sequence_generation_death_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_generation_death_changes[site_Check][0] - 1] + 1];
         }
 
         if (death_Gen_Prob > 1)
@@ -543,7 +560,7 @@ void cancer::sequence_to_string_Threads(int start, int stop, int **sequences, in
         {
             sequence_String.append(to_string(sequences[sequence][base]));
         }
-        sequences_Converted.push_back(make_pair(sequence_String, to_string(replication_probs[sequence]) + "_" + to_string(gen_Death_probs[sequence])));
+        sequences_Converted.push_back(make_pair(sequence_String, to_string(replication_probs[sequence]) + "_" + to_string(gen_Death_probs[sequence]) + "_0"));
     }
 
     int index = 0;

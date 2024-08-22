@@ -183,7 +183,7 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
         cout << "\nInfecting tissues\n";
         vector<string> line_Data;
 
-       //// Write to sequence profiles file
+        //// Write to sequence profiles file
 
         for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
         {
@@ -232,15 +232,15 @@ void node_within_host::begin_Infection(functions_library &functions, string &int
             }
         }
     }
-    
+
     set_Infected();
 
-    //exit(-1);
-    // for (int tissue = 0; tissue < num_Tissues; tissue++)
-    // {
-    //     cout << current_Viral_load_per_Tissue[tissue] << endl;
-    // }
     // exit(-1);
+    //  for (int tissue = 0; tissue < num_Tissues; tissue++)
+    //  {
+    //      cout << current_Viral_load_per_Tissue[tissue] << endl;
+    //  }
+    //  exit(-1);
 }
 
 string node_within_host::transfer_Infection(functions_library &functions, string &intermediary_Sequence_location, string &source_Target_file_Location,
@@ -2075,8 +2075,6 @@ __global__ void cuda_Progeny_Complete_Configuration(int genome_Length,
                     if (cuda_sequence_Configuration_standard[cuda_progeny_Configuration[tid][0]][1] != -1)
                     {
                         int count = 0;
-
-                        int bases_in_Region = cuda_mutation_hotspot_parameters[hotspot][1] - (cuda_mutation_hotspot_parameters[hotspot][0] - 1);
 
                         for (int trial = 0; trial < num_Mutations; trial++)
                         {

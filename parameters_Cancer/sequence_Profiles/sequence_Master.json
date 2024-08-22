@@ -25,16 +25,16 @@
   "Reference_metastatic profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_metastatic_prob.csv",
 
   "Reference Fitness":"1",
-  "Reference Survivability":"0.5",
-  "Reference Proof Reading":"0.75",
+  "Reference Survivability":"1",
+  "Reference Proof Reading":"0.5",
 
   "Mutations":{
 
-    "Number of hotspots":2,
+    "Number of hotspots":1,
 
     "Hotspot 1":{
 
-      "Region":"100_2000",
+      "Region":"100_100",
       # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
       "Clock model":"Poisson",
 
