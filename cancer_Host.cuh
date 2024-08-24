@@ -67,6 +67,9 @@ private:
     vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
 
     vector<vector<pair<string, string>>> to_write_Sequence_Store_OTHER_Gens;
+    vector<int> last_index_Seq_Written_OTHERs;
+
+    // vector<string> converted_Sequences;
 
 public:
     cancer_Host();
@@ -148,7 +151,7 @@ public:
                              int &num_of_Cells, int &start, int &stop,
                              int *parents_in_Tissue, int &tissue, string tissue_Name,
                              vector<pair<int, int>> &indexed_Tissue_Folder,
-                             string source_sequence_Data_folder,
+                             string this_Gen_intermediary_Sequences,
                              int &overall_Generations,
                              int &last_index_Seq_Written,
                              mt19937 &gen,
@@ -168,7 +171,8 @@ public:
                              float **sequence_generation_death_changes,
                              float **sequence_replication_prob_changes,
                              float **sequence_metastatic_prob_changes,
-                             int &max_sequences_per_File, string &intermediary_Tissue_folder);
+                             int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
+                             int &last_Progeny_written_this_Gen);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,
@@ -178,4 +182,6 @@ public:
 
     string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen);
     void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
+
+    void thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length);
 };
