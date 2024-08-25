@@ -711,9 +711,9 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
         {
             int start = gpu * standard_num_per_GPU;
-            int stop = start + standard_num_per_GPU;
+            int stop_GPU = start + standard_num_per_GPU;
 
-            start_stop_Per_GPU.push_back(make_pair(start, stop));
+            start_stop_Per_GPU.push_back(make_pair(start, stop_GPU));
         }
 
         start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
@@ -941,7 +941,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         {
             progeny_Sequences[row] = (int *)malloc(genome_Length * sizeof(int));
             progeny_Configuration_Cancer[row] = (float *)malloc(5 * sizeof(float));
-            converted_Sequences.push_back("");
+            // converted_Sequences.push_back("");
         }
 
         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -1070,40 +1070,58 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
         }
 
-        exit(-1);
-
-        int num_per_Core = (parent_Cells_Found * 2) / CPU_cores;
-        int remainder_CPU = (parent_Cells_Found * 2) % CPU_cores;
-
-        vector<thread> threads_vec;
-
         cout << "\nConverting sequences to String\n";
 
-        for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
+        // int num_Progeny_being_Processed = parent_Cells_Found * 2;
+
+        // int num_per_Core = num_Progeny_being_Processed / CPU_cores;
+        // int remainder_Core = num_Progeny_being_Processed % CPU_cores;
+
+        // vector<thread> threads_vec;
+
+        // for (int core_ID = 0; core_ID < CPU_cores; core_ID++)
+        // {
+        //     int start_Node = core_ID * num_per_Core;
+        //     int stop_Node = start_Node + num_per_Core;
+
+        //     threads_vec.push_back(thread{&cancer_Host::thread_Sequence_to_String_Cancer, this, start_Node, stop_Node, progeny_Sequences});
+        // }
+
+        // if (remainder_Core != 0)
+        // {
+        //     int start_Node = num_Progeny_being_Processed - remainder_Core;
+        //     int stop_Node = num_Progeny_being_Processed;
+
+        //     threads_vec.push_back(thread{&cancer_Host::thread_Sequence_to_String_Cancer, this, start_Node, stop_Node, progeny_Sequences});
+        // }
+
+        // for (thread &t : threads_vec)
+        // {
+        //     if (t.joinable())
+        //     {
+        //         t.join();
+        //     }
+        // }
+
+        // threads_vec.clear();
+
+        for (int test = 0; test < parent_Cells_Found; test++)
         {
-            int start_Node = core_ID * num_per_Core;
-            int stop_Node = start_Node + num_per_Core;
-
-            threads_vec.push_back(thread{&cancer_Host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length});
-        }
-
-        if (remainder_CPU != 0)
-        {
-            int start_Node = (parent_Cells_Found * 2) - remainder_CPU;
-            int stop_Node = (parent_Cells_Found * 2);
-
-            threads_vec.push_back(thread{&cancer_Host::thread_Sequence_to_String, this, start_Node, stop_Node, progeny_Sequences, genome_Length});
-        }
-
-        for (thread &t : threads_vec)
-        {
-            if (t.joinable())
+            for (int progeny = (test * 2); progeny < ((test * 2) + 2); progeny++)
             {
-                t.join();
+                string sequence = "";
+                for (int base = 0; base < genome_Length; base++)
+                {
+                    sequence.append(to_string(progeny_Sequences[progeny][base]));
+                    // cout << progeny_Sequences[progeny][base];
+                }
+                converted_Sequences.push_back(sequence);
             }
         }
 
-        threads_vec.clear();
+        // exit(-1);
+
+        cout << "Converted sequences to String\n";
 
         uniform_real_distribution<float> check_Survival_Dis(0.0, 1.0);
         int check_Survival = 0;
@@ -1120,6 +1138,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         dead_List_File.open(dead_List, ios::app);
 
         vector<int> rerun_Progeny;
+
+        cout << "\nCompiling progeny: ";
 
         for (int parent = 0; parent < parent_Cells_Found; parent++)
         {
@@ -1268,6 +1288,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                     else
                     {
                         rerun_Progeny.push_back(progeny_Index);
+                        // they have to be written too.
                     }
                 }
             }
@@ -1275,11 +1296,19 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
         sequence_Profiles_File.close();
         sequence_parent_Progeny_relationships_File.close();
+        converted_Sequences.clear();
+        dead_List_File.close();
+
+        cout << "Completed\n";
 
         full_Write_Sequences_NEXT_Generation(max_sequences_per_File, intermediary_Tissue_folder, functions);
 
-        converted_Sequences.clear();
-        dead_List_File.close();
+        if (rerun_Progeny.size() > 0)
+        {
+            cout << "\nRerun progeny: " << rerun_Progeny.size() << endl;
+            
+        }
+        // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
     }
     else
     {
@@ -1290,7 +1319,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
     exit(-1);
 }
 
-void cancer_Host::thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length)
+void cancer_Host::thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences)
 {
     vector<string> converted_Sequences_Store;
 

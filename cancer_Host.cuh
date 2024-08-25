@@ -183,5 +183,5 @@ public:
     string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen);
     void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 
-    void thread_Sequence_to_String(int start, int stop, int **progeny_Sequences, int genome_Length);
+    void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
 };
