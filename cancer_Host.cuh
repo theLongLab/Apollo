@@ -172,7 +172,7 @@ public:
                              float **sequence_replication_prob_changes,
                              float **sequence_metastatic_prob_changes,
                              int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
-                             int &last_Progeny_written_this_Gen);
+                             int &last_Progeny_written_this_Gen, string rapid_Progeny_Location);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,

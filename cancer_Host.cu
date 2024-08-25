@@ -201,6 +201,9 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         string intermediary_Tissue_folder = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations + 1);
                         string dead_List = intermediary_Tissue_folder + "/dead_List.txt";
 
+                        // fstream this_Gen_progeny_parents;
+                        functions.create_File(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nFASTA");
+
                         if (filesystem::exists(intermediary_Tissue_folder) && filesystem::is_directory(intermediary_Tissue_folder))
                         {
                             cout << "Next generation already present\n";
@@ -269,7 +272,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 sequence_replication_prob_changes,
                                                 sequence_metastatic_prob_changes,
                                                 max_sequences_per_File, intermediary_Tissue_folder, source_sequence_Data_folder,
-                                                last_Progeny_written_this_Gen);
+                                                last_Progeny_written_this_Gen, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nFASTA");
                         }
 
                         remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
@@ -674,7 +677,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                       float **sequence_replication_prob_changes,
                                       float **sequence_metastatic_prob_changes,
                                       int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
-                                      int &last_Progeny_written_this_Gen)
+                                      int &last_Progeny_written_this_Gen, string rapid_Progeny_Location)
 {
 
     sort(parents_in_Tissue + start, parents_in_Tissue + stop);
@@ -1139,6 +1142,9 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
         vector<int> rerun_Progeny;
 
+        fstream rapid_Progeny_File;
+        rapid_Progeny_File.open(rapid_Progeny_Location, ios::app);
+
         cout << "\nCompiling progeny: ";
 
         for (int parent = 0; parent < parent_Cells_Found; parent++)
@@ -1287,13 +1293,35 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                     }
                     else
                     {
-                        rerun_Progeny.push_back(progeny_Index);
-                        // they have to be written too.
+                        //! they have to be written too.
+                        sequence_Profiles_File << tissue_Name << "_" << to_string(overall_Generations) << "_" << to_string(last_Progeny_written_this_Gen) << "\t" << tissue_Name << endl;
+                        sequence_parent_Progeny_relationships_File << tissue_Name << "_" << to_string(overall_Generations) << "_" << parent_IDs[parent] << "\t"
+                                                                   << tissue_Name << "_" << to_string(overall_Generations) << "_" << to_string(last_Progeny_written_this_Gen)
+                                                                   << "\tprimary_Parent" << endl;
+                        string survival_Status = "_A_";
+                        check_Survival = (check_Survival_Dis(gen) < progeny_Configuration_Cancer[progeny_Index][4]) ? 0 : 1;
+                        if (check_Survival == 1)
+                        {
+                            fstream dead_List_File_this_Gen;
+                            survival_Status = "_D_";
+                            dead_List_File_this_Gen.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt", ios::app);
+                            dead_List_File_this_Gen << last_Progeny_written_this_Gen << endl;
+                            dead_List_File_this_Gen.close();
+                        }
+                        else
+                        {
+                            rerun_Progeny.push_back(progeny_Index);
+                        }
+
+                        rapid_Progeny_File << ">" << to_string(last_Progeny_written_this_Gen) << survival_Status << to_string(progeny_Configuration_Cancer[progeny_Index][2]) << "_" << to_string(progeny_Configuration_Cancer[progeny_Index][1]) << "_" << to_string(progeny_Elapsed[progeny_Index]) << endl;
+                        rapid_Progeny_File << converted_Sequences[progeny_Index] << endl;
+                        last_Progeny_written_this_Gen++;
                     }
                 }
             }
         }
 
+        rapid_Progeny_File.close();
         sequence_Profiles_File.close();
         sequence_parent_Progeny_relationships_File.close();
         converted_Sequences.clear();
@@ -1306,9 +1334,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         if (rerun_Progeny.size() > 0)
         {
             cout << "\nRerun progeny: " << rerun_Progeny.size() << endl;
-            
         }
-        // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
+        remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
     }
     else
     {
