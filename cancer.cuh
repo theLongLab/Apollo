@@ -173,4 +173,6 @@ public:
 
     void partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
                              const string &folder_Location, int &last_seq_Num);
+
+   
 };

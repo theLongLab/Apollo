@@ -47,7 +47,7 @@ private:
     int *parents_Prev_generation;
 
     // vector<pair<string, string>> to_write_Sequence_Store;
-    vector<string> converted_Sequences;
+    // vector<string> converted_Sequences;
 
     int num_Tissues = 0;
 
@@ -68,8 +68,6 @@ private:
 
     vector<vector<pair<string, string>>> to_write_Sequence_Store_OTHER_Gens;
     vector<int> last_index_Seq_Written_OTHERs;
-
-    // vector<string> converted_Sequences;
 
 public:
     cancer_Host();
@@ -184,4 +182,24 @@ public:
     void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 
     void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
+
+    void rerun_Progeny_THIS_gen(functions_library &functions, vector<int> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices,
+                                int **cuda_parent_sequences_INT[], float *cuda_parents_Elapsed[],
+                                float *cuda_Reference_fitness_survivability_proof_reading[],
+                                float *cuda_Reference_cancer_parameters[],
+                                float **cuda_sequence_replication_factor_changes[],
+                                int mutation_Hotspots, float **cuda_mutation_hotspot_parameters[],
+                                float **cuda_A_0_mutation[],
+                                float **cuda_T_1_mutation[],
+                                float **cuda_G_2_mutation[],
+                                float **cuda_C_3_mutation[],
+                                int *cuda_num_effect_Segregating_sites[],
+                                int *cuda_num_effect_Segregating_sites_Cancer[],
+                                float **cuda_sequence_Survivability_changes[],
+                                float **cuda_sequence_Proof_reading_changes[],
+                                float **cuda_sequence_mutation_rate_changes[],
+                                float **cuda_sequence_generation_death_changes[],
+                                float **cuda_sequence_replication_prob_changes[],
+                                float **cuda_sequence_metastatic_prob_changes[],
+                                int *CUDA_device_IDs);
 };
