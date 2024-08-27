@@ -66,8 +66,8 @@ private:
     vector<pair<string, string>> to_write_Sequence_Store_NEXT_Gen;
     vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
 
-    vector<vector<pair<string, string>>> to_write_Sequence_Store_OTHER_Gens;
-    vector<int> last_index_Seq_Written_OTHERs;
+    vector<vector<vector<pair<string, string>>>> to_write_Sequence_Store_OTHER_Gens;
+    vector<vector<int>> last_index_Seq_Written_OTHERs;
 
 public:
     cancer_Host();
@@ -183,8 +183,18 @@ public:
 
     void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
 
-    void rerun_Progeny_THIS_gen(functions_library &functions, vector<int> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices,
-                                int **cuda_parent_sequences_INT[], float *cuda_parents_Elapsed[],
+    vector<pair<int, int>> compile_Progeny(functions_library &functions,
+                                           string &intermediary_Tissue_folder, string &rapid_Progeny_Location,
+                                           int &parent_Cells_Found,
+                                           float *progeny_Elapsed, float **progeny_Configuration_Cancer,
+                                           int &last_index_Seq_Written, int &overall_Generations, string &tissue_Name,
+                                           int **progeny_Sequences, int &tissue_Index,
+                                           mt19937 &gen, vector<int> &parent_IDs,
+                                           string &source_sequence_Data_folder,
+                                           int &last_Progeny_written_this_Gen);
+
+    void rerun_Progeny_THIS_gen(functions_library &functions, vector<pair<int, int>> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices, int &tot_Parents,
+                                int **parent_sequences_INT, float *parents_Elapsed,
                                 float *cuda_Reference_fitness_survivability_proof_reading[],
                                 float *cuda_Reference_cancer_parameters[],
                                 float **cuda_sequence_replication_factor_changes[],
@@ -201,5 +211,9 @@ public:
                                 float **cuda_sequence_generation_death_changes[],
                                 float **cuda_sequence_replication_prob_changes[],
                                 float **cuda_sequence_metastatic_prob_changes[],
-                                int *CUDA_device_IDs);
+                                int *CUDA_device_IDs,
+                                string &intermediary_Tissue_folder, string &rapid_Progeny_Location,
+                                int &last_index_Seq_Written, int &overall_Generations, string &tissue_Name,
+                                int &tissue_Index, mt19937 &gen, string &source_sequence_Data_folder, int &last_Progeny_written_this_Gen,
+                                int &max_sequences_per_File);
 };
