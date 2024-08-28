@@ -172,7 +172,8 @@ public:
                              float **sequence_replication_prob_changes,
                              float **sequence_metastatic_prob_changes,
                              int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
-                             int &last_Progeny_written_this_Gen, string rapid_Progeny_Location);
+                             int &last_Progeny_written_this_Gen, string rapid_Progeny_Location,
+                             int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,
@@ -180,7 +181,8 @@ public:
     //                                    int &start, int &stop, int cell_Count,
     //                                    int *CUDA_device_IDs);
 
-    string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen);
+    string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen,
+                                 int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
     void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 
     void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
@@ -193,7 +195,8 @@ public:
                                            int **progeny_Sequences, int &tissue_Index,
                                            mt19937 &gen, vector<int> &parent_IDs,
                                            string &source_sequence_Data_folder,
-                                           int &last_Progeny_written_this_Gen);
+                                           int &last_Progeny_written_this_Gen,
+                                           int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
 
     void rerun_Progeny_THIS_gen(functions_library &functions, vector<pair<int, int>> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices, int &tot_Parents,
                                 int **parent_sequences_INT, float *parents_Elapsed,
@@ -217,5 +220,12 @@ public:
                                 string &intermediary_Tissue_folder, string &rapid_Progeny_Location,
                                 int &last_index_Seq_Written, int &overall_Generations, string &tissue_Name,
                                 int &tissue_Index, mt19937 &gen, string &source_sequence_Data_folder, int &last_Progeny_written_this_Gen,
-                                int &max_sequences_per_File);
+                                int &max_sequences_per_File,
+                                int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
+
+    void cell_Migration_set(int &max_Limit, multiset<pair<float, int>> &migration_cell_List, pair<float, int> candidate_Cell);
+
+    void migration_of_Cells(string &source_sequence_Data_folder, vector<string> &tissue_Names,
+                            int source, vector<pair<int, int>> tissue_migration_Targets_amount, multiset<pair<float, int>> &migration_cell_List,
+                            int &overall_Generations);
 };
