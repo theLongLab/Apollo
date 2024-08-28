@@ -64,7 +64,7 @@ private:
     int genome_Length;
 
     vector<pair<string, string>> to_write_Sequence_Store_NEXT_Gen;
-    vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
+    //vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
 
     vector<vector<vector<pair<string, string>>>> to_write_Sequence_Store_OTHER_Gens;
     vector<vector<int>> last_index_Seq_Written_OTHERs;
@@ -81,9 +81,10 @@ public:
                     string &output_Node_location,
                     int &max_sequences_per_File);
 
-    void intialize_Tissues(string &host_Folder, vector<vector<pair<string, string>>> &tissue_Sequences, functions_library &functions, int &current_Generation);
+    void intialize_Tissues(string &host_Folder, vector<vector<pair<string, string>>> &tissue_Sequences, vector<vector<string>> &profile_Lines_Tissues,
+                           functions_library &functions, int &current_Generation);
 
-    void sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> &sequence_Write_Store,
+    void sequence_Write_Configurator(vector<pair<string, string>> &sequence_Write_Store_All, vector<pair<string, string>> &sequence_Write_Store, vector<string> &profile_Lines,
                                      int &max_sequences_per_File, const string &folder_Location, int &last_seq_Num,
                                      string sequence_Profiles_Location, string tissue, int current_Generation);
 
@@ -91,11 +92,11 @@ public:
                              const string &folder_Location, int &last_seq_Num,
                              string sequence_Profiles_Location, string tissue, int current_Generation);
 
-    void full_Write_Sequences_NEXT_Generation(int &max_sequences_per_File, string &next_Generation_location,
-                                              functions_library &functions);
+    void full_Write_Sequences_NEXT_Generation(int &max_sequences_per_File, string next_Generation_location,
+                                              functions_library &functions, vector<pair<string, string>> &to_write_Sequence_Store);
 
-    void remainder_Write_Sequences_NEXT_Generation(string &next_Generation_location,
-                                                   functions_library &functions);
+    void remainder_Write_Sequences_NEXT_Generation(string next_Generation_location,
+                                                   functions_library &functions, vector<pair<string, string>> &to_write_Sequence_Store);
 
     void simulate_Generations(functions_library &functions,
                               int &overall_Generations, float &date_Increment,
