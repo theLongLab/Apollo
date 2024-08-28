@@ -210,7 +210,7 @@ void cancer::ingress()
 
     functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
 
-   // exit(-1);
+    // exit(-1);
 
     int stop = 0;
     host.simulate_Generations(functions,
@@ -244,7 +244,8 @@ void cancer::ingress()
                               sequence_generation_death_changes,
                               sequence_replication_prob_changes,
                               sequence_metastatic_prob_changes,
-                              max_sequences_per_File);
+                              max_sequences_per_File,
+                              viral_Migration_Values, migration_start_Generation);
 
     if (stop == 1)
     {

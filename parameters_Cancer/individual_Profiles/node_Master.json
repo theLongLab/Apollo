@@ -22,7 +22,7 @@
     "Cell migration":{
 
       "1_2":{
-        "Start generation":2,
+        "Start generation":0,
         "Cell migration Binomial trials":100,
         "Cell migration Binomial probability":"0.10",
       },

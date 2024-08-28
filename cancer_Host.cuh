@@ -64,7 +64,7 @@ private:
     int genome_Length;
 
     vector<pair<string, string>> to_write_Sequence_Store_NEXT_Gen;
-    //vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
+    // vector<pair<string, string>> to_write_Sequence_Store_THIS_Gen;
 
     vector<vector<vector<pair<string, string>>>> to_write_Sequence_Store_OTHER_Gens;
     vector<vector<int>> last_index_Seq_Written_OTHERs;
@@ -129,7 +129,8 @@ public:
                               float **sequence_generation_death_changes,
                               float **sequence_replication_prob_changes,
                               float **sequence_metastatic_prob_changes,
-                              int &max_sequences_per_File);
+                              int &max_sequences_per_File,
+                              float **viral_Migration_Values, int *migration_start_Generation);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);

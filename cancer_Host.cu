@@ -36,7 +36,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        float **sequence_generation_death_changes,
                                        float **sequence_replication_prob_changes,
                                        float **sequence_metastatic_prob_changes,
-                                       int &max_sequences_per_File)
+                                       int &max_sequences_per_File,
+                                       float **viral_Migration_Values, int *migration_start_Generation)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -69,12 +70,57 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         ////clear array
         int *real_Particle_count_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
         int sum_Check = 0;
+
+        vector<int> tissue_Migration_Totals;
+        vector<vector<pair<int, int>>> tissue_migration_Targets_amount;
+
         for (int tissue = 0; tissue < num_Tissues; tissue++)
         {
             real_Particle_count_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size() - dead_Particle_count[tissue];
             cout << tissue_Names[tissue] << " tissue: " << real_Particle_count_per_Tissue[tissue] << endl;
             sum_Check = sum_Check + real_Particle_count_per_Tissue[tissue];
+
+            tissue_Migration_Totals.push_back(0);
+            vector<pair<int, int>> intialize_vec;
+            tissue_migration_Targets_amount.push_back(intialize_vec);
         }
+
+        cout << "\nPutative migrating particles per tissue: \n";
+
+        for (int migration_Check = 0; migration_Check < (num_Tissues * (num_Tissues - 1)); migration_Check++)
+        {
+            if (viral_Migration_Values[migration_Check][0] != -1)
+            {
+                if (overall_Generations >= migration_start_Generation[migration_Check])
+                {
+                    int source = migration_Check / (num_Tissues - 1);
+                    int destination = migration_Check % (num_Tissues - 1);
+
+                    if (destination >= source)
+                    {
+                        destination = destination + 1;
+                    }
+
+                    binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
+                    int num_viruses_to_transfer = num_Particles(gen);
+
+                    tissue_Migration_Totals[source] = tissue_Migration_Totals[source] + num_viruses_to_transfer;
+                    tissue_migration_Targets_amount[source].push_back(make_pair(destination, num_viruses_to_transfer));
+                }
+            }
+        }
+
+        for (int tissue = 0; tissue < num_Tissues; tissue++)
+        {
+            cout << "\nTissue " << tissue_Names[tissue] << ": " << tissue_Migration_Totals[tissue] << endl;
+
+            for (int path = 0; path < tissue_migration_Targets_amount[tissue].size(); path++)
+            {
+                cout << tissue_migration_Targets_amount[tissue][path].second << " cells to " << tissue_Names[tissue_migration_Targets_amount[tissue][path].first] << endl;
+            }
+        }
+
+        // exit(-1);
 
         if (sum_Check > 0)
         {
@@ -283,10 +329,13 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                             remainder_Write_Sequences_NEXT_Generation(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(forward), functions, to_write_Sequence_Store_OTHER_Gens[tissue][forward]);
                         }
 
-                        exit(-1);
-
                         free(parents_in_Tissue);
+
+                        // See which progeny qualify to migrate
+
+                        exit(-1);
                     }
+                    // overall_Generations++;
                 }
             }
             else
