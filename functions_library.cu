@@ -6459,7 +6459,7 @@ vector<pair<int, int>> functions_library::index_sequence_Folder(string &source_T
 
     for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location))
     {
-        if (entry.path().extension() == ".nfasta")
+        if (entry.path().extension() == ".nfasta" || entry.path().extension() == ".nFASTA")
         {
 
             string trim_Extension = entry.path().filename().stem().string();
@@ -6490,7 +6490,7 @@ vector<vector<pair<int, int>>> functions_library::index_sequence_Folders(string 
             {
                 for (const auto &entry : filesystem::directory_iterator(source_Target_file_Location + "/" + to_string(tissue) + "/generation_" + to_string(current_Generation)))
                 {
-                    if (entry.path().extension() == ".nfasta")
+                    if (entry.path().extension() == ".nfasta" || entry.path().extension() == ".nFASTA")
                     {
                         // filesystem::path file_Name = entry.path().filename().stem().string();
                         string trim_Extension = entry.path().filename().stem().string();

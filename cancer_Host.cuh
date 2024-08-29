@@ -227,5 +227,8 @@ public:
 
     void migration_of_Cells(string &source_sequence_Data_folder, vector<string> &tissue_Names,
                             int source, vector<pair<int, int>> tissue_migration_Targets_amount, multiset<pair<float, int>> &migration_cell_List,
-                            int &overall_Generations);
+                            int &overall_Generations,
+                            functions_library &functions);
+
+    void thread_find_Files_2(int start, int stop, vector<int> &cell_Indexes, vector<pair<int, int>> &indexed_Tissue_Folder);
 };

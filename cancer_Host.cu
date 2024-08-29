@@ -258,7 +258,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         string dead_List = intermediary_Tissue_folder + "/dead_List.txt";
 
                         // fstream this_Gen_progeny_parents;
-                        functions.create_File(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nFASTA");
+                        functions.create_File(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta");
 
                         if (filesystem::exists(intermediary_Tissue_folder) && filesystem::is_directory(intermediary_Tissue_folder))
                         {
@@ -330,14 +330,14 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 sequence_replication_prob_changes,
                                                 sequence_metastatic_prob_changes,
                                                 max_sequences_per_File, intermediary_Tissue_folder, source_sequence_Data_folder,
-                                                last_Progeny_written_this_Gen, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nFASTA",
+                                                last_Progeny_written_this_Gen, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta",
                                                 tissue_Migration_Totals[tissue], migration_cell_List);
                         }
 
                         // last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
 
                         string rename_rapid_Progeny = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) +
-                                                      "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_rapid_Progeny.nFASTA";
+                                                      "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_rapid_Progeny.nfasta";
 
                         if (filesystem::exists(rename_rapid_Progeny))
                         {
@@ -345,7 +345,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                             try
                             {
                                 filesystem::rename(rename_rapid_Progeny, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) +
-                                                                             "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_" + to_string(last_Progeny_written_this_Gen - 1) + ".nFASTA");
+                                                                             "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_" + to_string(last_Progeny_written_this_Gen - 1) + ".nfasta");
                             }
                             catch (const filesystem::filesystem_error &e)
                             {
@@ -371,7 +371,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
                         migration_of_Cells(source_sequence_Data_folder, tissue_Names,
                                            tissue, tissue_migration_Targets_amount[tissue], migration_cell_List,
-                                           overall_Generations);
+                                           overall_Generations, functions);
 
                         exit(-1);
                     }
@@ -418,7 +418,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
 void cancer_Host::migration_of_Cells(string &source_sequence_Data_folder, vector<string> &tissue_Names,
                                      int source, vector<pair<int, int>> tissue_migration_Targets_amount, multiset<pair<float, int>> &migration_cell_List,
-                                     int &overall_Generations)
+                                     int &overall_Generations,
+                                     functions_library &functions)
 {
     cout << "\nConfiguring metastatic cell migration from " << tissue_Names[source] << ": ";
     // check if migrating target tissue folder exists already
@@ -458,6 +459,204 @@ void cancer_Host::migration_of_Cells(string &source_sequence_Data_folder, vector
     }
 
     cout << "\nAll cells assigned\nWriting migrations\n";
+
+    string sequence_Tissue_Folder = source_sequence_Data_folder + "/" + to_string(source) + "/generation_" + to_string(overall_Generations + 1);
+    vector<pair<int, int>> indexed_Source_Folder = functions.index_sequence_Folder(sequence_Tissue_Folder);
+
+    for (int tissue = 0; tissue < different_Tissues; tissue++)
+    {
+        cout << "\nMoving sequences to tissue: " << tissue_Names[tissue_migration_Targets_amount[tissue].first] << endl;
+
+        string sequence_target_Folder = source_sequence_Data_folder + "/" + to_string(tissue_migration_Targets_amount[tissue].first) + "/generation_" + to_string(overall_Generations + 1);
+        int last_target_Index = 0;
+
+        if (filesystem::exists(sequence_target_Folder))
+        {
+            vector<pair<int, int>> sequence_target_Index = functions.index_sequence_Folder(sequence_target_Folder);
+            last_target_Index = sequence_target_Index[sequence_target_Index.size() - 1].second + 1;
+        }
+        else
+        {
+            string dead_List = sequence_target_Folder + "/dead_List.txt";
+            functions.config_Folder(sequence_target_Folder, tissue_Names[tissue_migration_Targets_amount[tissue].first] + " Generation " + to_string(overall_Generations + 1));
+            functions.create_File(dead_List);
+        }
+
+        int start_Index = last_target_Index;
+
+        int num_Sequences = tissue_cell_Index[tissue].size();
+        sort(tissue_cell_Index[tissue].begin(), tissue_cell_Index[tissue].end());
+
+        cout << "Collecting " << num_Sequences << " sequence(s)\n";
+        int num_per_Core = num_Sequences / this->CPU_cores;
+        int remainder = num_Sequences % this->CPU_cores;
+
+        vector<thread> threads_vec;
+
+        for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+        {
+            int start_Cell = core_ID * num_per_Core;
+            int stop_Cell = start_Cell + num_per_Core;
+
+            threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
+        }
+
+        if (remainder != 0)
+        {
+            int start_Cell = num_Sequences - remainder;
+            int stop_Cell = num_Sequences;
+
+            threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
+        }
+
+        for (thread &t : threads_vec)
+        {
+            if (t.joinable())
+            {
+                t.join();
+            }
+        }
+
+        threads_vec.clear();
+
+        vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
+        found_Tissue_Folder_Indexes.clear();
+
+        sort(Tissue_files.begin(), Tissue_files.end());
+
+        cout << Tissue_files.size() << " file(s) identified\n";
+
+        vector<pair<string, string>> all_Sequences;
+        cout << "Retrieving sequence(s)\n";
+
+        fstream nfasta;
+        int index_Files = 0;
+        int line_current = 0;
+        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+
+        fstream sequence_Profiles_File;
+        sequence_Profiles_File.open(sequence_Profiles, ios::app);
+        fstream sequence_parent_Progeny_relationships_File;
+        sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
+
+        for (int find = 0; find < num_Sequences; find++)
+        {
+            while ((indexed_Source_Folder[Tissue_files[index_Files]].first <= tissue_cell_Index[tissue][find] && indexed_Source_Folder[Tissue_files[index_Files]].second >= tissue_cell_Index[tissue][find]) == 0)
+            {
+                nfasta.close();
+                index_Files++;
+                nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+                line_current = 0;
+            }
+
+            if (nfasta.is_open())
+            {
+                int line_t0_check = (tissue_cell_Index[tissue][find] - indexed_Source_Folder[Tissue_files[index_Files]].first) * 2;
+
+                string line;
+                string sequence = "";
+
+                while (getline(nfasta, line))
+                {
+                    if (line_t0_check == line_current)
+                    {
+                        vector<string> line_Data;
+                        functions.split(line_Data, line, '_');
+                        if (stoi(line_Data[0].substr(1)) == tissue_cell_Index[tissue][find])
+                        {
+                            getline(nfasta, line);
+
+                            all_Sequences.push_back(make_pair(to_string(last_target_Index) + "_A_" + line_Data[2] + "_" + line_Data[3] + "_" + line_Data[4] + "_" + line_Data[5] + "_" + line_Data[6] + "_" + line_Data[7], line));
+                            sequence_Profiles_File << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index) << "\t" << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "\t" << line_Data[5] << "\t" << line_Data[3] << "\t" << line_Data[2] << "\t" << line_Data[6] << "\t" << line_Data[7] << endl;
+                            sequence_parent_Progeny_relationships_File << tissue_Names[source] << "_" << to_string(overall_Generations + 1) << "_" << tissue_cell_Index[tissue][find] << "\t"
+                                                                       << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index)
+                                                                       << "\tMigration" << endl;
+                            last_target_Index++;
+                            line_current++;
+                        }
+                        else
+                        {
+                            cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                            cout << "Looking for: " << tissue_cell_Index[tissue][find] << endl
+                                 << "Sequence ID at location: " << line << endl
+                                 << "File: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first
+                                 << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                            exit(-1);
+                        }
+                        line_current++;
+                        break;
+                    }
+                    line_current++;
+                }
+            }
+            else
+            {
+                cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                exit(-1);
+            }
+        }
+        nfasta.close();
+
+        sequence_Profiles_File.close();
+        sequence_parent_Progeny_relationships_File.close();
+
+        cout << "Found " << all_Sequences.size() << " sequences\nWriting migrating sequences: ";
+        fstream write_Migration;
+        write_Migration.open(sequence_target_Folder + "/" + to_string(start_Index) + "_" + to_string(last_target_Index - 1) + ".nfasta", ios::out);
+
+        if (write_Migration.is_open())
+        {
+            for (int sequence = 0; sequence < all_Sequences.size(); sequence++)
+            {
+                write_Migration << ">" << all_Sequences[sequence].first << endl
+                                << all_Sequences[sequence].second << endl;
+            }
+            write_Migration.close();
+            cout << "Complete\n";
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO CREATE METASTIC SEQUENCES FILE: " << sequence_target_Folder << "/" << to_string(start_Index) << "_" << to_string(last_target_Index - 1) << ".nfasta" << endl;
+            exit(-1);
+        }
+    }
+}
+
+void cancer_Host::thread_find_Files_2(int start, int stop, vector<int> &cell_Indexes, vector<pair<int, int>> &indexed_Tissue_Folder)
+{
+    vector<int> caught_Indexes;
+
+    for (int sequence = start; sequence < stop; sequence++)
+    {
+        int top = 0;
+        int bottom = indexed_Tissue_Folder.size() - 1;
+        int middle = top + ((bottom - top) / 2);
+
+        while (top <= bottom)
+        {
+            if ((indexed_Tissue_Folder[middle].first <= cell_Indexes[sequence]) && (indexed_Tissue_Folder[middle].second >= cell_Indexes[sequence]))
+            {
+                caught_Indexes.push_back(middle);
+                // found = 'Y';
+                break;
+            }
+            else if (indexed_Tissue_Folder[middle].first < cell_Indexes[sequence])
+            {
+                top = middle + 1;
+            }
+            else
+            {
+                bottom = middle - 1;
+            }
+            middle = top + ((bottom - top) / 2);
+        }
+    }
+
+    unique_lock<shared_mutex> ul(g_mutex);
+    for (int index = 0; index < caught_Indexes.size(); index++)
+    {
+        found_Tissue_Folder_Indexes.insert(caught_Indexes[index]);
+    }
 }
 
 __global__ void cuda_replicate_Progeny_Main(int num_Parents,
@@ -2178,6 +2377,8 @@ string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tiss
 
     vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
     found_Tissue_Folder_Indexes.clear();
+
+    sort(Tissue_files.begin(), Tissue_files.end());
 
     cout << Tissue_files.size() << " file(s) identified\n";
 
