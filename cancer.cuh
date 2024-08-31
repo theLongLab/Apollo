@@ -152,6 +152,10 @@ private:
 
     vector<pair<string, string>> all_sequences_String;
 
+    int count_tajima_Regions = 0;
+    int **tajima_regions_Start_Stop;
+    string reference_Genome_location = "";
+
 public:
     cancer(string parameter_Master_Location);
 

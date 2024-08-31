@@ -130,7 +130,9 @@ public:
                               float **sequence_replication_prob_changes,
                               float **sequence_metastatic_prob_changes,
                               int &max_sequences_per_File,
-                              float **viral_Migration_Values, int *migration_start_Generation);
+                              float **viral_Migration_Values, int *migration_start_Generation,
+                              int &count_tajima_Regions, int **tajima_regions_Start_Stop,
+                              string &reference_Genome_location);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);
@@ -231,4 +233,19 @@ public:
                             functions_library &functions);
 
     void thread_find_Files_2(int start, int stop, vector<int> &cell_Indexes, vector<pair<int, int>> &indexed_Tissue_Folder);
+
+    void calculate_Tajima(functions_library &functions,
+                          int &num_Regions, int **tajima_regions_Start_Stop,
+                          int &overall_Generations, string &tissue_Name, int &tissue_Index,
+                          int *CUDA_device_IDs,
+                          string sequence_Tissue_Folder, int &max_Cells_at_a_time,
+                          string output_Tajima_File,
+                          string reference_Genome_location);
+
+    void process_Tajima_String(string &all_Sequences, int &count_Track, int &num_Regions, int **cuda_tajima_regions_Start_Stop,
+                               char *cuda_Reference_Genome, int *cuda_per_Region,
+                               functions_library &functions);
+
+    long int combos_N(int count);
+    long int fact_half(int count);
 };

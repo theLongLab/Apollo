@@ -245,7 +245,9 @@ void cancer::ingress()
                               sequence_replication_prob_changes,
                               sequence_metastatic_prob_changes,
                               max_sequences_per_File,
-                              viral_Migration_Values, migration_start_Generation);
+                              viral_Migration_Values, migration_start_Generation,
+                              count_tajima_Regions, tajima_regions_Start_Stop,
+                              reference_Genome_location);
 
     if (stop == 1)
     {
@@ -1430,7 +1432,8 @@ void cancer::sequence_Master_Manager(functions_library &functions)
         "\"Parent sequences folder\"",
         "\"Mutation availability\"",
         "\"Reference Fitness\"",
-        "\"Reference Survivability\""};
+        "\"Reference Survivability\"",
+        "\"Tajima's regions availability\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(sequence_Master_location, parameters_List);
 
@@ -1606,6 +1609,46 @@ void cancer::sequence_Master_Manager(functions_library &functions)
             cout << "No mutational hotspots present to configure.\n";
         }
     }
+
+    cout << "\nTajima's D regions: ";
+    status = Parameters.get_STRING(found_Parameters[4]);
+    transform(status.begin(), status.end(), status.begin(), ::toupper);
+
+    if (status == "YES")
+    {
+        cout << "Available\n";
+        vector<pair<string, string>> mutations_Block = Parameters.get_block_from_File(sequence_Master_location, "Tajima's regions");
+
+        reference_Genome_location = Parameters.get_STRING(mutations_Block, "Reference genome file");
+        cout << "Reference genome file: " << reference_Genome_location << endl;
+        count_tajima_Regions = Parameters.get_INT(mutations_Block, "Number of regions");
+
+        // exit(-1);
+
+        cout << "Number of regions: " << count_tajima_Regions << endl;
+        cout << "\nConfiguring regions:";
+        tajima_regions_Start_Stop = functions.create_INT_2D_arrays(count_tajima_Regions, 2);
+        vector<string> line_Data;
+
+        for (int region = 0; region < count_tajima_Regions; region++)
+        {
+            cout << "Processing Region " << region + 1 << ": ";
+            string region_String = "Region " + to_string(region + 1);
+            string region_Start_Stop = Parameters.get_STRING(mutations_Block, region_String);
+
+            functions.split(line_Data, region_Start_Stop, '_');
+            tajima_regions_Start_Stop[region][0] = stoi(line_Data[0]);
+            tajima_regions_Start_Stop[region][1] = stoi(line_Data[1]);
+
+            cout << tajima_regions_Start_Stop[region][0] << " to " << tajima_regions_Start_Stop[region][1] << endl;
+        }
+    }
+    else
+    {
+        cout << "Not Available\n";
+    }
+    cout << endl;
+    //exit(-1);
 
     parameters_List = {
         "\"Fitness profile file\"",
