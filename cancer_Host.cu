@@ -77,7 +77,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         // {
         //     columns_Tajima = columns_Tajima + "\tRegion_" + to_string(region + 1);
         // }
-        functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tpairwise_Diff\tCombinations\tPi\ttajima_D");
+        functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
     }
     // functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
 
@@ -273,7 +273,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         string dead_List = intermediary_Tissue_folder + "/dead_List.txt";
 
                         // fstream this_Gen_progeny_parents;
-                        functions.create_File(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta");
+                        // functions.create_File(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta");
 
                         if (filesystem::exists(intermediary_Tissue_folder) && filesystem::is_directory(intermediary_Tissue_folder))
                         {
@@ -437,7 +437,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         }
 
         // ! STOP after testing
-        stop_Type = 1;
+        // stop_Type = 1;
 
     } while (stop_Type == 0);
 
@@ -709,44 +709,71 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     cudaFree(cuda_per_Region);
 
     cout << "\nCalculating Tajima's D: \n";
-    // functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tpairwise_Diff\tCombinations\tPi\ttajima_D");
+    // functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
     float tot_pairwise_Differences = 0;
+    int seg_sites_Count = 0;
     for (int region = 0; region < num_Regions; region++)
     {
         float MAF = (float)per_Region[region] / N_float;
-        if (MAF > 0.5)
+        if (MAF != 0 || MAF != 1)
         {
-            MAF = 1.0 - MAF;
+            if (MAF > 0.5)
+            {
+                MAF = 1.0 - MAF;
+            }
+            // cout << MAF << endl;
+            tot_pairwise_Differences = tot_pairwise_Differences + (MAF * (1 - MAF) * pow(N_float, 2));
+            seg_sites_Count++;
         }
-        // cout << MAF << endl;
-        tot_pairwise_Differences = tot_pairwise_Differences + (MAF * (1 - MAF) * pow(N_float, 2));
     }
 
-    cout << "Total pairwise differences: " << tot_pairwise_Differences << endl;
-    long int combinations = combos_N(N);
-    cout << "Combinations: " << combinations << endl;
-    float pi = (float)tot_pairwise_Differences / combinations;
-    cout << "Pi: " << pi << endl;
-    float D = (float)(pi - (num_Regions / a_1)) / sqrt(((e1 * num_Regions) + (e2 * num_Regions * (num_Regions - 1))));
-    cout << "Tajima's D: " << D << endl;
-
-    fstream tajima_Write;
-    tajima_Write.open(output_Tajima_File, ios::app);
-    if (tajima_Write.is_open())
+    if (seg_sites_Count > 0)
     {
-        cout << "Writing to file: " << output_Tajima_File << endl;
-        tajima_Write << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
-                     << to_string(N) << "\t" << to_string(tot_pairwise_Differences) << "\t" << to_string(combinations) << "\t" << to_string(pi) << "\t"
-                     << to_string(D) << endl;
-        tajima_Write.close();
+        cout << "Total pairwise differences: " << tot_pairwise_Differences << endl;
+        long int combinations = combos_N(N);
+        cout << "Combinations: " << combinations << endl;
+        float pi = (float)tot_pairwise_Differences / combinations;
+        cout << "Pi: " << pi << endl;
+        float D = (float)(pi - (num_Regions / a_1)) / sqrt(((e1 * num_Regions) + (e2 * num_Regions * (num_Regions - 1))));
+        cout << "Tajima's D: " << D << endl;
+
+        fstream tajima_Write;
+        tajima_Write.open(output_Tajima_File, ios::app);
+        if (tajima_Write.is_open())
+        {
+            cout << "Writing to file: " << output_Tajima_File << endl;
+            tajima_Write << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
+                         << to_string(N) << "\t" << seg_sites_Count << "\t" << to_string(tot_pairwise_Differences) << "\t" << to_string(combinations) << "\t" << to_string(pi) << "\t"
+                         << to_string(D) << endl;
+            tajima_Write.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN TAJIMA OUTPUT FILE: " << output_Tajima_File << endl;
+            exit(-1);
+        }
+        // exit(-1);
     }
     else
     {
-        cout << "ERROR: UNABLE TO OPEN TAJIMA OUTPUT FILE: " << output_Tajima_File << endl;
-        exit(-1);
-    }
-    // exit(-1);
+        cout << "No segregating sites due to fixation\n";
 
+        fstream tajima_Write;
+        tajima_Write.open(output_Tajima_File, ios::app);
+        if (tajima_Write.is_open())
+        {
+            cout << "Writing to file: " << output_Tajima_File << endl;
+            tajima_Write << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
+                         << to_string(N) << "\t0\t" << "NA" << "\t" << "NA" << "\t" << "NA" << "\t"
+                         << "NA" << endl;
+            tajima_Write.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN TAJIMA OUTPUT FILE: " << output_Tajima_File << endl;
+            exit(-1);
+        }
+    }
     // cout << "DONE\n";
     for (int row = 0; row < num_Regions; row++)
     {
@@ -2113,7 +2140,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                 cout << "Configuring datapoints: ";
                 // int *rerun_Progeny_Indexes = (int *)malloc(sizeof(int) * parent_Cells_Found);
                 parents_Elapsed = (float *)malloc(sizeof(float) * parent_Cells_Found);
-                vector<int> parent_IDs;
+                parent_IDs.clear();
+                // vector<int> parent_IDs;
                 for (int parent = 0; parent < parent_Cells_Found; parent++)
                 {
                     // rerun_Progeny_Indexes[parent] = rerun_Progeny[parent];
@@ -2126,8 +2154,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                 cout << "Done\n";
 
                 int **cuda_progeny_Sequences_INT[num_Cuda_devices];
-                //float *cuda_progeny_Elapsed[num_Cuda_devices];
-                //float **cuda_progeny_Configuration_Cancer[num_Cuda_devices];
+                // float *cuda_progeny_Elapsed[num_Cuda_devices];
+                // float **cuda_progeny_Configuration_Cancer[num_Cuda_devices];
 
                 int **cuda_parent_sequences_INT[num_Cuda_devices];
                 // cuda_parents_Elapsed[num_Cuda_devices];
@@ -2365,7 +2393,12 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             cout << "Clearing arrays\n";
             // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
             // cout << "Check 1\n";
-            functions.clear_Array_int_CPU(progeny_Sequences, parent_Cells_Found * 2);
+            // functions.clear_Array_int_CPU(progeny_Sequences, parent_Cells_Found * 2);
+            for (int row = 0; row < parent_Cells_Found; row++)
+            {
+                free(progeny_Sequences[row]);
+            }
+            free(progeny_Sequences);
             // cout << "Check 2\n";
             free(progeny_Elapsed);
             // cout << "Check 3\n";
@@ -2491,8 +2524,10 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
     dead_List_File.open(dead_List, ios::app);
 
     fstream rapid_Progeny_File;
-    rapid_Progeny_File.open(rapid_Progeny_Location, ios::app);
-
+    if (filesystem::exists(rapid_Progeny_Location))
+    {
+        rapid_Progeny_File.open(rapid_Progeny_Location, ios::app);
+    }
     cout << "\nCompiling progeny: ";
 
     for (int parent = 0; parent < parent_Cells_Found; parent++)
@@ -2721,6 +2756,12 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                         rerun_Progeny.push_back(make_pair(progeny_Index, last_Progeny_written_this_Gen));
                     }
 
+                    if (!filesystem::exists(rapid_Progeny_Location))
+                    {
+                        functions.create_File(rapid_Progeny_Location);
+                        rapid_Progeny_File.open(rapid_Progeny_Location, ios::app);
+                    }
+
                     rapid_Progeny_File << ">" << to_string(last_Progeny_written_this_Gen) << survival_Status << to_string(progeny_Configuration_Cancer[progeny_Index][2]) << "_" << to_string(progeny_Configuration_Cancer[progeny_Index][1]) << "_" << to_string(progeny_Elapsed[progeny_Index]) << "_" << to_string(progeny_Configuration_Cancer[progeny_Index][0]) << "_" << to_string(progeny_Configuration_Cancer[progeny_Index][3]) << "_" << to_string(progeny_Configuration_Cancer[progeny_Index][4]) << endl;
                     string sequence = "";
                     for (int base = 0; base < genome_Length; base++)
@@ -2734,7 +2775,10 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
         }
     }
 
-    rapid_Progeny_File.close();
+    if (filesystem::exists(rapid_Progeny_Location))
+    {
+        rapid_Progeny_File.close();
+    }
     sequence_Profiles_File.close();
     sequence_parent_Progeny_relationships_File.close();
     dead_List_File.close();
