@@ -49,7 +49,22 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        int &max_sequences_per_File,
                                        float **viral_Migration_Values, int *migration_start_Generation,
                                        int &count_tajima_Regions, int **tajima_regions_Start_Stop,
-                                       string &reference_Genome_location)
+                                       string &reference_Genome_location,
+                                       int *tissue_selection_Position_Count,
+                                       int *Survivability_Positions,
+                                       int *Proof_Positions,
+                                       int *Replication_factor_Positions,
+                                       int *Mutation_rate_factor_Positions,
+                                       int *Generation_death_Positions,
+                                       int *Replication_prob_Positions,
+                                       int *Metastatic_Positions,
+                                       float **tissues_ATGC_positions_Survivability,
+                                       float **tissues_ATGC_positions_Proof,
+                                       float **tissues_ATGC_positions_Replication_factor,
+                                       float **tissues_ATGC_positions_Mutation_rate_factor,
+                                       float **tissues_ATGC_positions_Generation_death,
+                                       float **tissues_ATGC_positions_Replication_prob,
+                                       float **tissues_ATGC_positions_Metastatic)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -346,7 +361,22 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 sequence_metastatic_prob_changes,
                                                 max_sequences_per_File, intermediary_Tissue_folder, source_sequence_Data_folder,
                                                 last_Progeny_written_this_Gen, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta",
-                                                tissue_Migration_Totals[tissue], migration_cell_List);
+                                                tissue_Migration_Totals[tissue], migration_cell_List,
+                                                tissue_selection_Position_Count,
+                                                Survivability_Positions,
+                                                Proof_Positions,
+                                                Replication_factor_Positions,
+                                                Mutation_rate_factor_Positions,
+                                                Generation_death_Positions,
+                                                Replication_prob_Positions,
+                                                Metastatic_Positions,
+                                                tissues_ATGC_positions_Survivability,
+                                                tissues_ATGC_positions_Proof,
+                                                tissues_ATGC_positions_Replication_factor,
+                                                tissues_ATGC_positions_Mutation_rate_factor,
+                                                tissues_ATGC_positions_Generation_death,
+                                                tissues_ATGC_positions_Replication_prob,
+                                                tissues_ATGC_positions_Metastatic);
                         }
 
                         // last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
@@ -1145,7 +1175,23 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
                                             float **cuda_sequence_replication_prob_changes,
                                             float **cuda_sequence_metastatic_prob_changes,
                                             float **progeny_Configuration_Cancer,
-                                            float *cuda_parents_Elapsed, float *cuda_progeny_Elapsed)
+                                            float *cuda_parents_Elapsed, float *cuda_progeny_Elapsed,
+                                            int *cuda_tissue_selection_Position_Count,
+                                            float **cuda_tissues_ATGC_positions_Survivability,
+                                            float **cuda_tissues_ATGC_positions_Proof,
+                                            float **cuda_tissues_ATGC_positions_Replication_factor,
+                                            float **cuda_tissues_ATGC_positions_Mutation_rate_factor,
+                                            float **cuda_tissues_ATGC_positions_Generation_death,
+                                            float **cuda_tissues_ATGC_positions_Replication_prob,
+                                            float **cuda_tissues_ATGC_positions_Metastatic,
+                                            int *cuda_Survivability_Positions,
+                                            int *cuda_Proof_Positions,
+                                            int *cuda_Replication_factor_Positions,
+                                            int *cuda_Mutation_rate_factor_Positions,
+                                            int *cuda_Generation_death_Positions,
+                                            int *cuda_Replication_prob_Positions,
+                                            int *cuda_Metastatic_Positions,
+                                            int tissue)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -1197,6 +1243,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 replication_Factor = replication_Factor * cuda_sequence_replication_factor_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_factor_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[2]; pos++)
+            {
+                replication_Factor = replication_Factor * cuda_tissues_ATGC_positions_Replication_factor[progeny_sequences_INT[progeny_Index][cuda_Replication_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             cuda_progeny_Elapsed[progeny_Index] = cuda_parents_Elapsed[tid] + replication_Factor;
 
             if (mutation_Hotspots > 0)
@@ -1255,6 +1307,11 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
                             mutation_Factor = mutation_Factor * cuda_sequence_mutation_rate_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_mutation_rate_changes[pos][0] - 1] + 1];
                         }
 
+                        for (int pos = 0; pos < cuda_tissue_selection_Position_Count[3]; pos++)
+                        {
+                            mutation_Factor = mutation_Factor * cuda_tissues_ATGC_positions_Mutation_rate_factor[progeny_sequences_INT[progeny_Index][cuda_Mutation_rate_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+                        }
+
                         num_Mutations = (int)((num_Mutations * mutation_Factor) + 0.5);
                     }
 
@@ -1265,6 +1322,11 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
                         for (int pos = 0; pos < cuda_num_effect_Segregating_sites[2]; pos++)
                         {
                             proof_Reading = proof_Reading + cuda_sequence_Proof_reading_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] + 1];
+                        }
+
+                        for (int pos = 0; pos < cuda_tissue_selection_Position_Count[1]; pos++)
+                        {
+                            proof_Reading = proof_Reading + cuda_tissues_ATGC_positions_Proof[progeny_sequences_INT[progeny_Index][cuda_Proof_Positions[pos] - 1] + (tissue * 4)][pos];
                         }
 
                         proof_Reading = (proof_Reading > 1) ? 1 : (proof_Reading < 0) ? 0
@@ -1320,6 +1382,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 replication_Factor = replication_Factor * cuda_sequence_replication_factor_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_factor_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[2]; pos++)
+            {
+                replication_Factor = replication_Factor * cuda_tissues_ATGC_positions_Replication_factor[progeny_sequences_INT[progeny_Index][cuda_Replication_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             progeny_Configuration_Cancer[progeny_Index][0] = replication_Factor;
 
             float gen_Death_prob = cuda_Reference_cancer_parameters[2];
@@ -1327,6 +1395,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 gen_Death_prob = gen_Death_prob + cuda_sequence_generation_death_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_generation_death_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[4]; pos++)
+            {
+                gen_Death_prob = gen_Death_prob + cuda_tissues_ATGC_positions_Generation_death[progeny_sequences_INT[progeny_Index][cuda_Generation_death_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             gen_Death_prob = (gen_Death_prob > 1) ? 1 : (gen_Death_prob < 0) ? 0
                                                                              : gen_Death_prob;
             progeny_Configuration_Cancer[progeny_Index][1] = gen_Death_prob;
@@ -1336,6 +1410,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 replication_prob = replication_prob + cuda_sequence_replication_prob_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_prob_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[5]; pos++)
+            {
+                replication_prob = replication_prob + cuda_tissues_ATGC_positions_Replication_prob[progeny_sequences_INT[progeny_Index][cuda_Replication_prob_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             replication_prob = (replication_prob > 1) ? 1 : (replication_prob < 0) ? 0
                                                                                    : replication_prob;
             progeny_Configuration_Cancer[progeny_Index][2] = replication_prob;
@@ -1345,6 +1425,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 metatstatic_prob = metatstatic_prob + cuda_sequence_metastatic_prob_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_metastatic_prob_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[6]; pos++)
+            {
+                metatstatic_prob = metatstatic_prob + cuda_tissues_ATGC_positions_Metastatic[progeny_sequences_INT[progeny_Index][cuda_Metastatic_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             metatstatic_prob = (metatstatic_prob > 1) ? 1 : (metatstatic_prob < 0) ? 0
                                                                                    : metatstatic_prob;
             progeny_Configuration_Cancer[progeny_Index][3] = metatstatic_prob;
@@ -1354,6 +1440,12 @@ __global__ void cuda_replicate_Progeny_Main(int num_Parents,
             {
                 survivability = survivability + cuda_sequence_Survivability_changes[pos][progeny_sequences_INT[progeny_Index][(int)cuda_sequence_Survivability_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[0]; pos++)
+            {
+                survivability = survivability + cuda_tissues_ATGC_positions_Survivability[progeny_sequences_INT[progeny_Index][cuda_Survivability_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             survivability = (survivability > 1) ? 1 : (survivability < 0) ? 0
                                                                           : survivability;
             progeny_Configuration_Cancer[progeny_Index][4] = survivability;
@@ -1696,7 +1788,22 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                       float **sequence_metastatic_prob_changes,
                                       int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
                                       int &last_Progeny_written_this_Gen, string rapid_Progeny_Location,
-                                      int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List)
+                                      int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List,
+                                      int *tissue_selection_Position_Count,
+                                      int *Survivability_Positions,
+                                      int *Proof_Positions,
+                                      int *Replication_factor_Positions,
+                                      int *Mutation_rate_factor_Positions,
+                                      int *Generation_death_Positions,
+                                      int *Replication_prob_Positions,
+                                      int *Metastatic_Positions,
+                                      float **tissues_ATGC_positions_Survivability,
+                                      float **tissues_ATGC_positions_Proof,
+                                      float **tissues_ATGC_positions_Replication_factor,
+                                      float **tissues_ATGC_positions_Mutation_rate_factor,
+                                      float **tissues_ATGC_positions_Generation_death,
+                                      float **tissues_ATGC_positions_Replication_prob,
+                                      float **tissues_ATGC_positions_Metastatic)
 {
 
     sort(parents_in_Tissue + start, parents_in_Tissue + stop);
@@ -1783,6 +1890,27 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         float *cuda_parents_Elapsed[num_Cuda_devices];
 
         float *cuda_progeny_Elapsed[num_Cuda_devices];
+
+        // Tisse specific selection arrays
+        int *cuda_tissue_selection_Position_Count[num_Cuda_devices];
+
+        float **cuda_tissues_ATGC_positions_Survivability[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Proof[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Replication_factor[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Mutation_rate_factor[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Generation_death[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Replication_prob[num_Cuda_devices];
+        float **cuda_tissues_ATGC_positions_Metastatic[num_Cuda_devices];
+
+        int *cuda_Survivability_Positions[num_Cuda_devices];
+        int *cuda_Proof_Positions[num_Cuda_devices];
+        int *cuda_Replication_factor_Positions[num_Cuda_devices];
+        int *cuda_Mutation_rate_factor_Positions[num_Cuda_devices];
+        int *cuda_Generation_death_Positions[num_Cuda_devices];
+        int *cuda_Replication_prob_Positions[num_Cuda_devices];
+        int *cuda_Metastatic_Positions[num_Cuda_devices];
+
+        // int tissue;
 
         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
         {
@@ -1902,7 +2030,104 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             {
                 cudaMalloc((void **)&cuda_progeny_Configuration_Cancer[gpu][row], 5 * sizeof(float));
             }
-
+            // tissue selection
+            // cout << "Test 1\n";
+            cudaMallocManaged(&cuda_tissue_selection_Position_Count[gpu], 7 * sizeof(int));
+            cudaMemcpy(cuda_tissue_selection_Position_Count[gpu], tissue_selection_Position_Count, 7 * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 2\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Survivability[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[0] > 0)
+            {
+                // cout << "Test 2.1\n";
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Survivability[gpu][row], tissue_selection_Position_Count[0] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Survivability[gpu][row], tissues_ATGC_positions_Survivability[row], tissue_selection_Position_Count[0] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+                // cout << "Test 2.2\n";
+            }
+            // cout << "Test 3\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Proof[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[1] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Proof[gpu][row], tissue_selection_Position_Count[1] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Proof[gpu][row], tissues_ATGC_positions_Proof[row], tissue_selection_Position_Count[1] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 4\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Replication_factor[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[2] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Replication_factor[gpu][row], tissue_selection_Position_Count[2] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Replication_factor[gpu][row], tissues_ATGC_positions_Replication_factor[row], tissue_selection_Position_Count[2] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 5\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[3] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu][row], tissue_selection_Position_Count[3] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu][row], tissues_ATGC_positions_Mutation_rate_factor[row], tissue_selection_Position_Count[3] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 6\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Generation_death[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[4] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Generation_death[gpu][row], tissue_selection_Position_Count[4] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Generation_death[gpu][row], tissues_ATGC_positions_Generation_death[row], tissue_selection_Position_Count[4] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 7\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Replication_prob[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[5] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Replication_prob[gpu][row], tissue_selection_Position_Count[5] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Replication_prob[gpu][row], tissues_ATGC_positions_Replication_prob[row], tissue_selection_Position_Count[5] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 8\n";
+            cudaMallocManaged(&cuda_tissues_ATGC_positions_Metastatic[gpu], (4 * num_Tissues) * sizeof(float *));
+            if (tissue_selection_Position_Count[6] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaMalloc((void **)&cuda_tissues_ATGC_positions_Metastatic[gpu][row], tissue_selection_Position_Count[6] * sizeof(float));
+                    cudaMemcpy(cuda_tissues_ATGC_positions_Metastatic[gpu][row], tissues_ATGC_positions_Metastatic[row], tissue_selection_Position_Count[6] * sizeof(float), cudaMemcpyHostToDevice);
+                }
+            }
+            // cout << "Test 9\n";
+            cudaMallocManaged(&cuda_Survivability_Positions[gpu], tissue_selection_Position_Count[0] * sizeof(int));
+            cudaMemcpy(cuda_Survivability_Positions[gpu], Survivability_Positions, tissue_selection_Position_Count[0] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 10\n";
+            cudaMallocManaged(&cuda_Proof_Positions[gpu], tissue_selection_Position_Count[1] * sizeof(int));
+            cudaMemcpy(cuda_Proof_Positions[gpu], Proof_Positions, tissue_selection_Position_Count[1] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 11\n";
+            cudaMallocManaged(&cuda_Replication_factor_Positions[gpu], tissue_selection_Position_Count[2] * sizeof(int));
+            cudaMemcpy(cuda_Replication_factor_Positions[gpu], Replication_factor_Positions, tissue_selection_Position_Count[2] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 12\n";
+            cudaMallocManaged(&cuda_Mutation_rate_factor_Positions[gpu], tissue_selection_Position_Count[3] * sizeof(int));
+            cudaMemcpy(cuda_Mutation_rate_factor_Positions[gpu], Mutation_rate_factor_Positions, tissue_selection_Position_Count[3] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 13\n";
+            cudaMallocManaged(&cuda_Generation_death_Positions[gpu], tissue_selection_Position_Count[4] * sizeof(int));
+            cudaMemcpy(cuda_Generation_death_Positions[gpu], Generation_death_Positions, tissue_selection_Position_Count[4] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 14\n";
+            cudaMallocManaged(&cuda_Replication_prob_Positions[gpu], tissue_selection_Position_Count[5] * sizeof(int));
+            cudaMemcpy(cuda_Replication_prob_Positions[gpu], Replication_prob_Positions, tissue_selection_Position_Count[5] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 15\n";
+            cudaMallocManaged(&cuda_Metastatic_Positions[gpu], tissue_selection_Position_Count[6] * sizeof(int));
+            cudaMemcpy(cuda_Metastatic_Positions[gpu], Metastatic_Positions, tissue_selection_Position_Count[6] * sizeof(int), cudaMemcpyHostToDevice);
+            // cout << "Test 16\n";
             cudaStreamCreate(&streams[gpu]);
         }
 
@@ -1935,7 +2160,23 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                                                                                                                         cuda_sequence_replication_prob_changes[gpu],
                                                                                                                                         cuda_sequence_metastatic_prob_changes[gpu],
                                                                                                                                         cuda_progeny_Configuration_Cancer[gpu],
-                                                                                                                                        cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu]);
+                                                                                                                                        cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
+                                                                                                                                        cuda_tissue_selection_Position_Count[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Survivability[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Proof[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Replication_factor[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Generation_death[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Replication_prob[gpu],
+                                                                                                                                        cuda_tissues_ATGC_positions_Metastatic[gpu],
+                                                                                                                                        cuda_Survivability_Positions[gpu],
+                                                                                                                                        cuda_Proof_Positions[gpu],
+                                                                                                                                        cuda_Replication_factor_Positions[gpu],
+                                                                                                                                        cuda_Mutation_rate_factor_Positions[gpu],
+                                                                                                                                        cuda_Generation_death_Positions[gpu],
+                                                                                                                                        cuda_Replication_prob_Positions[gpu],
+                                                                                                                                        cuda_Metastatic_Positions[gpu],
+                                                                                                                                        tissue);
         }
 
         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -2028,6 +2269,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                 cout << endl;
             }
         }
+
+        exit(-1);
 
         // cout << "\nConverting sequences to String\n";
 
@@ -2481,6 +2724,79 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                 cudaFree(cuda_sequence_metastatic_prob_changes[gpu][row]);
             }
             cudaFree(cuda_sequence_metastatic_prob_changes[gpu]);
+
+            cudaFree(cuda_tissue_selection_Position_Count[gpu]);
+
+            cudaFree(cuda_Survivability_Positions[gpu]);
+            cudaFree(cuda_Proof_Positions[gpu]);
+            cudaFree(cuda_Replication_factor_Positions[gpu]);
+            cudaFree(cuda_Mutation_rate_factor_Positions[gpu]);
+            cudaFree(cuda_Generation_death_Positions[gpu]);
+            cudaFree(cuda_Replication_prob_Positions[gpu]);
+            cudaFree(cuda_Metastatic_Positions[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[0] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Survivability[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Survivability[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[1] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Proof[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Proof[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[2] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Replication_factor[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Replication_factor[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[3] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[4] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Generation_death[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Generation_death[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[5] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Replication_prob[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Replication_prob[gpu]);
+
+            if (cuda_tissue_selection_Position_Count[6] > 0)
+            {
+                for (int row = 0; row < (4 * num_Tissues); row++)
+                {
+                    cudaFree(cuda_tissues_ATGC_positions_Metastatic[gpu][row]);
+                }
+            }
+            cudaFree(cuda_tissues_ATGC_positions_Metastatic[gpu]);
         }
 
         cout << "Round Complete\n";

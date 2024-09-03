@@ -132,7 +132,22 @@ public:
                               int &max_sequences_per_File,
                               float **viral_Migration_Values, int *migration_start_Generation,
                               int &count_tajima_Regions, int **tajima_regions_Start_Stop,
-                              string &reference_Genome_location);
+                              string &reference_Genome_location,
+                              int *tissue_selection_Position_Count,
+                              int *Survivability_Positions,
+                              int *Proof_Positions,
+                              int *Replication_factor_Positions,
+                              int *Mutation_rate_factor_Positions,
+                              int *Generation_death_Positions,
+                              int *Replication_prob_Positions,
+                              int *Metastatic_Positions,
+                              float **tissues_ATGC_positions_Survivability,
+                              float **tissues_ATGC_positions_Proof,
+                              float **tissues_ATGC_positions_Replication_factor,
+                              float **tissues_ATGC_positions_Mutation_rate_factor,
+                              float **tissues_ATGC_positions_Generation_death,
+                              float **tissues_ATGC_positions_Replication_prob,
+                              float **tissues_ATGC_positions_Metastatic);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);
@@ -175,7 +190,22 @@ public:
                              float **sequence_metastatic_prob_changes,
                              int &max_sequences_per_File, string &intermediary_Tissue_folder, string &source_sequence_Data_folder,
                              int &last_Progeny_written_this_Gen, string rapid_Progeny_Location,
-                             int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
+                             int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List,
+                             int *tissue_selection_Position_Count,
+                             int *Survivability_Positions,
+                             int *Proof_Positions,
+                             int *Replication_factor_Positions,
+                             int *Mutation_rate_factor_Positions,
+                             int *Generation_death_Positions,
+                             int *Replication_prob_Positions,
+                             int *Metastatic_Positions,
+                             float **tissues_ATGC_positions_Survivability,
+                             float **tissues_ATGC_positions_Proof,
+                             float **tissues_ATGC_positions_Replication_factor,
+                             float **tissues_ATGC_positions_Mutation_rate_factor,
+                             float **tissues_ATGC_positions_Generation_death,
+                             float **tissues_ATGC_positions_Replication_prob,
+                             float **tissues_ATGC_positions_Metastatic);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,

@@ -247,7 +247,22 @@ void cancer::ingress()
                               max_sequences_per_File,
                               viral_Migration_Values, migration_start_Generation,
                               count_tajima_Regions, tajima_regions_Start_Stop,
-                              reference_Genome_location);
+                              reference_Genome_location,
+                              tissue_selection_Position_Count,
+                              Survivability_Positions,
+                              Proof_Positions,
+                              Replication_factor_Positions,
+                              Mutation_rate_factor_Positions,
+                              Generation_death_Positions,
+                              Replication_prob_Positions,
+                              Metastatic_Positions,
+                              tissues_ATGC_positions_Survivability,
+                              tissues_ATGC_positions_Proof,
+                              tissues_ATGC_positions_Replication_factor,
+                              tissues_ATGC_positions_Mutation_rate_factor,
+                              tissues_ATGC_positions_Generation_death,
+                              tissues_ATGC_positions_Replication_prob,
+                              tissues_ATGC_positions_Metastatic);
 
     if (stop == 1)
     {
@@ -318,6 +333,15 @@ __global__ void cuda_Sequences_to_INT_replication_Factor(int num_Sequences, int 
         {
             replication_Probability = replication_Probability + cuda_sequence_replication_prob_changes[site_Check][sequence_INT[tid][(int)cuda_sequence_replication_prob_changes[site_Check][0] - 1] + 1];
         }
+
+        // ! MOVE TO TISSUE SPECIFIC ONES
+        // if (cuda_tissue_selection_Position_Count[5] > 0)
+        // {
+        //     for (int pos = 0; pos < cuda_tissue_selection_Position_Count[5]; pos++)
+        //     {
+        //       replication_Probability = replication_Probability + tissues_ATGC_positions_Replication_prob[sequence_INT[tid][Replication_prob_Positions[pos] - 1] + (tissue * 4)][pos];
+        //     }
+        // }
 
         if (replication_Probability > 1)
         {
@@ -1065,18 +1089,14 @@ void cancer::tissue_specific_Selection(fstream &read_Selection, char &delim,
                                        functions_library &functions, string &file_Location)
 {
     // survivability
-    X_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
     // cout << "Done\n";
     for (int pos = 1; pos < line_Data.size(); pos++)
     {
         X_Positions[pos - 1] = stoi(line_Data[pos]);
     }
     // cout << "Done\n";
-    tissues_ATGC_positions_X = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
-    for (int row = 0; row < (4 * num_tissues_per_Node); row++)
-    {
-        tissues_ATGC_positions_X[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
-    }
+
     // cout << "Done\n";
     int check_Tissue = -1;
     // cout << "Done\n";
@@ -1432,6 +1452,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             cout << "\nNumber of segregating positions: " << tissue_selection_Position_Count[type] << endl;
                             if (type == 0)
                             {
+                                Survivability_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Survivability = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Survivability[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Survivability_Positions, tissues_ATGC_positions_Survivability,
                                                           type, line, line_Data,
@@ -1439,6 +1466,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 1)
                             {
+                                Proof_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Proof = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Proof[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Proof_Positions, tissues_ATGC_positions_Proof,
                                                           type, line, line_Data,
@@ -1446,6 +1480,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 2)
                             {
+                                Replication_factor_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Replication_factor = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Replication_factor[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Replication_factor_Positions, tissues_ATGC_positions_Replication_factor,
                                                           type, line, line_Data,
@@ -1453,6 +1494,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 3)
                             {
+                                Mutation_rate_factor_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Mutation_rate_factor = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Mutation_rate_factor[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Mutation_rate_factor_Positions, tissues_ATGC_positions_Mutation_rate_factor,
                                                           type, line, line_Data,
@@ -1460,6 +1508,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 4)
                             {
+                                Generation_death_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Generation_death = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Generation_death[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Generation_death_Positions, tissues_ATGC_positions_Generation_death,
                                                           type, line, line_Data,
@@ -1467,6 +1522,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 5)
                             {
+                                Replication_prob_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Replication_prob = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Replication_prob[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Replication_prob_Positions, tissues_ATGC_positions_Replication_prob,
                                                           type, line, line_Data,
@@ -1474,6 +1536,13 @@ void cancer::node_Master_Manager(functions_library &functions)
                             }
                             else if (type == 6)
                             {
+                                Metastatic_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+
+                                tissues_ATGC_positions_Metastatic = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+                                for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+                                {
+                                    tissues_ATGC_positions_Metastatic[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+                                }
                                 tissue_specific_Selection(read_Selection, delim,
                                                           Metastatic_Positions, tissues_ATGC_positions_Metastatic,
                                                           type, line, line_Data,
@@ -1501,9 +1570,13 @@ void cancer::node_Master_Manager(functions_library &functions)
         else
         {
             cout << "Inactive\n";
+            for (int type = 0; type < 7; type++)
+            {
+                tissue_selection_Position_Count[type] = 0;
+            }
         }
 
-       // exit(-1);
+        // exit(-1);
 
         profile_tissue_Limits = (int *)malloc(sizeof(int) * num_tissues_per_Node);
 
