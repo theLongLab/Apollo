@@ -1059,6 +1059,112 @@ vector<string> cancer::read_Reference_Sequences(vector<int> &tissue_Sequence_Cou
     }
 }
 
+void cancer::tissue_specific_Selection(fstream &read_Selection, char &delim,
+                                       int *X_Positions, float **tissues_ATGC_positions_X,
+                                       int &type, string &line, vector<string> &line_Data,
+                                       functions_library &functions, string &file_Location)
+{
+    // survivability
+    X_Positions = (int *)malloc(tissue_selection_Position_Count[type] * sizeof(int));
+    // cout << "Done\n";
+    for (int pos = 1; pos < line_Data.size(); pos++)
+    {
+        X_Positions[pos - 1] = stoi(line_Data[pos]);
+    }
+    // cout << "Done\n";
+    tissues_ATGC_positions_X = (float **)malloc(4 * num_tissues_per_Node * sizeof(float *));
+    for (int row = 0; row < (4 * num_tissues_per_Node); row++)
+    {
+        tissues_ATGC_positions_X[row] = (float *)malloc(tissue_selection_Position_Count[type] * sizeof(float));
+    }
+    // cout << "Done\n";
+    int check_Tissue = -1;
+    // cout << "Done\n";
+    while (getline(read_Selection, line))
+    {
+        if (line != "")
+        {
+            // cout << "Line: " << line << endl;
+            if (line.rfind("Tissue_", 0) == 0)
+            {
+                functions.split(line_Data, line, '_');
+                check_Tissue = stoi(line_Data[1]) - 1;
+                cout << "Processing Tissue " << check_Tissue + 1 << endl;
+            }
+            else
+            {
+                if (check_Tissue != -1)
+                {
+                    int row_Fill = check_Tissue * 4;
+                    functions.split(line_Data, line, delim);
+                    if (functions.to_Upper_Case(line_Data[0]) == "A")
+                    {
+                        row_Fill = row_Fill + 0;
+                    }
+                    else if (functions.to_Upper_Case(line_Data[0]) == "T")
+                    {
+                        row_Fill = row_Fill + 1;
+                    }
+                    else if (functions.to_Upper_Case(line_Data[0]) == "G")
+                    {
+                        row_Fill = row_Fill + 2;
+                    }
+                    else if (functions.to_Upper_Case(line_Data[0]) == "C")
+                    {
+                        row_Fill = row_Fill + 3;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    for (int pos = 1; pos < line_Data.size(); pos++)
+                    {
+                        tissues_ATGC_positions_X[row_Fill][pos - 1] = stof(line_Data[pos]);
+                    }
+                }
+                else
+                {
+                    cout << "ERROR IN TISSUE INDEX IN FILE: " << file_Location << endl;
+                    exit(-1);
+                }
+            }
+        }
+    }
+
+    read_Selection.close();
+
+    cout << "\nPrinting matrix:\n";
+    for (int tissue = 0; tissue < num_tissues_per_Node; tissue++)
+    {
+        cout << "Tissue " << tissue + 1 << endl;
+        for (int row = tissue * 4; row < ((tissue * 4) + 4); row++)
+        {
+            if (row % 4 == 0)
+            {
+                cout << "A:\t";
+            }
+            else if (row % 4 == 1)
+            {
+                cout << "T:\t";
+            }
+            else if (row % 4 == 2)
+            {
+                cout << "G:\t";
+            }
+            else if (row % 4 == 3)
+            {
+                cout << "C:\t";
+            }
+            for (int col = 0; col < tissue_selection_Position_Count[type]; col++)
+            {
+                cout << X_Positions[col] << ": " << tissues_ATGC_positions_X[row][col] << "\t";
+            }
+            cout << endl;
+        }
+    }
+}
+
 void cancer::node_Master_Manager(functions_library &functions)
 {
     parameter_load Parameters = parameter_load();
@@ -1275,6 +1381,129 @@ void cancer::node_Master_Manager(functions_library &functions)
 
         cout << "\nCollecting tissue data\n";
         vector<pair<string, string>> Tissue_profiles_block_Data = Parameters.get_block_from_File(node_Profile_Location, "Tissue profiles");
+
+        cout << "\nTissue specific selection: ";
+        tissue_selection_Position_Count = (int *)malloc(7 * sizeof(int));
+        if (functions.to_Upper_Case(Parameters.get_STRING(Tissue_profiles_block_Data, "Tissue specific selection")) == "YES")
+        {
+            cout << "Active\n";
+            tissue_specific_selection = 1;
+
+            vector<string> selection_Types;
+            selection_Types.push_back("Survivability profile file");
+            selection_Types.push_back("Proof reading profile file");
+
+            selection_Types.push_back("Replication_factor profile file");
+            selection_Types.push_back("Mutation_rate_factor profile file");
+            selection_Types.push_back("Generation_death profile file");
+            selection_Types.push_back("Replication_prob profile file");
+            selection_Types.push_back("Metastatic profile file");
+
+            for (int type = 0; type < selection_Types.size(); type++)
+            {
+                string file_Location = Parameters.get_STRING(Tissue_profiles_block_Data, selection_Types[type]);
+
+                if (functions.to_Upper_Case(file_Location) != "NA")
+                {
+                    cout << "\nConfiguring " << selection_Types[type];
+                    if (filesystem::exists(file_Location))
+                    {
+                        cout << " : " << file_Location << endl;
+                        fstream read_Selection;
+                        read_Selection.open(file_Location, ios::in);
+                        if (read_Selection.is_open())
+                        {
+                            vector<string> line_Data;
+                            string line;
+
+                            getline(read_Selection, line);
+
+                            char delim = ',';
+                            functions.split(line_Data, line, delim);
+                            if (line_Data.size() == 1)
+                            {
+                                delim = '\t';
+                                functions.split(line_Data, line, delim);
+                            }
+
+                            // cout << "Position: " << line_Data[1] << endl;
+
+                            tissue_selection_Position_Count[type] = line_Data.size() - 1;
+                            cout << "\nNumber of segregating positions: " << tissue_selection_Position_Count[type] << endl;
+                            if (type == 0)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Survivability_Positions, tissues_ATGC_positions_Survivability,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 1)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Proof_Positions, tissues_ATGC_positions_Proof,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 2)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Replication_factor_Positions, tissues_ATGC_positions_Replication_factor,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 3)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Mutation_rate_factor_Positions, tissues_ATGC_positions_Mutation_rate_factor,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 4)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Generation_death_Positions, tissues_ATGC_positions_Generation_death,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 5)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Replication_prob_Positions, tissues_ATGC_positions_Replication_prob,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            else if (type == 6)
+                            {
+                                tissue_specific_Selection(read_Selection, delim,
+                                                          Metastatic_Positions, tissues_ATGC_positions_Metastatic,
+                                                          type, line, line_Data,
+                                                          functions, file_Location);
+                            }
+                            // read_Selection.close();
+                        }
+                        else
+                        {
+                            cout << "ERROR: UNABLE TO OPEN FILE " << selection_Types[type] << " : " << file_Location << endl;
+                        }
+                    }
+                    else
+                    {
+                        cout << "\nERROR: SELECTION FILE " << selection_Types[type] << " DOES NOT EXIST: " << file_Location << endl;
+                        exit(-1);
+                    }
+                }
+                else
+                {
+                    tissue_selection_Position_Count[type] = 0;
+                }
+            }
+        }
+        else
+        {
+            cout << "Inactive\n";
+        }
+
+       // exit(-1);
 
         profile_tissue_Limits = (int *)malloc(sizeof(int) * num_tissues_per_Node);
 
@@ -1648,7 +1877,7 @@ void cancer::sequence_Master_Manager(functions_library &functions)
         cout << "Not Available\n";
     }
     cout << endl;
-    //exit(-1);
+    // exit(-1);
 
     parameters_List = {
         "\"Fitness profile file\"",

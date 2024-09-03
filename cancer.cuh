@@ -156,6 +156,29 @@ private:
     int **tajima_regions_Start_Stop;
     string reference_Genome_location = "";
 
+    // 0 = inactive
+    // 1 = active
+    int tissue_specific_selection = 0;
+    int *tissue_selection_Position_Count;
+
+    int *Survivability_Positions;
+    int *Proof_Positions;
+
+    int *Replication_factor_Positions;
+    int *Mutation_rate_factor_Positions;
+    int *Generation_death_Positions;
+    int *Replication_prob_Positions;
+    int *Metastatic_Positions;
+
+    float **tissues_ATGC_positions_Survivability;
+    float **tissues_ATGC_positions_Proof;
+
+    float **tissues_ATGC_positions_Replication_factor;
+    float **tissues_ATGC_positions_Mutation_rate_factor;
+    float **tissues_ATGC_positions_Generation_death;
+    float **tissues_ATGC_positions_Replication_prob;
+    float **tissues_ATGC_positions_Metastatic;
+
 public:
     cancer(string parameter_Master_Location);
 
@@ -180,4 +203,9 @@ public:
 
     void partial_Write_Check(vector<pair<string, string>> &sequence_Write_Store_All,
                              const string &folder_Location, int &last_seq_Num);
+
+    void tissue_specific_Selection(fstream &read_Selection, char &delim,
+                                   int *X_Positions, float **tissues_ATGC_positions_X,
+                                   int &type, string &line, vector<string> &line_Data,
+                                   functions_library &functions, string &file_Location);
 };

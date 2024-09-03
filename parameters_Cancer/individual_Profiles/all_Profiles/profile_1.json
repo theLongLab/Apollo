@@ -8,6 +8,17 @@
 
   "Tissue profiles":{
 
+    "Tissue specific selection":"Yes",
+
+    "Survivability profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/sequence_Survivability.csv",
+    "Proof reading profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/sequence_Proof_Reading.csv",
+
+    "Replication_factor profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/replication_factor.csv",
+    "Mutation_rate_factor profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/mutation_rate_factor.csv",
+    "Generation_death profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/generation_death_prob.csv",
+    "Replication_prob profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/replication_prob.csv",
+    "Metastatic profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/metastatic_prob.csv",
+
     "Tissue 1":{
       "Cell limit":"YES",
       "Cell limit type":"Binomial",
