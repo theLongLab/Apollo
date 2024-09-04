@@ -1568,7 +1568,23 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
                                              float **cuda_sequence_generation_death_changes,
                                              float **cuda_sequence_replication_prob_changes,
                                              float **cuda_sequence_metastatic_prob_changes,
-                                             float **progeny_Configuration_Cancer)
+                                             float **progeny_Configuration_Cancer,
+                                             int *cuda_tissue_selection_Position_Count,
+                                             float **cuda_tissues_ATGC_positions_Survivability,
+                                             float **cuda_tissues_ATGC_positions_Proof,
+                                             float **cuda_tissues_ATGC_positions_Replication_factor,
+                                             float **cuda_tissues_ATGC_positions_Mutation_rate_factor,
+                                             float **cuda_tissues_ATGC_positions_Generation_death,
+                                             float **cuda_tissues_ATGC_positions_Replication_prob,
+                                             float **cuda_tissues_ATGC_positions_Metastatic,
+                                             int *cuda_Survivability_Positions,
+                                             int *cuda_Proof_Positions,
+                                             int *cuda_Replication_factor_Positions,
+                                             int *cuda_Mutation_rate_factor_Positions,
+                                             int *cuda_Generation_death_Positions,
+                                             int *cuda_Replication_prob_Positions,
+                                             int *cuda_Metastatic_Positions,
+                                             int tissue)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -1596,6 +1612,12 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
             {
                 replication_Factor = replication_Factor * cuda_sequence_replication_factor_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_factor_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[2]; pos++)
+            {
+                replication_Factor = replication_Factor * cuda_tissues_ATGC_positions_Replication_factor[cuda_progeny_sequences_INT[progeny_Index][cuda_Replication_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             cuda_progeny_Elapsed[progeny_Index] = cuda_parents_Elapsed[tid] + replication_Factor;
 
             if (mutation_Hotspots > 0)
@@ -1654,6 +1676,11 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
                             mutation_Factor = mutation_Factor * cuda_sequence_mutation_rate_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_mutation_rate_changes[pos][0] - 1] + 1];
                         }
 
+                        for (int pos = 0; pos < cuda_tissue_selection_Position_Count[3]; pos++)
+                        {
+                            mutation_Factor = mutation_Factor * cuda_tissues_ATGC_positions_Mutation_rate_factor[cuda_progeny_sequences_INT[progeny_Index][cuda_Mutation_rate_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+                        }
+
                         num_Mutations = (int)((num_Mutations * mutation_Factor) + 0.5);
                     }
 
@@ -1664,6 +1691,11 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
                         for (int pos = 0; pos < cuda_num_effect_Segregating_sites[2]; pos++)
                         {
                             proof_Reading = proof_Reading + cuda_sequence_Proof_reading_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_Proof_reading_changes[pos][0] - 1] + 1];
+                        }
+
+                        for (int pos = 0; pos < cuda_tissue_selection_Position_Count[1]; pos++)
+                        {
+                            proof_Reading = proof_Reading + cuda_tissues_ATGC_positions_Proof[cuda_progeny_sequences_INT[progeny_Index][cuda_Proof_Positions[pos] - 1] + (tissue * 4)][pos];
                         }
 
                         proof_Reading = (proof_Reading > 1) ? 1 : (proof_Reading < 0) ? 0
@@ -1719,12 +1751,23 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
             {
                 replication_Factor = replication_Factor * cuda_sequence_replication_factor_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_factor_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[2]; pos++)
+            {
+                replication_Factor = replication_Factor * cuda_tissues_ATGC_positions_Replication_factor[cuda_progeny_sequences_INT[progeny_Index][cuda_Replication_factor_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             progeny_Configuration_Cancer[progeny_Index][0] = replication_Factor;
 
             float gen_Death_prob = cuda_Reference_cancer_parameters[2];
             for (int pos = 0; pos < cuda_num_effect_Segregating_sites_Cancer[2]; pos++)
             {
                 gen_Death_prob = gen_Death_prob + cuda_sequence_generation_death_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_generation_death_changes[pos][0] - 1] + 1];
+            }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[4]; pos++)
+            {
+                gen_Death_prob = gen_Death_prob + cuda_tissues_ATGC_positions_Generation_death[cuda_progeny_sequences_INT[progeny_Index][cuda_Generation_death_Positions[pos] - 1] + (tissue * 4)][pos];
             }
             gen_Death_prob = (gen_Death_prob > 1) ? 1 : (gen_Death_prob < 0) ? 0
                                                                              : gen_Death_prob;
@@ -1735,6 +1778,11 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
             {
                 replication_prob = replication_prob + cuda_sequence_replication_prob_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_replication_prob_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[5]; pos++)
+            {
+                replication_prob = replication_prob + cuda_tissues_ATGC_positions_Replication_prob[cuda_progeny_sequences_INT[progeny_Index][cuda_Replication_prob_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
             replication_prob = (replication_prob > 1) ? 1 : (replication_prob < 0) ? 0
                                                                                    : replication_prob;
             progeny_Configuration_Cancer[progeny_Index][2] = replication_prob;
@@ -1743,6 +1791,11 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
             for (int pos = 0; pos < cuda_num_effect_Segregating_sites_Cancer[4]; pos++)
             {
                 metatstatic_prob = metatstatic_prob + cuda_sequence_metastatic_prob_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_metastatic_prob_changes[pos][0] - 1] + 1];
+            }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[6]; pos++)
+            {
+                metatstatic_prob = metatstatic_prob + cuda_tissues_ATGC_positions_Metastatic[cuda_progeny_sequences_INT[progeny_Index][cuda_Metastatic_Positions[pos] - 1] + (tissue * 4)][pos];
             }
             metatstatic_prob = (metatstatic_prob > 1) ? 1 : (metatstatic_prob < 0) ? 0
                                                                                    : metatstatic_prob;
@@ -1753,6 +1806,12 @@ __global__ void cuda_replicate_Progeny_reRun(int num_Parents,
             {
                 survivability = survivability + cuda_sequence_Survivability_changes[pos][cuda_progeny_sequences_INT[progeny_Index][(int)cuda_sequence_Survivability_changes[pos][0] - 1] + 1];
             }
+
+            for (int pos = 0; pos < cuda_tissue_selection_Position_Count[0]; pos++)
+            {
+                survivability = survivability + cuda_tissues_ATGC_positions_Survivability[cuda_progeny_sequences_INT[progeny_Index][cuda_Survivability_Positions[pos] - 1] + (tissue * 4)][pos];
+            }
+
             survivability = (survivability > 1) ? 1 : (survivability < 0) ? 0
                                                                           : survivability;
             progeny_Configuration_Cancer[progeny_Index][4] = survivability;
@@ -2270,7 +2329,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
         }
 
-        exit(-1);
+        // exit(-1);
 
         // cout << "\nConverting sequences to String\n";
 
@@ -2479,7 +2538,23 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                                                                                                                                  cuda_sequence_generation_death_changes[gpu],
                                                                                                                                                  cuda_sequence_replication_prob_changes[gpu],
                                                                                                                                                  cuda_sequence_metastatic_prob_changes[gpu],
-                                                                                                                                                 cuda_progeny_Configuration_Cancer[gpu]);
+                                                                                                                                                 cuda_progeny_Configuration_Cancer[gpu],
+                                                                                                                                                 cuda_tissue_selection_Position_Count[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Survivability[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Proof[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Replication_factor[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Generation_death[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Replication_prob[gpu],
+                                                                                                                                                 cuda_tissues_ATGC_positions_Metastatic[gpu],
+                                                                                                                                                 cuda_Survivability_Positions[gpu],
+                                                                                                                                                 cuda_Proof_Positions[gpu],
+                                                                                                                                                 cuda_Replication_factor_Positions[gpu],
+                                                                                                                                                 cuda_Mutation_rate_factor_Positions[gpu],
+                                                                                                                                                 cuda_Generation_death_Positions[gpu],
+                                                                                                                                                 cuda_Replication_prob_Positions[gpu],
+                                                                                                                                                 cuda_Metastatic_Positions[gpu],
+                                                                                                                                                 tissue);
                 }
 
                 for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -3104,282 +3179,282 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
     return rerun_Progeny;
 }
 
-void cancer_Host::rerun_Progeny_THIS_gen(functions_library &functions, vector<pair<int, int>> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices, int &tot_Parents,
-                                         int **parent_sequences_INT, float *parents_Elapsed_full,
-                                         float *cuda_Reference_fitness_survivability_proof_reading[],
-                                         float *cuda_Reference_cancer_parameters[],
-                                         float **cuda_sequence_replication_factor_changes[],
-                                         int mutation_Hotspots, float **cuda_mutation_hotspot_parameters[],
-                                         float **cuda_A_0_mutation[],
-                                         float **cuda_T_1_mutation[],
-                                         float **cuda_G_2_mutation[],
-                                         float **cuda_C_3_mutation[],
-                                         int *cuda_num_effect_Segregating_sites[],
-                                         int *cuda_num_effect_Segregating_sites_Cancer[],
-                                         float **cuda_sequence_Survivability_changes[],
-                                         float **cuda_sequence_Proof_reading_changes[],
-                                         float **cuda_sequence_mutation_rate_changes[],
-                                         float **cuda_sequence_generation_death_changes[],
-                                         float **cuda_sequence_replication_prob_changes[],
-                                         float **cuda_sequence_metastatic_prob_changes[],
-                                         int *CUDA_device_IDs,
-                                         string &intermediary_Tissue_folder, string &rapid_Progeny_Location,
-                                         int &last_index_Seq_Written, int &overall_Generations, string &tissue_Name,
-                                         int &tissue_Index, mt19937 &gen, string &source_sequence_Data_folder, int &last_Progeny_written_this_Gen,
-                                         int &max_sequences_per_File,
-                                         int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List)
-{
-    cout << "\nProcessing reRun progeny\n";
-    int rounds_reRun = 0;
-    do
-    {
-        // CONVERT THE TOT cuda_parent_sequences_INT PARENTS TO ONE SO NOT SHARED BETWEEN GPUs
-        cout << "reRun Round: " << (rounds_reRun + 1) << endl;
-        int parent_Cells_Found = rerun_Progeny.size();
+// void cancer_Host::rerun_Progeny_THIS_gen(functions_library &functions, vector<pair<int, int>> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices, int &tot_Parents,
+//                                          int **parent_sequences_INT, float *parents_Elapsed_full,
+//                                          float *cuda_Reference_fitness_survivability_proof_reading[],
+//                                          float *cuda_Reference_cancer_parameters[],
+//                                          float **cuda_sequence_replication_factor_changes[],
+//                                          int mutation_Hotspots, float **cuda_mutation_hotspot_parameters[],
+//                                          float **cuda_A_0_mutation[],
+//                                          float **cuda_T_1_mutation[],
+//                                          float **cuda_G_2_mutation[],
+//                                          float **cuda_C_3_mutation[],
+//                                          int *cuda_num_effect_Segregating_sites[],
+//                                          int *cuda_num_effect_Segregating_sites_Cancer[],
+//                                          float **cuda_sequence_Survivability_changes[],
+//                                          float **cuda_sequence_Proof_reading_changes[],
+//                                          float **cuda_sequence_mutation_rate_changes[],
+//                                          float **cuda_sequence_generation_death_changes[],
+//                                          float **cuda_sequence_replication_prob_changes[],
+//                                          float **cuda_sequence_metastatic_prob_changes[],
+//                                          int *CUDA_device_IDs,
+//                                          string &intermediary_Tissue_folder, string &rapid_Progeny_Location,
+//                                          int &last_index_Seq_Written, int &overall_Generations, string &tissue_Name,
+//                                          int &tissue_Index, mt19937 &gen, string &source_sequence_Data_folder, int &last_Progeny_written_this_Gen,
+//                                          int &max_sequences_per_File,
+//                                          int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List)
+// {
+//     cout << "\nProcessing reRun progeny\n";
+//     int rounds_reRun = 0;
+//     do
+//     {
+//         // CONVERT THE TOT cuda_parent_sequences_INT PARENTS TO ONE SO NOT SHARED BETWEEN GPUs
+//         cout << "reRun Round: " << (rounds_reRun + 1) << endl;
+//         int parent_Cells_Found = rerun_Progeny.size();
 
-        start_stop_Per_GPU.clear();
+//         start_stop_Per_GPU.clear();
 
-        int standard_num_per_GPU = parent_Cells_Found / num_Cuda_devices;
-        int remainder = parent_Cells_Found % num_Cuda_devices;
+//         int standard_num_per_GPU = parent_Cells_Found / num_Cuda_devices;
+//         int remainder = parent_Cells_Found % num_Cuda_devices;
 
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            int start = gpu * standard_num_per_GPU;
-            int stop_GPU = start + standard_num_per_GPU;
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             int start = gpu * standard_num_per_GPU;
+//             int stop_GPU = start + standard_num_per_GPU;
 
-            start_stop_Per_GPU.push_back(make_pair(start, stop_GPU));
-        }
+//             start_stop_Per_GPU.push_back(make_pair(start, stop_GPU));
+//         }
 
-        start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
+//         start_stop_Per_GPU[num_Cuda_devices - 1].second = start_stop_Per_GPU[num_Cuda_devices - 1].second + remainder;
 
-        cout << "Configuring datapoints: ";
-        // int *rerun_Progeny_Indexes = (int *)malloc(sizeof(int) * parent_Cells_Found);
-        float *parents_Elapsed = (float *)malloc(sizeof(float) * parent_Cells_Found);
-        vector<int> parent_IDs;
-        for (int parent = 0; parent < parent_Cells_Found; parent++)
-        {
-            // rerun_Progeny_Indexes[parent] = rerun_Progeny[parent];
-            parents_Elapsed[parent] = parents_Elapsed_full[rerun_Progeny[parent].first];
-            parent_IDs.push_back(rerun_Progeny[parent].second);
-        }
-        rerun_Progeny.clear();
-        free(parents_Elapsed_full);
+//         cout << "Configuring datapoints: ";
+//         // int *rerun_Progeny_Indexes = (int *)malloc(sizeof(int) * parent_Cells_Found);
+//         float *parents_Elapsed = (float *)malloc(sizeof(float) * parent_Cells_Found);
+//         vector<int> parent_IDs;
+//         for (int parent = 0; parent < parent_Cells_Found; parent++)
+//         {
+//             // rerun_Progeny_Indexes[parent] = rerun_Progeny[parent];
+//             parents_Elapsed[parent] = parents_Elapsed_full[rerun_Progeny[parent].first];
+//             parent_IDs.push_back(rerun_Progeny[parent].second);
+//         }
+//         rerun_Progeny.clear();
+//         free(parents_Elapsed_full);
 
-        cout << "Done\n";
+//         cout << "Done\n";
 
-        // exit(-1);
+//         // exit(-1);
 
-        // int *cuda_rerun_Progeny_Indexes[num_Cuda_devices];
-        int **cuda_progeny_Sequences_INT[num_Cuda_devices];
-        float *cuda_progeny_Elapsed[num_Cuda_devices];
-        float **cuda_progeny_Configuration_Cancer[num_Cuda_devices];
+//         // int *cuda_rerun_Progeny_Indexes[num_Cuda_devices];
+//         int **cuda_progeny_Sequences_INT[num_Cuda_devices];
+//         float *cuda_progeny_Elapsed[num_Cuda_devices];
+//         float **cuda_progeny_Configuration_Cancer[num_Cuda_devices];
 
-        int **cuda_parent_sequences_INT[num_Cuda_devices];
-        float *cuda_parents_Elapsed[num_Cuda_devices];
+//         int **cuda_parent_sequences_INT[num_Cuda_devices];
+//         float *cuda_parents_Elapsed[num_Cuda_devices];
 
-        cudaStream_t streams[num_Cuda_devices];
+//         cudaStream_t streams[num_Cuda_devices];
 
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaDeviceProp deviceProp;
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cudaGetDeviceProperties(&deviceProp, gpu);
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             cudaDeviceProp deviceProp;
+//             cudaSetDevice(CUDA_device_IDs[gpu]);
+//             cudaGetDeviceProperties(&deviceProp, gpu);
 
-            cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
+//             cout << "Intializing GPU " << CUDA_device_IDs[gpu] << "'s stream: " << deviceProp.name << endl;
 
-            int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
+//             int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
 
-            cudaMallocManaged(&cuda_parent_sequences_INT[gpu], cell_Count * sizeof(int *));
-            for (int row = 0; row < cell_Count; row++)
-            {
-                cudaMalloc((void **)&cuda_parent_sequences_INT[gpu][row], genome_Length * sizeof(int));
-                cudaMemcpy(cuda_parent_sequences_INT[gpu][row], parent_sequences_INT[rerun_Progeny[row + start_stop_Per_GPU[gpu].first].first], genome_Length * sizeof(int), cudaMemcpyHostToDevice);
-            }
+//             cudaMallocManaged(&cuda_parent_sequences_INT[gpu], cell_Count * sizeof(int *));
+//             for (int row = 0; row < cell_Count; row++)
+//             {
+//                 cudaMalloc((void **)&cuda_parent_sequences_INT[gpu][row], genome_Length * sizeof(int));
+//                 cudaMemcpy(cuda_parent_sequences_INT[gpu][row], parent_sequences_INT[rerun_Progeny[row + start_stop_Per_GPU[gpu].first].first], genome_Length * sizeof(int), cudaMemcpyHostToDevice);
+//             }
 
-            cudaMalloc(&cuda_parents_Elapsed[gpu], cell_Count * sizeof(float));
-            cudaMemcpy(cuda_parents_Elapsed[gpu], parents_Elapsed + start_stop_Per_GPU[gpu].first, cell_Count * sizeof(float), cudaMemcpyHostToDevice);
+//             cudaMalloc(&cuda_parents_Elapsed[gpu], cell_Count * sizeof(float));
+//             cudaMemcpy(cuda_parents_Elapsed[gpu], parents_Elapsed + start_stop_Per_GPU[gpu].first, cell_Count * sizeof(float), cudaMemcpyHostToDevice);
 
-            // cudaMalloc(&cuda_rerun_Progeny_Indexes[gpu], cell_Count * sizeof(int));
-            // cudaMemcpy(cuda_rerun_Progeny_Indexes[gpu], rerun_Progeny_Indexes + start_stop_Per_GPU[gpu].first, cell_Count * sizeof(int), cudaMemcpyHostToDevice);
+//             // cudaMalloc(&cuda_rerun_Progeny_Indexes[gpu], cell_Count * sizeof(int));
+//             // cudaMemcpy(cuda_rerun_Progeny_Indexes[gpu], rerun_Progeny_Indexes + start_stop_Per_GPU[gpu].first, cell_Count * sizeof(int), cudaMemcpyHostToDevice);
 
-            cudaMallocManaged(&cuda_progeny_Sequences_INT[gpu], (cell_Count * 2) * sizeof(int *));
-            for (int row = 0; row < (cell_Count * 2); row++)
-            {
-                cudaMalloc((void **)&cuda_progeny_Sequences_INT[gpu][row], genome_Length * sizeof(int));
-            }
+//             cudaMallocManaged(&cuda_progeny_Sequences_INT[gpu], (cell_Count * 2) * sizeof(int *));
+//             for (int row = 0; row < (cell_Count * 2); row++)
+//             {
+//                 cudaMalloc((void **)&cuda_progeny_Sequences_INT[gpu][row], genome_Length * sizeof(int));
+//             }
 
-            cudaMallocManaged(&cuda_progeny_Elapsed[gpu], (cell_Count * 2) * sizeof(float));
+//             cudaMallocManaged(&cuda_progeny_Elapsed[gpu], (cell_Count * 2) * sizeof(float));
 
-            cudaMallocManaged(&cuda_progeny_Configuration_Cancer[gpu], (cell_Count * 2) * sizeof(float *));
-            for (int row = 0; row < (cell_Count * 2); row++)
-            {
-                cudaMalloc((void **)&cuda_progeny_Configuration_Cancer[gpu][row], 5 * sizeof(float));
-            }
+//             cudaMallocManaged(&cuda_progeny_Configuration_Cancer[gpu], (cell_Count * 2) * sizeof(float *));
+//             for (int row = 0; row < (cell_Count * 2); row++)
+//             {
+//                 cudaMalloc((void **)&cuda_progeny_Configuration_Cancer[gpu][row], 5 * sizeof(float));
+//             }
 
-            cudaStreamCreate(&streams[gpu]);
-        }
+//             cudaStreamCreate(&streams[gpu]);
+//         }
 
-        // functions.clear_Array_int_CPU(parent_sequences_INT, tot_Parents * 2);
-        for (int row = 0; row < tot_Parents * 2; row++)
-        {
-            free(parent_sequences_INT[row]);
-        }
-        free(parent_sequences_INT);
+//         // functions.clear_Array_int_CPU(parent_sequences_INT, tot_Parents * 2);
+//         for (int row = 0; row < tot_Parents * 2; row++)
+//         {
+//             free(parent_sequences_INT[row]);
+//         }
+//         free(parent_sequences_INT);
 
-        tot_Parents = parent_Cells_Found;
+//         tot_Parents = parent_Cells_Found;
 
-        cout << "GPUs intialized\n";
+//         cout << "GPUs intialized\n";
 
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             cudaSetDevice(CUDA_device_IDs[gpu]);
 
-            cuda_replicate_Progeny_reRun<<<functions.tot_Blocks_array[gpu], functions.tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
-                                                                                                                                         cuda_parent_sequences_INT[gpu], cuda_progeny_Sequences_INT[gpu], genome_Length,
-                                                                                                                                         cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
-                                                                                                                                         cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
-                                                                                                                                         cuda_sequence_replication_factor_changes[gpu],
-                                                                                                                                         mutation_Hotspots,
-                                                                                                                                         cuda_mutation_hotspot_parameters[gpu],
-                                                                                                                                         cuda_A_0_mutation[gpu],
-                                                                                                                                         cuda_T_1_mutation[gpu],
-                                                                                                                                         cuda_G_2_mutation[gpu],
-                                                                                                                                         cuda_C_3_mutation[gpu],
-                                                                                                                                         cuda_num_effect_Segregating_sites[gpu],
-                                                                                                                                         cuda_num_effect_Segregating_sites_Cancer[gpu],
-                                                                                                                                         cuda_sequence_Survivability_changes[gpu],
-                                                                                                                                         cuda_sequence_Proof_reading_changes[gpu],
-                                                                                                                                         cuda_sequence_mutation_rate_changes[gpu],
-                                                                                                                                         cuda_sequence_generation_death_changes[gpu],
-                                                                                                                                         cuda_sequence_replication_prob_changes[gpu],
-                                                                                                                                         cuda_sequence_metastatic_prob_changes[gpu],
-                                                                                                                                         cuda_progeny_Configuration_Cancer[gpu]);
-        }
+//             cuda_replicate_Progeny_reRun<<<functions.tot_Blocks_array[gpu], functions.tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
+//                                                                                                                                          cuda_parent_sequences_INT[gpu], cuda_progeny_Sequences_INT[gpu], genome_Length,
+//                                                                                                                                          cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
+//                                                                                                                                          cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
+//                                                                                                                                          cuda_sequence_replication_factor_changes[gpu],
+//                                                                                                                                          mutation_Hotspots,
+//                                                                                                                                          cuda_mutation_hotspot_parameters[gpu],
+//                                                                                                                                          cuda_A_0_mutation[gpu],
+//                                                                                                                                          cuda_T_1_mutation[gpu],
+//                                                                                                                                          cuda_G_2_mutation[gpu],
+//                                                                                                                                          cuda_C_3_mutation[gpu],
+//                                                                                                                                          cuda_num_effect_Segregating_sites[gpu],
+//                                                                                                                                          cuda_num_effect_Segregating_sites_Cancer[gpu],
+//                                                                                                                                          cuda_sequence_Survivability_changes[gpu],
+//                                                                                                                                          cuda_sequence_Proof_reading_changes[gpu],
+//                                                                                                                                          cuda_sequence_mutation_rate_changes[gpu],
+//                                                                                                                                          cuda_sequence_generation_death_changes[gpu],
+//                                                                                                                                          cuda_sequence_replication_prob_changes[gpu],
+//                                                                                                                                          cuda_sequence_metastatic_prob_changes[gpu],
+//                                                                                                                                          cuda_progeny_Configuration_Cancer[gpu],);
+//         }
 
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            cudaStreamSynchronize(streams[gpu]);
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             cudaSetDevice(CUDA_device_IDs[gpu]);
+//             cudaStreamSynchronize(streams[gpu]);
 
-            cudaError_t err = cudaGetLastError();
-            if (err != cudaSuccess)
-            {
-                fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", gpu, cudaGetErrorString(err));
-                exit(-1);
-            }
-        }
+//             cudaError_t err = cudaGetLastError();
+//             if (err != cudaSuccess)
+//             {
+//                 fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", gpu, cudaGetErrorString(err));
+//                 exit(-1);
+//             }
+//         }
 
-        cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
+//         cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
 
-        float **progeny_Configuration_Cancer;
-        parents_Elapsed_full = (float *)malloc(sizeof(float) * parent_Cells_Found * 2);
-        parent_sequences_INT = (int **)malloc(parent_Cells_Found * 2 * sizeof(int *));
+//         float **progeny_Configuration_Cancer;
+//         parents_Elapsed_full = (float *)malloc(sizeof(float) * parent_Cells_Found * 2);
+//         parent_sequences_INT = (int **)malloc(parent_Cells_Found * 2 * sizeof(int *));
 
-        progeny_Configuration_Cancer = (float **)malloc(parent_Cells_Found * 2 * sizeof(float *));
-        for (int row = 0; row < (parent_Cells_Found * 2); row++)
-        {
-            parent_sequences_INT[row] = (int *)malloc(genome_Length * sizeof(int));
-            progeny_Configuration_Cancer[row] = (float *)malloc(5 * sizeof(float));
-            // converted_Sequences.push_back("");
-        }
+//         progeny_Configuration_Cancer = (float **)malloc(parent_Cells_Found * 2 * sizeof(float *));
+//         for (int row = 0; row < (parent_Cells_Found * 2); row++)
+//         {
+//             parent_sequences_INT[row] = (int *)malloc(genome_Length * sizeof(int));
+//             progeny_Configuration_Cancer[row] = (float *)malloc(5 * sizeof(float));
+//             // converted_Sequences.push_back("");
+//         }
 
-        cout << "Receiving data from GPU: ";
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
-            int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
+//         cout << "Receiving data from GPU: ";
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             cudaSetDevice(CUDA_device_IDs[gpu]);
+//             int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
 
-            for (int row = 0; row < (cell_Count * 2); row++)
-            {
-                cudaMemcpy(parent_sequences_INT[(start_stop_Per_GPU[gpu].first * 2) + row], cuda_progeny_Sequences_INT[gpu][row], genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
-                cudaMemcpy(progeny_Configuration_Cancer[(start_stop_Per_GPU[gpu].first * 2) + row], cuda_progeny_Configuration_Cancer[gpu][row], 5 * sizeof(float), cudaMemcpyDeviceToHost);
-            }
+//             for (int row = 0; row < (cell_Count * 2); row++)
+//             {
+//                 cudaMemcpy(parent_sequences_INT[(start_stop_Per_GPU[gpu].first * 2) + row], cuda_progeny_Sequences_INT[gpu][row], genome_Length * sizeof(int), cudaMemcpyDeviceToHost);
+//                 cudaMemcpy(progeny_Configuration_Cancer[(start_stop_Per_GPU[gpu].first * 2) + row], cuda_progeny_Configuration_Cancer[gpu][row], 5 * sizeof(float), cudaMemcpyDeviceToHost);
+//             }
 
-            cudaMemcpy(parents_Elapsed_full + (start_stop_Per_GPU[gpu].first * 2), cuda_progeny_Elapsed[gpu], (cell_Count * 2) * sizeof(float), cudaMemcpyDeviceToHost);
-        }
+//             cudaMemcpy(parents_Elapsed_full + (start_stop_Per_GPU[gpu].first * 2), cuda_progeny_Elapsed[gpu], (cell_Count * 2) * sizeof(float), cudaMemcpyDeviceToHost);
+//         }
 
-        cout << "Data received by host\n";
+//         cout << "Data received by host\n";
 
-        cout << "Partial termination of GPU streams: ";
-        for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
-        {
-            cudaSetDevice(CUDA_device_IDs[gpu]);
+//         cout << "Partial termination of GPU streams: ";
+//         for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
+//         {
+//             cudaSetDevice(CUDA_device_IDs[gpu]);
 
-            cudaFree(cuda_parents_Elapsed[gpu]);
-            cudaFree(cuda_progeny_Elapsed[gpu]);
+//             cudaFree(cuda_parents_Elapsed[gpu]);
+//             cudaFree(cuda_progeny_Elapsed[gpu]);
 
-            int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
+//             int cell_Count = start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first;
 
-            for (int row = 0; row < (cell_Count * 2); row++)
-            {
-                cudaFree(cuda_progeny_Configuration_Cancer[gpu][row]);
-                cudaFree(cuda_progeny_Sequences_INT[gpu][row]);
-            }
-            cudaFree(cuda_progeny_Configuration_Cancer[gpu]);
-            cudaFree(cuda_progeny_Sequences_INT[gpu]);
+//             for (int row = 0; row < (cell_Count * 2); row++)
+//             {
+//                 cudaFree(cuda_progeny_Configuration_Cancer[gpu][row]);
+//                 cudaFree(cuda_progeny_Sequences_INT[gpu][row]);
+//             }
+//             cudaFree(cuda_progeny_Configuration_Cancer[gpu]);
+//             cudaFree(cuda_progeny_Sequences_INT[gpu]);
 
-            for (int row = 0; row < cell_Count; row++)
-            {
-                cudaFree(cuda_parent_sequences_INT[gpu][row]);
-            }
-            cudaFree(cuda_parent_sequences_INT[gpu]);
+//             for (int row = 0; row < cell_Count; row++)
+//             {
+//                 cudaFree(cuda_parent_sequences_INT[gpu][row]);
+//             }
+//             cudaFree(cuda_parent_sequences_INT[gpu]);
 
-            cudaStreamDestroy(streams[gpu]);
-        }
+//             cudaStreamDestroy(streams[gpu]);
+//         }
 
-        cout << " GPU(s) released\n";
+//         cout << " GPU(s) released\n";
 
-        for (int test = 0; test < parent_Cells_Found; test++)
-        {
-            cout << test << ": " << endl;
-            for (int progeny = (test * 2); progeny < ((test * 2) + 2); progeny++)
-            {
-                cout << parent_sequences_INT[progeny][0];
-                cout << " ";
-                for (int col = 0; col < 5; col++)
-                {
-                    cout << progeny_Configuration_Cancer[progeny][col] << " ";
-                }
-                cout << "| " << parents_Elapsed_full[progeny];
-                cout << endl;
-            }
-        }
+//         for (int test = 0; test < parent_Cells_Found; test++)
+//         {
+//             cout << test << ": " << endl;
+//             for (int progeny = (test * 2); progeny < ((test * 2) + 2); progeny++)
+//             {
+//                 cout << parent_sequences_INT[progeny][0];
+//                 cout << " ";
+//                 for (int col = 0; col < 5; col++)
+//                 {
+//                     cout << progeny_Configuration_Cancer[progeny][col] << " ";
+//                 }
+//                 cout << "| " << parents_Elapsed_full[progeny];
+//                 cout << endl;
+//             }
+//         }
 
-        rerun_Progeny = compile_Progeny(functions,
-                                        intermediary_Tissue_folder, rapid_Progeny_Location,
-                                        parent_Cells_Found,
-                                        parents_Elapsed_full, progeny_Configuration_Cancer,
-                                        last_index_Seq_Written, overall_Generations, tissue_Name,
-                                        parent_sequences_INT, tissue_Index,
-                                        gen, parent_IDs,
-                                        source_sequence_Data_folder,
-                                        last_Progeny_written_this_Gen,
-                                        tissue_Migration_Total, migration_cell_List);
+//         rerun_Progeny = compile_Progeny(functions,
+//                                         intermediary_Tissue_folder, rapid_Progeny_Location,
+//                                         parent_Cells_Found,
+//                                         parents_Elapsed_full, progeny_Configuration_Cancer,
+//                                         last_index_Seq_Written, overall_Generations, tissue_Name,
+//                                         parent_sequences_INT, tissue_Index,
+//                                         gen, parent_IDs,
+//                                         source_sequence_Data_folder,
+//                                         last_Progeny_written_this_Gen,
+//                                         tissue_Migration_Total, migration_cell_List);
 
-        functions.clear_Array_float_CPU(progeny_Configuration_Cancer, parent_Cells_Found * 2);
+//         functions.clear_Array_float_CPU(progeny_Configuration_Cancer, parent_Cells_Found * 2);
 
-        rounds_reRun++;
+//         rounds_reRun++;
 
-        full_Write_Sequences_NEXT_Generation(max_sequences_per_File, intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
-        // full_Write_Sequences_NEXT_Generation(max_sequences_per_File, source_sequence_Data_folder + "/" + to_string(tissue_Index) + "/generation_" + to_string(overall_Generations), functions, to_write_Sequence_Store_THIS_Gen);
+//         full_Write_Sequences_NEXT_Generation(max_sequences_per_File, intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
+//         // full_Write_Sequences_NEXT_Generation(max_sequences_per_File, source_sequence_Data_folder + "/" + to_string(tissue_Index) + "/generation_" + to_string(overall_Generations), functions, to_write_Sequence_Store_THIS_Gen);
 
-        for (int forward = 0; forward < to_write_Sequence_Store_OTHER_Gens[tissue_Index].size(); forward++)
-        {
-            full_Write_Sequences_NEXT_Generation(max_sequences_per_File, source_sequence_Data_folder + "/" + to_string(tissue_Index) + "/generation_" + to_string(forward), functions, to_write_Sequence_Store_OTHER_Gens[tissue_Index][forward]);
-        }
+//         for (int forward = 0; forward < to_write_Sequence_Store_OTHER_Gens[tissue_Index].size(); forward++)
+//         {
+//             full_Write_Sequences_NEXT_Generation(max_sequences_per_File, source_sequence_Data_folder + "/" + to_string(tissue_Index) + "/generation_" + to_string(forward), functions, to_write_Sequence_Store_OTHER_Gens[tissue_Index][forward]);
+//         }
 
-    } while (rerun_Progeny.size() > 0);
+//     } while (rerun_Progeny.size() > 0);
 
-    // functions.clear_Array_int_CPU(parent_sequences_INT, tot_Parents * 2);
-    for (int row = 0; row < tot_Parents * 2; row++)
-    {
-        free(parent_sequences_INT[row]);
-    }
-    free(parent_sequences_INT);
-    free(parents_Elapsed_full);
+//     // functions.clear_Array_int_CPU(parent_sequences_INT, tot_Parents * 2);
+//     for (int row = 0; row < tot_Parents * 2; row++)
+//     {
+//         free(parent_sequences_INT[row]);
+//     }
+//     free(parent_sequences_INT);
+//     free(parents_Elapsed_full);
 
-    cout << "Reruns completed after: " << rounds_reRun << " rounds\n";
-}
+//     cout << "Reruns completed after: " << rounds_reRun << " rounds\n";
+// }
 
 // void cancer_Host::thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences)
 // {
