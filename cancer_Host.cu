@@ -2810,7 +2810,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             cudaFree(cuda_Replication_prob_Positions[gpu]);
             cudaFree(cuda_Metastatic_Positions[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[0] > 0)
+            if (tissue_selection_Position_Count[0] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2819,7 +2819,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Survivability[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[1] > 0)
+            if (tissue_selection_Position_Count[1] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2828,7 +2828,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Proof[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[2] > 0)
+            if (tissue_selection_Position_Count[2] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2837,7 +2837,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Replication_factor[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[3] > 0)
+            if (tissue_selection_Position_Count[3] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2846,7 +2846,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[4] > 0)
+            if (tissue_selection_Position_Count[4] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2855,7 +2855,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Generation_death[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[5] > 0)
+            if (tissue_selection_Position_Count[5] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
@@ -2864,7 +2864,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             cudaFree(cuda_tissues_ATGC_positions_Replication_prob[gpu]);
 
-            if (cuda_tissue_selection_Position_Count[6] > 0)
+            if (tissue_selection_Position_Count[6] > 0)
             {
                 for (int row = 0; row < (4 * num_Tissues); row++)
                 {
