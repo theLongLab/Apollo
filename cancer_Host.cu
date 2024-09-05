@@ -77,7 +77,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
     this->genome_Length = genome_Length;
 
     generational_Summary = output_Node_location + "/cancer_Host/node_generational_Summary.csv";
-    functions.create_File(generational_Summary, "overall_Generation\tTissue\tnum_Parents\tnum_Progeny\tdead_Progeny");
+    functions.create_File(generational_Summary, "Generation\tTissue\tPhase\tnum_Parents\tnum_Progeny\tdead_Progeny\trapid_Progeny");
 
     sequence_Profiles = output_Node_location + "/cancer_Host/sequence_Profiles.csv";
     // functions.create_File(sequence_Profiles, "Sequence_ID\tTissue");
@@ -381,6 +381,20 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
                         // last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
 
+                        fstream gen_Summary;
+                        gen_Summary.open(generational_Summary, ios::app);
+                        if (gen_Summary.is_open())
+                        {
+                            //"Generation\tTissue\tPhase\tnum_Parents\tnum_Progeny\tdead_Progeny\trapid_Progeny"
+                            gen_Summary << overall_Generations << "\t" << tissue_Names[tissue] << "\t" << generation_Type << "\t" << to_string(parent_population_Count)
+                                        << "\t" << last_index_Seq_Written << "\t" << dead_Particle_count[tissue] << "\t";
+                        }
+                        else
+                        {
+                            cout << "ERROR: UNABLE TO OPEN GENERATIONAL SUMMARY FILE: " << generational_Summary << endl;
+                            exit(-1);
+                        }
+
                         string rename_rapid_Progeny = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) +
                                                       "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_rapid_Progeny.nfasta";
 
@@ -391,6 +405,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                             {
                                 filesystem::rename(rename_rapid_Progeny, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) +
                                                                              "/" + to_string(indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1) + "_" + to_string(last_Progeny_written_this_Gen - 1) + ".nfasta");
+                                gen_Summary << to_string(last_Progeny_written_this_Gen - (indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1));
                             }
                             catch (const filesystem::filesystem_error &e)
                             {
@@ -398,6 +413,13 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                 std::cerr << "Error renaming file: " << e.what() << '\n';
                             }
                         }
+                        else
+                        {
+                            gen_Summary << "0";
+                        }
+
+                        gen_Summary << endl;
+                        gen_Summary.close();
 
                         remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
                         // remainder_Write_Sequences_NEXT_Generation(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations), functions, to_write_Sequence_Store_THIS_Gen);
@@ -418,7 +440,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                            tissue, tissue_migration_Targets_amount[tissue], migration_cell_List,
                                            overall_Generations, functions);
 
-                        // ! Calculate Tajima's. Define parameters with gene regions for Tajima's
+                        // // ! Calculate Tajima's. Define parameters with gene regions for Tajima's
+
                         if (count_tajima_Regions > 0)
                         {
                             calculate_Tajima(functions,
@@ -2680,7 +2703,12 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             }
             free(progeny_Sequences);
             free(progeny_Elapsed);
+
+            // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
+
             cout << "Reruns completed after: " << rounds_reRun << " rounds\n";
+
+            // exit(-1);
             // rerun_Progeny_THIS_gen(functions, rerun_Progeny, start_stop_Per_GPU, num_Cuda_devices, parent_Cells_Found,
             //                        progeny_Sequences, progeny_Elapsed,
             //                        cuda_Reference_fitness_survivability_proof_reading,
