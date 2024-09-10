@@ -61,11 +61,11 @@ renamevcf::renamevcf(string vcf_Folder, string sample_sheet_vcf)
         vector<string> sample_Types;
         functions.split(sample_Types, sample_Type, ',');
 
-        if (sample_Types[0] == "Metastatic" || sample_Types[1] == "Metastatic")
+        if (sample_Types[0] == " Metastatic" || sample_Types[1] == " Metastatic" || sample_Types[0] == "Metastatic" || sample_Types[1] == "Metastatic")
         {
             tumor_Column_Name = vcf_Folder_name + "_METASTATIC_TUMOR";
         }
-        else if (sample_Types[0] == "Primary Tumor" || sample_Types[1] == "Primary Tumor")
+        else if (sample_Types[0] == "Primary Tumor" || sample_Types[1] == "Primary Tumor"||sample_Types[0] == " Primary Tumor" || sample_Types[1] == " Primary Tumor")
         {
             tumor_Column_Name = vcf_Folder_name + "_PRIMARY_TUMOR";
         }
@@ -84,65 +84,72 @@ renamevcf::renamevcf(string vcf_Folder, string sample_sheet_vcf)
 
 void renamevcf::ingress()
 {
-    cout << "\nReading and renaming vcf files\n";
-    fstream vcf_File_rename;
-    fstream vcf_File_original;
-
-    vcf_File_original.open(vcf_File, ios::in);
-
-    functions_library functions = functions_library();
-
-    if (vcf_File_original.is_open())
+    if (filesystem::exists(vcf_Folder + "/renamed_" + vcf_File_name_only))
     {
-        vcf_File_rename.open(vcf_Folder + "/renamed_" + vcf_File_name_only, ios::out);
-
-        string line;
-
-        while (getline(vcf_File_original, line))
-        {
-            if (line.substr(0, 2) == "##")
-            {
-                vcf_File_rename << line << endl;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        vector<string> line_Data;
-        functions.split(line_Data, line, '\t');
-
-        for (int col = 0; col < 9; col++)
-        {
-            vcf_File_rename << line_Data[col] << "\t";
-        }
-
-        if (line_Data[9] == "NORMAL")
-        {
-            vcf_File_rename << vcf_Folder_name << "_NORMAL\t" << tumor_Column_Name;
-        }
-        else
-        {
-            vcf_File_rename << tumor_Column_Name << "\t" << vcf_Folder_name << "_NORMAL";
-        }
-
-        vcf_File_rename << endl;
-
-        while (getline(vcf_File_original, line))
-        {
-            vcf_File_rename << line << endl;
-        }
-
-        cout << "Renaming VCF columns completed: ";
-
-        vcf_File_rename.close();
-        vcf_File_original.close();
-
-        cout << vcf_Folder << "/renamed_" << vcf_File_name_only << endl;
+        cout << "Already exists\n";
     }
     else
     {
-        cout << "ERROR: UNABLE TO OPEN FILE: " << vcf_File << endl;
+        cout << "\nReading and renaming vcf files\n";
+        fstream vcf_File_rename;
+        fstream vcf_File_original;
+
+        vcf_File_original.open(vcf_File, ios::in);
+
+        functions_library functions = functions_library();
+
+        if (vcf_File_original.is_open())
+        {
+            vcf_File_rename.open(vcf_Folder + "/renamed_" + vcf_File_name_only, ios::out);
+
+            string line;
+
+            while (getline(vcf_File_original, line))
+            {
+                if (line.substr(0, 2) == "##")
+                {
+                    vcf_File_rename << line << endl;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            vector<string> line_Data;
+            functions.split(line_Data, line, '\t');
+
+            for (int col = 0; col < 9; col++)
+            {
+                vcf_File_rename << line_Data[col] << "\t";
+            }
+
+            if (line_Data[9] == "NORMAL")
+            {
+                vcf_File_rename << vcf_Folder_name << "_NORMAL\t" << tumor_Column_Name;
+            }
+            else
+            {
+                vcf_File_rename << tumor_Column_Name << "\t" << vcf_Folder_name << "_NORMAL";
+            }
+
+            vcf_File_rename << endl;
+
+            while (getline(vcf_File_original, line))
+            {
+                vcf_File_rename << line << endl;
+            }
+
+            cout << "Renaming VCF columns completed: ";
+
+            vcf_File_rename.close();
+            vcf_File_original.close();
+
+            cout << vcf_Folder << "/renamed_" << vcf_File_name_only << endl;
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN FILE: " << vcf_File << endl;
+        }
     }
 }
