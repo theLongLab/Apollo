@@ -31,6 +31,8 @@
 #include "pedigree2r.cuh"
 #include "segmatch.cuh"
 
+#include "renamevcf.cuh"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -64,7 +66,17 @@ int main(int argc, char *argv[])
 
      parameter_load Parameters = parameter_load();
 
-     if (function == "--simulator")
+     if (function == "--renamevcf")
+     {
+          cout << "Renaming TCGA VCF file and creating PLINK phenotype file\n\n";
+
+          string vcf_Folder(argv[2]);
+          string sample_sheet(argv[3]);
+
+          renamevcf rvcf = renamevcf(vcf_Folder, sample_sheet);
+          rvcf.ingress();
+     }
+     else if (function == "--simulator")
      {
           cout << "Simulator for within host viral replication\n\n";
 
