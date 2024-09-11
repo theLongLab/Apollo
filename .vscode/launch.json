@@ -10,9 +10,9 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "--renamevcf",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/0a6d8136-a7e7-4e07-8164-0aab6076ccc9",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/gdc_sample_sheet.2024-09-10.tsv"
+                "--pheno",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/head_MUSE.vcf",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/pheno_MUSE.txt"
                 // "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/parameters_MASTER.json"
             ],
             "stopAtEntry": false,

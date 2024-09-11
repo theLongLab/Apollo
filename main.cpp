@@ -32,6 +32,7 @@
 #include "segmatch.cuh"
 
 #include "renamevcf.cuh"
+#include "pheno_plink.cuh"
 
 using namespace std;
 
@@ -65,8 +66,17 @@ int main(int argc, char *argv[])
      // int seed_value = rd();
 
      parameter_load Parameters = parameter_load();
+     if (function == "--pheno")
+     {
+          cout << "Creating PLINK phenotype file\n\n";
+          string vcf_File(argv[2]);
+          string output_File_Pheno(argv[3]);
+          string output_VCF(argv[4]);
 
-     if (function == "--renamevcf")
+          pheno_plink pplink = pheno_plink(vcf_File, output_File_Pheno, output_VCF);
+          pplink.ingress();
+     }
+     else if (function == "--renamevcf")
      {
           cout << "Renaming TCGA VCF file and creating PLINK phenotype file\n\n";
 
