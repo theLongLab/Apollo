@@ -1,6 +1,6 @@
 #include "pheno_plink.cuh"
 
-pheno_plink::pheno_plink(string vcf_File, string output_File,string output_VCF)
+pheno_plink::pheno_plink(string vcf_File, string output_File, string output_VCF)
 {
     cout << "Intializing Phenotype generation\n";
     functions_library functions = functions_library();
@@ -53,9 +53,11 @@ pheno_plink::pheno_plink(string vcf_File, string output_File,string output_VCF)
         count++;
     }
 
+    count = 0;
+
     for (int col = 9; col < headers.size(); col++)
     {
-        vcf_File_rename << headers[col];
+        vcf_File_rename << to_string(count);
         if (col + 1 != headers.size())
         {
             vcf_File_rename << "\t";
@@ -91,6 +93,8 @@ void pheno_plink::ingress()
         vector<string> line_Data_1;
         vector<string> line_Data_2;
         int family_ID = 0;
+        int count = 0;
+
         for (int sample = 9; sample < headers.size(); sample = sample + 2)
         {
             functions.split(line_Data_1, headers[sample], 'v');
@@ -108,8 +112,10 @@ void pheno_plink::ingress()
                 line_2 = 1;
             }
 
-            pheno_File << headers[sample] << "\t" << headers[sample] << "\t" << line_1 << endl;
-            pheno_File << headers[sample + 1] << "\t" << headers[sample + 1] << "\t" << line_2 << endl;
+            pheno_File << to_string(count) << "\t" << to_string(count) << "\t" << line_1 << endl;
+            count++;
+            pheno_File << to_string(count) << "\t" << to_string(count) << "\t" << line_2 << endl;
+            count++;
             family_ID++;
         }
     }
