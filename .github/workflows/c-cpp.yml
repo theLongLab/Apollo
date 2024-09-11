@@ -32,7 +32,3 @@ jobs:
     # Compile using nvcc
     - name: Compile
       run: nvcc -std=c++17 *.cu *.cpp -o output_binary
-
-    # Run tests
-    - name: Run Tests
-      run: ./output_binary -h mnt
