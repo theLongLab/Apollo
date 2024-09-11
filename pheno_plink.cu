@@ -66,6 +66,7 @@ pheno_plink::pheno_plink(string vcf_File, string output_File, string output_VCF)
         {
             vcf_File_rename << "\n";
         }
+        count++;
     }
 
     while (getline(vcf_File_original, line))
