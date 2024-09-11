@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install CUDA
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cuda
+    - name: Configure
+      run: ./configure
+    - name: Compile
+      run: nvcc -std=c++17 *.cu *.cpp -o output_binary
+    - name: Run Tests
+      run: ./output_binary -h
