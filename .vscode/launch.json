@@ -10,10 +10,10 @@
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
-                "--pheno",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/head_MUSE.vcf",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/pheno_MUSE.txt",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_tumor_non_tumor/rename.vcf"
+                "--tumor",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_primary/tumor_vcf_head.vcf",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_primary/pheno_MUSE.txt",
+                "/mnt/d/Deshan/Books/University of Calgary/Experiments/TCGA/metastatic_primary/rename.vcf"
                 // "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/parameters_MASTER.json"
             ],
             "stopAtEntry": false,
