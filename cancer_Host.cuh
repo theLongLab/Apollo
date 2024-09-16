@@ -130,7 +130,7 @@ public:
                               float **sequence_replication_prob_changes,
                               float **sequence_metastatic_prob_changes,
                               int &max_sequences_per_File,
-                              float **viral_Migration_Values, int *migration_start_Generation,
+                              string &viral_Migration, float **viral_Migration_Values, int *migration_start_Generation,
                               int &count_tajima_Regions, int **tajima_regions_Start_Stop,
                               string &reference_Genome_location,
                               int *tissue_selection_Position_Count,

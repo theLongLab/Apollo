@@ -47,7 +47,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        float **sequence_replication_prob_changes,
                                        float **sequence_metastatic_prob_changes,
                                        int &max_sequences_per_File,
-                                       float **viral_Migration_Values, int *migration_start_Generation,
+                                       string &viral_Migration, float **viral_Migration_Values, int *migration_start_Generation,
                                        int &count_tajima_Regions, int **tajima_regions_Start_Stop,
                                        string &reference_Genome_location,
                                        int *tissue_selection_Position_Count,
@@ -123,27 +123,30 @@ void cancer_Host::simulate_Generations(functions_library &functions,
             tissue_migration_Targets_amount.push_back(intialize_vec);
         }
 
-        cout << "\nPutative migrating particles per tissue: \n";
-
-        for (int migration_Check = 0; migration_Check < (num_Tissues * (num_Tissues - 1)); migration_Check++)
+        if (viral_Migration == "YES")
         {
-            if (viral_Migration_Values[migration_Check][0] != -1)
+            cout << "\nPutative migrating particles per tissue: \n";
+
+            for (int migration_Check = 0; migration_Check < (num_Tissues * (num_Tissues - 1)); migration_Check++)
             {
-                if (overall_Generations >= migration_start_Generation[migration_Check])
+                if (viral_Migration_Values[migration_Check][0] != -1)
                 {
-                    int source = migration_Check / (num_Tissues - 1);
-                    int destination = migration_Check % (num_Tissues - 1);
-
-                    if (destination >= source)
+                    if (overall_Generations >= migration_start_Generation[migration_Check])
                     {
-                        destination = destination + 1;
+                        int source = migration_Check / (num_Tissues - 1);
+                        int destination = migration_Check % (num_Tissues - 1);
+
+                        if (destination >= source)
+                        {
+                            destination = destination + 1;
+                        }
+
+                        binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
+                        int num_viruses_to_transfer = num_Particles(gen);
+
+                        tissue_Migration_Totals[source] = tissue_Migration_Totals[source] + num_viruses_to_transfer;
+                        tissue_migration_Targets_amount[source].push_back(make_pair(destination, num_viruses_to_transfer));
                     }
-
-                    binomial_distribution<int> num_Particles(viral_Migration_Values[migration_Check][0], viral_Migration_Values[migration_Check][1]);
-                    int num_viruses_to_transfer = num_Particles(gen);
-
-                    tissue_Migration_Totals[source] = tissue_Migration_Totals[source] + num_viruses_to_transfer;
-                    tissue_migration_Targets_amount[source].push_back(make_pair(destination, num_viruses_to_transfer));
                 }
             }
         }
@@ -436,10 +439,12 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         cout << "\nBottleneck size for metastatsis: " << tissue_Migration_Totals[tissue] << endl;
                         cout << "Metastatic cells avaiable: " << migration_cell_List.size() << endl;
 
-                        migration_of_Cells(source_sequence_Data_folder, tissue_Names,
-                                           tissue, tissue_migration_Targets_amount[tissue], migration_cell_List,
-                                           overall_Generations, functions);
-
+                        if (viral_Migration == "YES")
+                        {
+                            migration_of_Cells(source_sequence_Data_folder, tissue_Names,
+                                               tissue, tissue_migration_Targets_amount[tissue], migration_cell_List,
+                                               overall_Generations, functions);
+                        }
                         // // ! Calculate Tajima's. Define parameters with gene regions for Tajima's
 
                         if (count_tajima_Regions > 0)

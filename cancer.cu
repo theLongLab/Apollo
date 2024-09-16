@@ -245,7 +245,7 @@ void cancer::ingress()
                               sequence_replication_prob_changes,
                               sequence_metastatic_prob_changes,
                               max_sequences_per_File,
-                              viral_Migration_Values, migration_start_Generation,
+                              viral_Migration, viral_Migration_Values, migration_start_Generation,
                               count_tajima_Regions, tajima_regions_Start_Stop,
                               reference_Genome_location,
                               tissue_selection_Position_Count,
