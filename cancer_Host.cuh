@@ -205,7 +205,8 @@ public:
                              float **tissues_ATGC_positions_Mutation_rate_factor,
                              float **tissues_ATGC_positions_Generation_death,
                              float **tissues_ATGC_positions_Replication_prob,
-                             float **tissues_ATGC_positions_Metastatic);
+                             float **tissues_ATGC_positions_Metastatic,
+                             string &viral_Migration);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,
@@ -214,7 +215,9 @@ public:
     //                                    int *CUDA_device_IDs);
 
     string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen,
-                                 int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
+                                 int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List,
+                                 string &viral_Migration);
+
     void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 
     void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
@@ -228,7 +231,7 @@ public:
                                            mt19937 &gen, vector<int> &parent_IDs,
                                            string &source_sequence_Data_folder,
                                            int &last_Progeny_written_this_Gen,
-                                           int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List);
+                                           int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List, string &viral_Migration);
 
     // void rerun_Progeny_THIS_gen(functions_library &functions, vector<pair<int, int>> &rerun_Progeny, vector<pair<int, int>> &start_stop_Per_GPU, int &num_Cuda_devices, int &tot_Parents,
     //                             int **parent_sequences_INT, float *parents_Elapsed,

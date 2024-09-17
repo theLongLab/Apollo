@@ -149,15 +149,15 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                     }
                 }
             }
-        }
 
-        for (int tissue = 0; tissue < num_Tissues; tissue++)
-        {
-            cout << "Tissue " << tissue_Names[tissue] << ": " << tissue_Migration_Totals[tissue] << endl;
-
-            for (int path = 0; path < tissue_migration_Targets_amount[tissue].size(); path++)
+            for (int tissue = 0; tissue < num_Tissues; tissue++)
             {
-                cout << tissue_migration_Targets_amount[tissue][path].second << " cells to " << tissue_Names[tissue_migration_Targets_amount[tissue][path].first] << endl;
+                cout << "Tissue " << tissue_Names[tissue] << ": " << tissue_Migration_Totals[tissue] << endl;
+
+                for (int path = 0; path < tissue_migration_Targets_amount[tissue].size(); path++)
+                {
+                    cout << tissue_migration_Targets_amount[tissue][path].second << " cells to " << tissue_Names[tissue_migration_Targets_amount[tissue][path].first] << endl;
+                }
             }
         }
 
@@ -379,7 +379,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 tissues_ATGC_positions_Mutation_rate_factor,
                                                 tissues_ATGC_positions_Generation_death,
                                                 tissues_ATGC_positions_Replication_prob,
-                                                tissues_ATGC_positions_Metastatic);
+                                                tissues_ATGC_positions_Metastatic,
+                                                viral_Migration);
                         }
 
                         // last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
@@ -1890,7 +1891,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                       float **tissues_ATGC_positions_Mutation_rate_factor,
                                       float **tissues_ATGC_positions_Generation_death,
                                       float **tissues_ATGC_positions_Replication_prob,
-                                      float **tissues_ATGC_positions_Metastatic)
+                                      float **tissues_ATGC_positions_Metastatic,
+                                      string &viral_Migration)
 {
 
     sort(parents_in_Tissue + start, parents_in_Tissue + stop);
@@ -1900,7 +1902,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
     float *parents_Elapsed = (float *)malloc(sizeof(float) * num_of_Cells);
 
-    string all_Sequences = find_Sequences_Master(start, tissue, tissue_Name, functions, this_Gen_intermediary_Sequences, parents_in_Tissue, num_of_Cells, indexed_Tissue_Folder, overall_Generations, parent_IDs, parents_Elapsed, last_index_Seq_Written, gen, tissue_Migration_Total, migration_cell_List);
+    string all_Sequences = find_Sequences_Master(start, tissue, tissue_Name, functions, this_Gen_intermediary_Sequences, parents_in_Tissue, num_of_Cells, indexed_Tissue_Folder, overall_Generations, parent_IDs, parents_Elapsed, last_index_Seq_Written, gen, tissue_Migration_Total, migration_cell_List, viral_Migration);
     full_Write_Sequences_NEXT_Generation(max_sequences_per_File, intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
     // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
 
@@ -2421,7 +2423,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                                                gen, parent_IDs,
                                                                source_sequence_Data_folder,
                                                                last_Progeny_written_this_Gen,
-                                                               tissue_Migration_Total, migration_cell_List);
+                                                               tissue_Migration_Total, migration_cell_List, viral_Migration);
 
         full_Write_Sequences_NEXT_Generation(max_sequences_per_File, intermediary_Tissue_folder, functions, to_write_Sequence_Store_NEXT_Gen);
         //  full_Write_Sequences_NEXT_Generation(max_sequences_per_File, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations), functions, to_write_Sequence_Store_THIS_Gen);
@@ -2682,7 +2684,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                                 gen, parent_IDs,
                                                 source_sequence_Data_folder,
                                                 last_Progeny_written_this_Gen,
-                                                tissue_Migration_Total, migration_cell_List);
+                                                tissue_Migration_Total, migration_cell_List, viral_Migration);
 
                 for (int row = 0; row < parent_Cells_Found * 2; row++)
                 {
@@ -2929,7 +2931,7 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                                                     mt19937 &gen, vector<int> &parent_IDs,
                                                     string &source_sequence_Data_folder,
                                                     int &last_Progeny_written_this_Gen,
-                                                    int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List)
+                                                    int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List, string &viral_Migration)
 {
     vector<pair<int, int>> rerun_Progeny;
 
@@ -2990,11 +2992,14 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                     }
                     to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) + survival_Status + to_string(progeny_Configuration_Cancer[progeny_Index][2]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) + "_" + to_string(progeny_Elapsed[progeny_Index]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][0]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][3]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][4]), sequence));
 
-                    int migration_Check = 0;
-                    migration_Check = (check_Survival_Dis(gen) < progeny_Configuration_Cancer[progeny_Index][3]) ? 0 : 1;
-                    if (migration_Check == 0)
+                    if (viral_Migration == "YES")
                     {
-                        cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(progeny_Configuration_Cancer[progeny_Index][3], last_index_Seq_Written));
+                        int migration_Check = 0;
+                        migration_Check = (check_Survival_Dis(gen) < progeny_Configuration_Cancer[progeny_Index][3]) ? 0 : 1;
+                        if (migration_Check == 0)
+                        {
+                            cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(progeny_Configuration_Cancer[progeny_Index][3], last_index_Seq_Written));
+                        }
                     }
 
                     last_index_Seq_Written++;
@@ -3088,11 +3093,14 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                         }
                         to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) + survival_Status + to_string(progeny_Configuration_Cancer[progeny_Index][2]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) + "_" + to_string(progeny_Elapsed[progeny_Index] - 1), sequence));
 
-                        int migration_Check = 0;
-                        migration_Check = (check_Survival_Dis(gen) < progeny_Configuration_Cancer[progeny_Index][3]) ? 0 : 1;
-                        if (migration_Check == 0)
+                        if (viral_Migration == "YES")
                         {
-                            cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(progeny_Configuration_Cancer[progeny_Index][3], last_index_Seq_Written));
+                            int migration_Check = 0;
+                            migration_Check = (check_Survival_Dis(gen) < progeny_Configuration_Cancer[progeny_Index][3]) ? 0 : 1;
+                            if (migration_Check == 0)
+                            {
+                                cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(progeny_Configuration_Cancer[progeny_Index][3], last_index_Seq_Written));
+                            }
                         }
 
                         last_index_Seq_Written++;
@@ -3513,7 +3521,8 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
 // }
 
 string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen,
-                                          int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List)
+                                          int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List,
+                                          string &viral_Migration)
 {
 
     cout << "Collecting " << num_Sequences << " sequence(s)\n";
@@ -3651,11 +3660,14 @@ string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tiss
                                                                        << tissue_Name << "_" << to_string(current_Generation + 1) << "_" << to_string(last_index_Seq_Written)
                                                                        << "\tgeneration_Forward" << endl;
 
-                            int migration_Check = 0;
-                            migration_Check = (check_Survival_Dis(gen) < stof(line_Data[6])) ? 0 : 1;
-                            if (migration_Check == 0)
+                            if (viral_Migration == "YES")
                             {
-                                cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(stof(line_Data[6]), last_index_Seq_Written));
+                                int migration_Check = 0;
+                                migration_Check = (check_Survival_Dis(gen) < stof(line_Data[6])) ? 0 : 1;
+                                if (migration_Check == 0)
+                                {
+                                    cell_Migration_set(tissue_Migration_Total, migration_cell_List, make_pair(stof(line_Data[6]), last_index_Seq_Written));
+                                }
                             }
 
                             current_cell_load_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] + 1;
