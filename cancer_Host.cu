@@ -776,7 +776,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     for (int region = 0; region < num_Regions; region++)
     {
         float MAF = (float)per_Region[region] / N_float;
-        if (MAF != 0 || MAF != 1)
+        if (MAF != 0 && MAF != 1)
         {
             if (MAF > 0.5)
             {
