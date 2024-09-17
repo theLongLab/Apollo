@@ -177,6 +177,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         // get last wrtten progeny number
                         cout << endl;
                         int last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
+                        string rapid_Progeny_Location = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta";
+                        
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
 
@@ -365,7 +367,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 sequence_replication_prob_changes,
                                                 sequence_metastatic_prob_changes,
                                                 max_sequences_per_File, intermediary_Tissue_folder, source_sequence_Data_folder,
-                                                last_Progeny_written_this_Gen, source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta",
+                                                last_Progeny_written_this_Gen, rapid_Progeny_Location,
                                                 tissue_Migration_Totals[tissue], migration_cell_List,
                                                 tissue_selection_Position_Count,
                                                 Survivability_Positions,
