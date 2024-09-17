@@ -285,6 +285,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         dead_Particle_count[tissue] = 0;
                         current_cell_load_per_Tissue[tissue] = 0;
 
+                        parents_Prev_generation[tissue] = parent_population_Count;
+
                         int last_index_Seq_Written = 0;
                         // ! check if the new generation already exists and if so update;
                         string intermediary_Tissue_folder = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations + 1);
