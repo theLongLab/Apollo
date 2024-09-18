@@ -147,7 +147,8 @@ public:
                               float **tissues_ATGC_positions_Mutation_rate_factor,
                               float **tissues_ATGC_positions_Generation_death,
                               float **tissues_ATGC_positions_Replication_prob,
-                              float **tissues_ATGC_positions_Metastatic);
+                              float **tissues_ATGC_positions_Metastatic,
+                              int *profile_tissue_Limits);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);
@@ -206,8 +207,7 @@ public:
                              float **tissues_ATGC_positions_Generation_death,
                              float **tissues_ATGC_positions_Replication_prob,
                              float **tissues_ATGC_positions_Metastatic,
-                             string &viral_Migration,
-                             int *profile_tissue_Limits);
+                             string &viral_Migration);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,
