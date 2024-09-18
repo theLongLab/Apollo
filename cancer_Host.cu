@@ -727,8 +727,8 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
         for (double n = 1; n < N; n++)
         {
-            a_1 = (double)1.0 / n;
-            a_2 = (double)1.0 / (n * n);
+            a_1 = a_1 + ((double)1.0 / n);
+            a_2 = a_2 + ((double)1.0 / (n * n));
         }
         cout << "a1: " << a_1 << endl;
         cout << "a2: " << a_2 << endl;
@@ -811,11 +811,11 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
     cout << "\nCalculating Tajima's D: \n";
     // functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
-    float tot_pairwise_Differences = 0;
-    float seg_sites_Count = 0;
+    double tot_pairwise_Differences = 0;
+    double seg_sites_Count = 0;
     for (int region = 0; region < num_Regions; region++)
     {
-        float MAF = (float)per_Region[region] / N_float;
+        double MAF = (double)per_Region[region] / N_float;
         if (MAF != 0 && MAF != 1)
         {
             if (MAF > 0.5)
@@ -833,7 +833,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         cout << "Total pairwise differences: " << tot_pairwise_Differences << endl;
         long int combinations = combos_N(N);
         cout << "Combinations: " << combinations << endl;
-        float pi = (float)tot_pairwise_Differences / combinations;
+        double pi = (double)tot_pairwise_Differences / combinations;
         cout << "Pi: " << pi << endl;
         double D = (double)(pi - (seg_sites_Count / out_a_1)) / sqrt(((e1 * seg_sites_Count) + (e2 * seg_sites_Count * (seg_sites_Count - 1))));
         cout << "Tajima's D: " << D << endl;
