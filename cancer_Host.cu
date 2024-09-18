@@ -178,7 +178,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         cout << endl;
                         int last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
                         string rapid_Progeny_Location = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/" + to_string(last_Progeny_written_this_Gen) + "_rapid_Progeny.nfasta";
-                        
+
                         cout << "\nSimulating " << real_Particle_count_per_Tissue[tissue] << " particle(s) for " << tissue_Names[tissue] << " tissue\n"
                              << endl;
 
@@ -649,61 +649,99 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     int N = indexed_Source_Folder[indexed_Source_Folder.size() - 1].second + 1;
     cout << "Total number of cells (N): " << N << endl;
 
-    float a_1 = 0;
-    float *cuda_a_1;
+    double b1;
+    double b2;
+    double c1;
+    double c2;
+    double e1;
+    double e2;
 
-    // Allocate memory on the device
-    cudaMalloc(&cuda_a_1, sizeof(float));
+    double out_a_1;
 
-    // Copy the initial value from host to device
-    cudaMemcpy(cuda_a_1, &a_1, sizeof(float), cudaMemcpyHostToDevice);
+    double N_float = N;
 
-    addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_1, (N - 1));
-    cudaDeviceSynchronize();
-
-    err = cudaGetLastError();
-    if (err != cudaSuccess)
+    if (N < 50000)
     {
-        fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", 0, cudaGetErrorString(err));
-        exit(-1);
+        float a_1 = 0;
+        float *cuda_a_1;
+
+        // Allocate memory on the device
+        cudaMalloc(&cuda_a_1, sizeof(float));
+
+        // Copy the initial value from host to device
+        cudaMemcpy(cuda_a_1, &a_1, sizeof(float), cudaMemcpyHostToDevice);
+
+        addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_1, (N - 1));
+        cudaDeviceSynchronize();
+
+        err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", 0, cudaGetErrorString(err));
+            exit(-1);
+        }
+
+        // Copy the result back to the host
+        cudaMemcpy(&a_1, cuda_a_1, sizeof(float), cudaMemcpyDeviceToHost);
+        // Free device memory
+        cudaFree(cuda_a_1);
+
+        cout << "a1: " << a_1 << endl;
+
+        float a_2 = 0;
+        float *cuda_a_2;
+
+        cudaMalloc(&cuda_a_2, sizeof(float));
+        cudaMemcpy(cuda_a_2, &a_2, sizeof(float), cudaMemcpyHostToDevice);
+
+        squared_addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_2, (N - 1));
+        cudaDeviceSynchronize();
+
+        err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", 0, cudaGetErrorString(err));
+            exit(-1);
+        }
+
+        cudaMemcpy(&a_2, cuda_a_2, sizeof(float), cudaMemcpyDeviceToHost);
+        cudaFree(cuda_a_2);
+
+        cout << "a2: " << a_2 << endl;
+
+        // double N_float = N;
+
+        b1 = (N_float + 1.0) / (3.0 * (N_float - 1.0));
+        b2 = (2.0 * ((N_float * N_float) + N_float + 3.0)) / (9.0 * N_float * (N_float - 1.0));
+        c1 = b1 - (1.0 / a_1);
+        c2 = b2 - ((N_float + 2.0) / (a_1 * N_float)) + (a_2 / (a_1 * a_1));
+        e1 = c1 / a_1;
+        e2 = c2 / ((a_1 * a_1) + a_2);
+
+        out_a_1 = a_1;
     }
-
-    // Copy the result back to the host
-    cudaMemcpy(&a_1, cuda_a_1, sizeof(float), cudaMemcpyDeviceToHost);
-    // Free device memory
-    cudaFree(cuda_a_1);
-
-    cout << "a1: " << a_1 << endl;
-
-    float a_2 = 0;
-    float *cuda_a_2;
-
-    cudaMalloc(&cuda_a_2, sizeof(float));
-    cudaMemcpy(cuda_a_2, &a_2, sizeof(float), cudaMemcpyHostToDevice);
-
-    squared_addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_2, (N - 1));
-    cudaDeviceSynchronize();
-
-    err = cudaGetLastError();
-    if (err != cudaSuccess)
+    else
     {
-        fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", 0, cudaGetErrorString(err));
-        exit(-1);
+        double a_1 = 0;
+        double a_2 = 0;
+
+        for (double n = 1; n < N; n++)
+        {
+            a_1 = (double)1.0 / n;
+            a_2 = (double)1.0 / (n * n);
+        }
+        cout << "a1: " << a_1 << endl;
+        cout << "a2: " << a_2 << endl;
+
+        b1 = (N_float + 1.0) / (3.0 * (N_float - 1.0));
+        b2 = (2.0 * ((N_float * N_float) + N_float + 3.0)) / (9.0 * N_float * (N_float - 1.0));
+        c1 = b1 - (1.0 / a_1);
+        c2 = b2 - ((N_float + 2.0) / (a_1 * N_float)) + (a_2 / (a_1 * a_1));
+        e1 = c1 / a_1;
+        e2 = c2 / ((a_1 * a_1) + a_2);
+
+        out_a_1 = a_1;
     }
-
-    cudaMemcpy(&a_2, cuda_a_2, sizeof(float), cudaMemcpyDeviceToHost);
-    cudaFree(cuda_a_2);
-
-    cout << "a2: " << a_2 << endl;
-
-    float N_float = N;
-
-    float b1 = (N_float + 1.0) / (3.0 * (N_float - 1.0));
-    float b2 = (2.0 * ((N_float * N_float) + N_float + 3.0)) / (9.0 * N_float * (N_float - 1.0));
-    float c1 = b1 - (1.0 / a_1);
-    float c2 = b2 - ((N_float + 2.0) / (a_1 * N_float)) + (a_2 / (a_1 * a_1));
-    float e1 = c1 / a_1;
-    float e2 = c2 / ((a_1 * a_1) + a_2);
 
     cout << "b1: " << b1 << endl;
     cout << "b2: " << b2 << endl;
@@ -797,7 +835,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         cout << "Combinations: " << combinations << endl;
         float pi = (float)tot_pairwise_Differences / combinations;
         cout << "Pi: " << pi << endl;
-        float D = (float)(pi - (seg_sites_Count / a_1)) / sqrt(((e1 * seg_sites_Count) + (e2 * seg_sites_Count * (seg_sites_Count - 1))));
+        double D = (double)(pi - (seg_sites_Count / out_a_1)) / sqrt(((e1 * seg_sites_Count) + (e2 * seg_sites_Count * (seg_sites_Count - 1))));
         cout << "Tajima's D: " << D << endl;
 
         fstream tajima_Write;
