@@ -64,7 +64,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        float **tissues_ATGC_positions_Mutation_rate_factor,
                                        float **tissues_ATGC_positions_Generation_death,
                                        float **tissues_ATGC_positions_Replication_prob,
-                                       float **tissues_ATGC_positions_Metastatic)
+                                       float **tissues_ATGC_positions_Metastatic,
+                                       int *profile_tissue_Limits)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -280,6 +281,12 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                     cout << "Parent population reduced to: " << parent_population_Count << endl;
                                 }
                             }
+                        }
+
+                        if (profile_tissue_Limits[tissue] != -1 && parent_population_Count > profile_tissue_Limits[tissue])
+                        {
+                            cout << "\nMax cell count in tissue reached\n";
+                            parent_population_Count = profile_tissue_Limits[tissue];
                         }
 
                         check_to_Remove.clear();
@@ -727,10 +734,15 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
         for (double n = 1; n < N; n++)
         {
-            a_1 = a_1 + ((double)1.0 / n);
-            a_2 = a_2 + ((double)1.0 / (n * n));
+            a_1 = a_1 + (1.0 / n);
+            a_2 = a_2 + (1.0 / (n * n));
         }
         cout << "a1: " << a_1 << endl;
+        if (isinf(a_2))
+        {
+            // pi_squared /6
+            a_2 = 1.64493128;
+        }
         cout << "a2: " << a_2 << endl;
 
         b1 = (N_float + 1.0) / (3.0 * (N_float - 1.0));

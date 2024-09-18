@@ -262,7 +262,8 @@ void cancer::ingress()
                               tissues_ATGC_positions_Mutation_rate_factor,
                               tissues_ATGC_positions_Generation_death,
                               tissues_ATGC_positions_Replication_prob,
-                              tissues_ATGC_positions_Metastatic);
+                              tissues_ATGC_positions_Metastatic,
+                              profile_tissue_Limits);
 
     if (stop == 1)
     {

@@ -206,7 +206,8 @@ public:
                              float **tissues_ATGC_positions_Generation_death,
                              float **tissues_ATGC_positions_Replication_prob,
                              float **tissues_ATGC_positions_Metastatic,
-                             string &viral_Migration);
+                             string &viral_Migration,
+                             int *profile_tissue_Limits);
 
     // void replication_Generation_thread(int gpu, cudaStream_t *streams,
     //                                    char *cuda_full_Char, char *full_Char,
