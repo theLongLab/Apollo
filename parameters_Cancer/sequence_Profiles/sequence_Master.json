@@ -26,7 +26,7 @@
   "Reference_metastatic profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/sequence_Profiles/profiles/cancer_Profiles/Reference_metastatic_prob.csv",
 
   "Reference Fitness":"1",
-  "Reference Survivability":"1",
+  "Reference Survivability":"0.5",
   "Reference Proof Reading":"0.5",
 
   "Tajima's regions":{

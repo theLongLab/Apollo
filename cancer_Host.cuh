@@ -278,7 +278,11 @@ public:
 
     void process_Tajima_String(string &all_Sequences, int &count_Track, int &num_Regions, int **cuda_tajima_regions_Start_Stop,
                                char *cuda_Reference_Genome, int *cuda_per_Region,
-                               functions_library &functions);
+                               functions_library &functions,
+                               string &dead_or_Alive, int *cuda_per_Region_ALIVE);
+
+    void write_Tajima(string type, int *per_Region, string &output_Tajima_File, int &overall_Generations, string &tissue_Name,
+                      int &num_Regions, int &N, double &N_float, double &out_a_1, double &e1, double &e2);
 
     long int combos_N(int count);
     long int fact_half(int count);

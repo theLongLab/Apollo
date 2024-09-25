@@ -93,7 +93,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         // {
         //     columns_Tajima = columns_Tajima + "\tRegion_" + to_string(region + 1);
         // }
-        functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
+        functions.create_File(output_Tajima_File, "Type\tGeneration\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
     }
     // functions.create_File(sequence_parent_Progeny_relationships, "Source\tTarget\tType");
 
@@ -765,17 +765,27 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     // exit(-1);
 
     string sequence_String = "";
+    vector<string> line_Data;
+    string dead_or_Alive = "";
+
     int count_Track = 0;
 
     int *per_Region = (int *)malloc(num_Regions * sizeof(int));
+    int *per_Region_ALIVE = (int *)malloc(num_Regions * sizeof(int));
+
     for (int region = 0; region < num_Regions; region++)
     {
         per_Region[region] = 0;
+        per_Region_ALIVE[region] = 0;
     }
 
     int *cuda_per_Region;
     cudaMallocManaged(&cuda_per_Region, num_Regions * sizeof(int));
     cudaMemcpy(cuda_per_Region, per_Region, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
+
+    int *cuda_per_Region_ALIVE;
+    cudaMallocManaged(&cuda_per_Region_ALIVE, num_Regions * sizeof(int));
+    cudaMemcpy(cuda_per_Region_ALIVE, per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
 
     cout << "\nReading files\n";
 
@@ -796,8 +806,14 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
                     if (count_Track == max_Cells_at_a_time)
                     {
                         process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
-                                              cuda_full_Char, cuda_per_Region, functions);
+                                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive,
+                                              cuda_per_Region_ALIVE);
                     }
+                }
+                else
+                {
+                    functions.split(line_Data, line, '_');
+                    dead_or_Alive.append(line_Data[1]);
                 }
             }
             nfasta.close();
@@ -813,7 +829,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     if (count_Track > 0)
     {
         process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
-                              cuda_full_Char, cuda_per_Region, functions);
+                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive, cuda_per_Region_ALIVE);
     }
 
     cout << "Completed reading files\n";
@@ -821,8 +837,39 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     cudaMemcpy(per_Region, cuda_per_Region, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
     cudaFree(cuda_per_Region);
 
-    cout << "\nCalculating Tajima's D: \n";
-    // functions.create_File(output_Tajima_File, "Generation\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
+    cudaMemcpy(per_Region_ALIVE, cuda_per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaFree(cuda_per_Region_ALIVE);
+
+    write_Tajima("ALL", per_Region, output_Tajima_File, overall_Generations, tissue_Name,
+                 num_Regions, N, N_float, out_a_1, e1, e2);
+    write_Tajima("ALIVE", per_Region_ALIVE, output_Tajima_File, overall_Generations, tissue_Name,
+                 num_Regions, N, N_float, out_a_1, e1, e2);
+
+    // cout << "DONE\n";
+    for (int row = 0; row < num_Regions; row++)
+    {
+        cudaFree(cuda_tajima_regions_Start_Stop[row]);
+    }
+    // cout << "DONE\n";
+    cudaFree(cuda_tajima_regions_Start_Stop);
+    cudaFree(cuda_full_Char);
+    // cout << "DONE\n";
+    free(per_Region);
+    free(per_Region_ALIVE);
+    // cout << "DONE\n";
+
+    cout << "Completed Tajima calculation for generation: " << overall_Generations << endl;
+
+    // exit(-1);
+}
+
+void cancer_Host::write_Tajima(string type, int *per_Region, string &output_Tajima_File, int &overall_Generations, string &tissue_Name,
+                               int &num_Regions, int &N, double &N_float, double &out_a_1, double &e1, double &e2)
+{
+    cout << "\nCalculating Tajima's D for ";
+    cout << type << endl;
+    // functions.create_File(output_Tajima_File, "Type\tGeneration\tTissue\tN_cells\tseg_Sites\tpairwise_Diff\tCombinations\tPi\ttajima_D");
+
     double tot_pairwise_Differences = 0;
     double seg_sites_Count = 0;
     for (int region = 0; region < num_Regions; region++)
@@ -855,7 +902,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         if (tajima_Write.is_open())
         {
             cout << "Writing to file: " << output_Tajima_File << endl;
-            tajima_Write << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
+            tajima_Write << type << "\t" << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
                          << to_string(N) << "\t" << seg_sites_Count << "\t" << to_string(tot_pairwise_Differences) << "\t" << to_string(combinations) << "\t" << to_string(pi) << "\t"
                          << to_string(D) << endl;
             tajima_Write.close();
@@ -876,7 +923,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         if (tajima_Write.is_open())
         {
             cout << "Writing to file: " << output_Tajima_File << endl;
-            tajima_Write << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
+            tajima_Write << type << "\t" << to_string(overall_Generations) << "\t" << tissue_Name << "\t"
                          << to_string(N) << "\t0\t" << "NA" << "\t" << "NA" << "\t" << "NA" << "\t"
                          << "NA" << endl;
             tajima_Write.close();
@@ -887,19 +934,6 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
             exit(-1);
         }
     }
-    // cout << "DONE\n";
-    for (int row = 0; row < num_Regions; row++)
-    {
-        cudaFree(cuda_tajima_regions_Start_Stop[row]);
-    }
-    // cout << "DONE\n";
-    cudaFree(cuda_tajima_regions_Start_Stop);
-    cudaFree(cuda_full_Char);
-    // cout << "DONE\n";
-    free(per_Region);
-    // cout << "DONE\n";
-
-    cout << "Completed Tajima calculation for generation: " << overall_Generations << endl;
 }
 
 long int cancer_Host::fact_half(int count)
@@ -922,7 +956,8 @@ long int cancer_Host::combos_N(int count)
 }
 
 __global__ void cuda_tajima_calc(int num_Regions, int genome_Length, int **cuda_tajima_regions_Start_Stop,
-                                 char *sites, char *cuda_reference_Genome, int *cuda_per_Region, int sequences_Total)
+                                 char *sites, char *cuda_reference_Genome, int *cuda_per_Region, int sequences_Total,
+                                 char *cuda_char_dead_or_Alive, int *cuda_per_Region_ALIVE)
 {
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -953,6 +988,11 @@ __global__ void cuda_tajima_calc(int num_Regions, int genome_Length, int **cuda_
             if (region_Count != 0)
             {
                 atomicAdd(&cuda_per_Region[region], 1);
+
+                if (cuda_char_dead_or_Alive[tid] == 'A')
+                {
+                    atomicAdd(&cuda_per_Region_ALIVE[region], 1);
+                }
                 // cuda_per_Region[region] = 1;
             }
             // else
@@ -967,9 +1007,15 @@ __global__ void cuda_tajima_calc(int num_Regions, int genome_Length, int **cuda_
 
 void cancer_Host::process_Tajima_String(string &all_Sequences, int &count_Track, int &num_Regions, int **cuda_tajima_regions_Start_Stop,
                                         char *cuda_Reference_Genome, int *cuda_per_Region,
-                                        functions_library &functions)
+                                        functions_library &functions,
+                                        string &dead_or_Alive, int *cuda_per_Region_ALIVE)
 {
     cout << "Processing MAF for " << count_Track << " cells\n";
+
+    // cout << "Dead alive size: " << dead_or_Alive.size() << endl;
+
+    // exit(-1);
+
     char *full_Char;
     full_Char = (char *)malloc((all_Sequences.size() + 1) * sizeof(char));
     strcpy(full_Char, all_Sequences.c_str());
@@ -980,8 +1026,19 @@ void cancer_Host::process_Tajima_String(string &all_Sequences, int &count_Track,
     free(full_Char);
     all_Sequences = "";
 
+    char *char_dead_or_Alive;
+    char_dead_or_Alive = (char *)malloc((dead_or_Alive.size() + 1) * sizeof(char));
+    strcpy(char_dead_or_Alive, dead_or_Alive.c_str());
+
+    char *cuda_char_dead_or_Alive;
+    cudaMallocManaged(&cuda_char_dead_or_Alive, (dead_or_Alive.size() + 1) * sizeof(char));
+    cudaMemcpy(cuda_char_dead_or_Alive, char_dead_or_Alive, (dead_or_Alive.size() + 1) * sizeof(char), cudaMemcpyHostToDevice);
+    free(char_dead_or_Alive);
+    dead_or_Alive = "";
+
     cuda_tajima_calc<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(num_Regions, genome_Length, cuda_tajima_regions_Start_Stop,
-                                                                                                cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track);
+                                                                                                cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track,
+                                                                                                cuda_char_dead_or_Alive, cuda_per_Region_ALIVE);
     cudaDeviceSynchronize();
 
     cudaError_t err = cudaGetLastError();
@@ -992,6 +1049,9 @@ void cancer_Host::process_Tajima_String(string &all_Sequences, int &count_Track,
     }
 
     cudaFree(cuda_full_Char);
+    cudaFree(cuda_char_dead_or_Alive);
+
+    // exit(-1);
 
     count_Track = 0;
 }

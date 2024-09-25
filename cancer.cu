@@ -1273,7 +1273,7 @@ void cancer::node_Master_Manager(functions_library &functions)
     {
         cout << "Metastatic migration: Activated\n";
 
-        viral_Migration_Values = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * (num_tissues_per_Node - 1), 2, -1);
+        viral_Migration_Values = functions.create_Fill_2D_array_FLOAT(num_tissues_per_Node * (num_tissues_per_Node - 1), 3, -1);
         migration_start_Generation = (int *)malloc(num_tissues_per_Node * (num_tissues_per_Node - 1) * sizeof(int));
 
         for (int fill_mig = 0; fill_mig < num_tissues_per_Node * (num_tissues_per_Node - 1); fill_mig++)
@@ -1315,6 +1315,10 @@ void cancer::node_Master_Manager(functions_library &functions)
                     else if (Parameters.get_STRING(block_Migration[i].first) == "Start generation")
                     {
                         migration_start_Generation[migration_Check] = Parameters.get_INT(block_Migration[i].second);
+                    }
+                    else if (Parameters.get_STRING(block_Migration[i].first) == "Preference")
+                    {
+                        viral_Migration_Values[migration_Check][2] = Parameters.get_FLOAT(block_Migration[i].second);
                     }
                     else
                     {
