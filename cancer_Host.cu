@@ -115,6 +115,17 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         for (int tissue = 0; tissue < num_Tissues; tissue++)
         {
+            if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations)))
+            {
+                string source_sequence_Data_folder_Tissue = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations);
+                vector<pair<int, int>> seq_Files = functions.index_sequence_Folder(source_sequence_Data_folder_Tissue);
+                if (seq_Files.size() > 0)
+                {
+                    current_cell_load_per_Tissue[tissue] = seq_Files[seq_Files.size() - 1].second + 1;
+                    cout << tissue << " Check: " << current_cell_load_per_Tissue[tissue] << endl;
+                }
+            }
+
             real_Particle_count_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size() - dead_Particle_count[tissue];
             cout << tissue_Names[tissue] << " tissue: " << real_Particle_count_per_Tissue[tissue] << endl;
             sum_Check = sum_Check + real_Particle_count_per_Tissue[tissue];
@@ -488,6 +499,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         decimal_Date = decimal_Date + date_Increment;
         overall_Generations++;
+
+        free(real_Particle_count_per_Tissue);
 
         cout << "\nCompleted generation " << overall_Generations << " of time: " << decimal_Date << endl;
 
