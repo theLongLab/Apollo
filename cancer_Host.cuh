@@ -286,4 +286,13 @@ public:
 
     long int combos_N(int count);
     long int fact_half(int count);
+
+    void calc_pre_Requistes(double &b1,
+                            double &b2,
+                            double &c1,
+                            double &c2,
+                            double &e1,
+                            double &e2,
+                            double &out_a_1, int &N,
+                            functions_library &functions);
 };

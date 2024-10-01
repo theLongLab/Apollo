@@ -113,17 +113,15 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         vector<int> tissue_Migration_Totals;
         vector<vector<pair<int, int>>> tissue_migration_Targets_amount;
 
+        vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, overall_Generations, multi_Read);
+
         for (int tissue = 0; tissue < num_Tissues; tissue++)
         {
-            if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations)))
+
+            if (indexed_Source_Folders[tissue].size() > 0)
             {
-                string source_sequence_Data_folder_Tissue = source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations);
-                vector<pair<int, int>> seq_Files = functions.index_sequence_Folder(source_sequence_Data_folder_Tissue);
-                if (seq_Files.size() > 0)
-                {
-                    current_cell_load_per_Tissue[tissue] = seq_Files[seq_Files.size() - 1].second + 1;
-                    cout << tissue << " Check: " << current_cell_load_per_Tissue[tissue] << endl;
-                }
+                current_cell_load_per_Tissue[tissue] = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
+                cout << tissue << " Check: " << current_cell_load_per_Tissue[tissue] << endl;
             }
 
             real_Particle_count_per_Tissue[tissue] = current_cell_load_per_Tissue[tissue] - removed_by_Transfer_Indexes[tissue].size() - dead_Particle_count[tissue];
@@ -179,7 +177,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         {
             if (terminal_status(terminal_tissues, terminal_array, source_sequence_Data_folder, enable_Folder_management, enable_Compression, terminal_Load) != 1)
             {
-                vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, overall_Generations, multi_Read);
+                // vector<vector<pair<int, int>>> indexed_Source_Folders = functions.index_sequence_Folders(source_sequence_Data_folder, num_Tissues, overall_Generations, multi_Read);
 
                 for (int tissue = 0; tissue < num_Tissues; tissue++)
                 {
@@ -662,12 +660,95 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     }
 
     cout << "Reading folder: " << sequence_Tissue_Folder << endl;
-
     vector<pair<int, int>> indexed_Source_Folder = functions.index_sequence_Folder(sequence_Tissue_Folder);
 
-    cout << "\nCalculating pre-requisites: \n";
+    //cout << "\nCalculating pre-requisites: \n";
     int N = indexed_Source_Folder[indexed_Source_Folder.size() - 1].second + 1;
     cout << "Total number of cells (N): " << N << endl;
+
+    int N_alive = 0;
+
+    // exit(-1);
+
+    string sequence_String = "";
+    vector<string> line_Data;
+    string dead_or_Alive = "";
+
+    int count_Track = 0;
+
+    int *per_Region = (int *)malloc(num_Regions * sizeof(int));
+    int *per_Region_ALIVE = (int *)malloc(num_Regions * sizeof(int));
+
+    for (int region = 0; region < num_Regions; region++)
+    {
+        per_Region[region] = 0;
+        per_Region_ALIVE[region] = 0;
+    }
+
+    int *cuda_per_Region;
+    cudaMallocManaged(&cuda_per_Region, num_Regions * sizeof(int));
+    cudaMemcpy(cuda_per_Region, per_Region, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
+
+    int *cuda_per_Region_ALIVE;
+    cudaMallocManaged(&cuda_per_Region_ALIVE, num_Regions * sizeof(int));
+    cudaMemcpy(cuda_per_Region_ALIVE, per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
+
+    cout << "\nReading files\n";
+
+    for (int file = 0; file < indexed_Source_Folder.size(); file++)
+    {
+        fstream nfasta;
+        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[file].first) + "_" + to_string(indexed_Source_Folder[file].second) + ".nfasta");
+        if (nfasta.is_open())
+        {
+            string line;
+            while (getline(nfasta, line))
+            {
+                if (line.at(0) != '>')
+                {
+                    sequence_String.append(line);
+                    count_Track++;
+
+                    if (count_Track == max_Cells_at_a_time)
+                    {
+                        process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
+                                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive,
+                                              cuda_per_Region_ALIVE);
+                    }
+                }
+                else
+                {
+                    functions.split(line_Data, line, '_');
+                    dead_or_Alive.append(line_Data[1]);
+                    if (line_Data[1] == "A")
+                    {
+                        N_alive++;
+                    }
+                }
+            }
+            nfasta.close();
+        }
+        else
+        {
+            cout << "ERROR: UNABLE TO OPEN SEQUENCE: "
+                 << sequence_Tissue_Folder + "/" << indexed_Source_Folder[file].first + "_" << indexed_Source_Folder[file].second << ".nfasta\n";
+            exit(-1);
+        }
+    }
+
+    if (count_Track > 0)
+    {
+        process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
+                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive, cuda_per_Region_ALIVE);
+    }
+
+    cout << "Completed reading files\n";
+
+    cudaMemcpy(per_Region, cuda_per_Region, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaFree(cuda_per_Region);
+
+    cudaMemcpy(per_Region_ALIVE, cuda_per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaFree(cuda_per_Region_ALIVE);
 
     double b1;
     double b2;
@@ -678,6 +759,60 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
     double out_a_1;
 
+    double N_float = N;
+    calc_pre_Requistes(b1,
+                       b2,
+                       c1,
+                       c2,
+                       e1,
+                       e2,
+                       out_a_1, N, functions);
+    write_Tajima("ALL", per_Region, output_Tajima_File, overall_Generations, tissue_Name,
+                 num_Regions, N, N_float, out_a_1, e1, e2);
+
+    if (N != N_alive)
+    {
+        cout << "Processing ALIVE only\n";
+        double N_float = N_alive;
+        calc_pre_Requistes(b1,
+                           b2,
+                           c1,
+                           c2,
+                           e1,
+                           e2,
+                           out_a_1, N_alive, functions);
+        write_Tajima("ALIVE", per_Region_ALIVE, output_Tajima_File, overall_Generations, tissue_Name,
+                     num_Regions, N_alive, N_float, out_a_1, e1, e2);
+    }
+
+    // cout << "DONE\n";
+    for (int row = 0; row < num_Regions; row++)
+    {
+        cudaFree(cuda_tajima_regions_Start_Stop[row]);
+    }
+    // cout << "DONE\n";
+    cudaFree(cuda_tajima_regions_Start_Stop);
+    cudaFree(cuda_full_Char);
+    // cout << "DONE\n";
+    free(per_Region);
+    free(per_Region_ALIVE);
+    // cout << "DONE\n";
+
+    cout << "Completed Tajima calculation for generation: " << overall_Generations << endl;
+
+    // exit(-1);
+}
+
+void cancer_Host::calc_pre_Requistes(double &b1,
+                                     double &b2,
+                                     double &c1,
+                                     double &c2,
+                                     double &e1,
+                                     double &e2,
+                                     double &out_a_1, int &N,
+                                     functions_library &functions)
+{
+    cout << "\nCalculating pre-requistes\n";
     double N_float = N;
 
     if (N < 50000)
@@ -694,7 +829,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_1, (N - 1));
         cudaDeviceSynchronize();
 
-        err = cudaGetLastError();
+        cudaError_t err = cudaGetLastError();
         if (err != cudaSuccess)
         {
             fprintf(stderr, "ERROR: CUDA error after synchronizing stream on GPU %d: %s\n", 0, cudaGetErrorString(err));
@@ -774,106 +909,6 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     cout << "c2: " << c2 << endl;
     cout << "e1: " << e1 << endl;
     cout << "e2: " << e2 << endl;
-
-    // exit(-1);
-
-    string sequence_String = "";
-    vector<string> line_Data;
-    string dead_or_Alive = "";
-
-    int count_Track = 0;
-
-    int *per_Region = (int *)malloc(num_Regions * sizeof(int));
-    int *per_Region_ALIVE = (int *)malloc(num_Regions * sizeof(int));
-
-    for (int region = 0; region < num_Regions; region++)
-    {
-        per_Region[region] = 0;
-        per_Region_ALIVE[region] = 0;
-    }
-
-    int *cuda_per_Region;
-    cudaMallocManaged(&cuda_per_Region, num_Regions * sizeof(int));
-    cudaMemcpy(cuda_per_Region, per_Region, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
-
-    int *cuda_per_Region_ALIVE;
-    cudaMallocManaged(&cuda_per_Region_ALIVE, num_Regions * sizeof(int));
-    cudaMemcpy(cuda_per_Region_ALIVE, per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyHostToDevice);
-
-    cout << "\nReading files\n";
-
-    for (int file = 0; file < indexed_Source_Folder.size(); file++)
-    {
-        fstream nfasta;
-        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[file].first) + "_" + to_string(indexed_Source_Folder[file].second) + ".nfasta");
-        if (nfasta.is_open())
-        {
-            string line;
-            while (getline(nfasta, line))
-            {
-                if (line.at(0) != '>')
-                {
-                    sequence_String.append(line);
-                    count_Track++;
-
-                    if (count_Track == max_Cells_at_a_time)
-                    {
-                        process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
-                                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive,
-                                              cuda_per_Region_ALIVE);
-                    }
-                }
-                else
-                {
-                    functions.split(line_Data, line, '_');
-                    dead_or_Alive.append(line_Data[1]);
-                }
-            }
-            nfasta.close();
-        }
-        else
-        {
-            cout << "ERROR: UNABLE TO OPEN SEQUENCE: "
-                 << sequence_Tissue_Folder + "/" << indexed_Source_Folder[file].first + "_" << indexed_Source_Folder[file].second << ".nfasta\n";
-            exit(-1);
-        }
-    }
-
-    if (count_Track > 0)
-    {
-        process_Tajima_String(sequence_String, count_Track, num_Regions, cuda_tajima_regions_Start_Stop,
-                              cuda_full_Char, cuda_per_Region, functions, dead_or_Alive, cuda_per_Region_ALIVE);
-    }
-
-    cout << "Completed reading files\n";
-
-    cudaMemcpy(per_Region, cuda_per_Region, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
-    cudaFree(cuda_per_Region);
-
-    cudaMemcpy(per_Region_ALIVE, cuda_per_Region_ALIVE, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
-    cudaFree(cuda_per_Region_ALIVE);
-
-    write_Tajima("ALL", per_Region, output_Tajima_File, overall_Generations, tissue_Name,
-                 num_Regions, N, N_float, out_a_1, e1, e2);
-    write_Tajima("ALIVE", per_Region_ALIVE, output_Tajima_File, overall_Generations, tissue_Name,
-                 num_Regions, N, N_float, out_a_1, e1, e2);
-
-    // cout << "DONE\n";
-    for (int row = 0; row < num_Regions; row++)
-    {
-        cudaFree(cuda_tajima_regions_Start_Stop[row]);
-    }
-    // cout << "DONE\n";
-    cudaFree(cuda_tajima_regions_Start_Stop);
-    cudaFree(cuda_full_Char);
-    // cout << "DONE\n";
-    free(per_Region);
-    free(per_Region_ALIVE);
-    // cout << "DONE\n";
-
-    cout << "Completed Tajima calculation for generation: " << overall_Generations << endl;
-
-    // exit(-1);
 }
 
 void cancer_Host::write_Tajima(string type, int *per_Region, string &output_Tajima_File, int &overall_Generations, string &tissue_Name,
@@ -4142,8 +4177,6 @@ void cancer_Host::initialize(functions_library &functions,
     {
         cout << "\nInfecting tissues\n";
         vector<string> line_Data;
-
-        //// Write to sequence profiles file
 
         for (int tissue = 0; tissue < tissue_Names.size(); tissue++)
         {
