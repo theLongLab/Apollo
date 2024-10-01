@@ -662,7 +662,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     cout << "Reading folder: " << sequence_Tissue_Folder << endl;
     vector<pair<int, int>> indexed_Source_Folder = functions.index_sequence_Folder(sequence_Tissue_Folder);
 
-    //cout << "\nCalculating pre-requisites: \n";
+    // cout << "\nCalculating pre-requisites: \n";
     int N = indexed_Source_Folder[indexed_Source_Folder.size() - 1].second + 1;
     cout << "Total number of cells (N): " << N << endl;
 
@@ -1173,139 +1173,142 @@ void cancer_Host::migration_of_Cells(string &source_sequence_Data_folder, vector
         int start_Index = last_target_Index;
 
         int num_Sequences = tissue_cell_Index[tissue].size();
-        sort(tissue_cell_Index[tissue].begin(), tissue_cell_Index[tissue].end());
-
-        cout << "Collecting " << num_Sequences << " sequence(s)\n";
-        int num_per_Core = num_Sequences / this->CPU_cores;
-        int remainder = num_Sequences % this->CPU_cores;
-
-        vector<thread> threads_vec;
-
-        for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
+        if (num_Sequences > 0)
         {
-            int start_Cell = core_ID * num_per_Core;
-            int stop_Cell = start_Cell + num_per_Core;
+            sort(tissue_cell_Index[tissue].begin(), tissue_cell_Index[tissue].end());
 
-            threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
-        }
+            cout << "Collecting " << num_Sequences << " sequence(s)\n";
+            int num_per_Core = num_Sequences / this->CPU_cores;
+            int remainder = num_Sequences % this->CPU_cores;
 
-        if (remainder != 0)
-        {
-            int start_Cell = num_Sequences - remainder;
-            int stop_Cell = num_Sequences;
+            vector<thread> threads_vec;
 
-            threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
-        }
-
-        for (thread &t : threads_vec)
-        {
-            if (t.joinable())
+            for (int core_ID = 0; core_ID < this->CPU_cores; core_ID++)
             {
-                t.join();
-            }
-        }
+                int start_Cell = core_ID * num_per_Core;
+                int stop_Cell = start_Cell + num_per_Core;
 
-        threads_vec.clear();
-
-        vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
-        found_Tissue_Folder_Indexes.clear();
-
-        sort(Tissue_files.begin(), Tissue_files.end());
-
-        cout << Tissue_files.size() << " file(s) identified\n";
-
-        vector<pair<string, string>> all_Sequences;
-        cout << "Retrieving sequence(s)\n";
-
-        fstream nfasta;
-        int index_Files = 0;
-        int line_current = 0;
-        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
-
-        fstream sequence_Profiles_File;
-        sequence_Profiles_File.open(sequence_Profiles, ios::app);
-        fstream sequence_parent_Progeny_relationships_File;
-        sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
-
-        for (int find = 0; find < num_Sequences; find++)
-        {
-            while ((indexed_Source_Folder[Tissue_files[index_Files]].first <= tissue_cell_Index[tissue][find] && indexed_Source_Folder[Tissue_files[index_Files]].second >= tissue_cell_Index[tissue][find]) == 0)
-            {
-                nfasta.close();
-                index_Files++;
-                nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
-                line_current = 0;
+                threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
             }
 
-            if (nfasta.is_open())
+            if (remainder != 0)
             {
-                int line_t0_check = (tissue_cell_Index[tissue][find] - indexed_Source_Folder[Tissue_files[index_Files]].first) * 2;
+                int start_Cell = num_Sequences - remainder;
+                int stop_Cell = num_Sequences;
 
-                string line;
-                string sequence = "";
+                threads_vec.push_back(thread{&cancer_Host::thread_find_Files_2, this, start_Cell, stop_Cell, ref(tissue_cell_Index[tissue]), ref(indexed_Source_Folder)});
+            }
 
-                while (getline(nfasta, line))
+            for (thread &t : threads_vec)
+            {
+                if (t.joinable())
                 {
-                    if (line_t0_check == line_current)
-                    {
-                        vector<string> line_Data;
-                        functions.split(line_Data, line, '_');
-                        if (stoi(line_Data[0].substr(1)) == tissue_cell_Index[tissue][find])
-                        {
-                            getline(nfasta, line);
+                    t.join();
+                }
+            }
 
-                            all_Sequences.push_back(make_pair(to_string(last_target_Index) + "_A_" + line_Data[2] + "_" + line_Data[3] + "_" + line_Data[4] + "_" + line_Data[5] + "_" + line_Data[6] + "_" + line_Data[7], line));
-                            sequence_Profiles_File << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index) << "\t" << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "\t" << line_Data[5] << "\t" << line_Data[3] << "\t" << line_Data[2] << "\t" << line_Data[6] << "\t" << line_Data[7] << endl;
-                            sequence_parent_Progeny_relationships_File << tissue_Names[source] << "_" << to_string(overall_Generations + 1) << "_" << tissue_cell_Index[tissue][find] << "\t"
-                                                                       << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index)
-                                                                       << "\tMigration" << endl;
-                            last_target_Index++;
-                            line_current++;
-                        }
-                        else
+            threads_vec.clear();
+
+            vector<int> Tissue_files(found_Tissue_Folder_Indexes.begin(), found_Tissue_Folder_Indexes.end());
+            found_Tissue_Folder_Indexes.clear();
+
+            sort(Tissue_files.begin(), Tissue_files.end());
+
+            cout << Tissue_files.size() << " file(s) identified\n";
+
+            vector<pair<string, string>> all_Sequences;
+            cout << "Retrieving sequence(s)\n";
+
+            fstream nfasta;
+            int index_Files = 0;
+            int line_current = 0;
+            nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+
+            fstream sequence_Profiles_File;
+            sequence_Profiles_File.open(sequence_Profiles, ios::app);
+            fstream sequence_parent_Progeny_relationships_File;
+            sequence_parent_Progeny_relationships_File.open(sequence_parent_Progeny_relationships, ios::app);
+
+            for (int find = 0; find < num_Sequences; find++)
+            {
+                while ((indexed_Source_Folder[Tissue_files[index_Files]].first <= tissue_cell_Index[tissue][find] && indexed_Source_Folder[Tissue_files[index_Files]].second >= tissue_cell_Index[tissue][find]) == 0)
+                {
+                    nfasta.close();
+                    index_Files++;
+                    nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].first) + "_" + to_string(indexed_Source_Folder[Tissue_files[index_Files]].second) + ".nfasta", ios::in);
+                    line_current = 0;
+                }
+
+                if (nfasta.is_open())
+                {
+                    int line_t0_check = (tissue_cell_Index[tissue][find] - indexed_Source_Folder[Tissue_files[index_Files]].first) * 2;
+
+                    string line;
+                    string sequence = "";
+
+                    while (getline(nfasta, line))
+                    {
+                        if (line_t0_check == line_current)
                         {
-                            cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
-                            cout << "Looking for: " << tissue_cell_Index[tissue][find] << endl
-                                 << "Sequence ID at location: " << line << endl
-                                 << "File: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first
-                                 << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
-                            exit(-1);
+                            vector<string> line_Data;
+                            functions.split(line_Data, line, '_');
+                            if (stoi(line_Data[0].substr(1)) == tissue_cell_Index[tissue][find])
+                            {
+                                getline(nfasta, line);
+
+                                all_Sequences.push_back(make_pair(to_string(last_target_Index) + "_A_" + line_Data[2] + "_" + line_Data[3] + "_" + line_Data[4] + "_" + line_Data[5] + "_" + line_Data[6] + "_" + line_Data[7], line));
+                                sequence_Profiles_File << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index) << "\t" << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "\t" << line_Data[5] << "\t" << line_Data[3] << "\t" << line_Data[2] << "\t" << line_Data[6] << "\t" << line_Data[7] << endl;
+                                sequence_parent_Progeny_relationships_File << tissue_Names[source] << "_" << to_string(overall_Generations + 1) << "_" << tissue_cell_Index[tissue][find] << "\t"
+                                                                           << tissue_Names[tissue_migration_Targets_amount[tissue].first] << "_" << to_string(overall_Generations + 1) << "_" << to_string(last_target_Index)
+                                                                           << "\tMigration" << endl;
+                                last_target_Index++;
+                                line_current++;
+                            }
+                            else
+                            {
+                                cout << "ERROR: CORRECT SEQUENCE NOT FOUND AT INDEX\n";
+                                cout << "Looking for: " << tissue_cell_Index[tissue][find] << endl
+                                     << "Sequence ID at location: " << line << endl
+                                     << "File: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first
+                                     << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                                exit(-1);
+                            }
+                            line_current++;
+                            break;
                         }
                         line_current++;
-                        break;
                     }
-                    line_current++;
                 }
+                else
+                {
+                    cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                    exit(-1);
+                }
+            }
+            nfasta.close();
+
+            sequence_Profiles_File.close();
+            sequence_parent_Progeny_relationships_File.close();
+
+            cout << "Found " << all_Sequences.size() << " sequences\nWriting migrating sequences: ";
+            fstream write_Migration;
+            write_Migration.open(sequence_target_Folder + "/" + to_string(start_Index) + "_" + to_string(last_target_Index - 1) + ".nfasta", ios::out);
+
+            if (write_Migration.is_open())
+            {
+                for (int sequence = 0; sequence < all_Sequences.size(); sequence++)
+                {
+                    write_Migration << ">" << all_Sequences[sequence].first << endl
+                                    << all_Sequences[sequence].second << endl;
+                }
+                write_Migration.close();
+                cout << "Complete\n";
             }
             else
             {
-                cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << sequence_Tissue_Folder << "/" << indexed_Source_Folder[Tissue_files[index_Files]].first << "_" << indexed_Source_Folder[Tissue_files[index_Files]].second << ".nfasta" << endl;
+                cout << "ERROR: UNABLE TO CREATE METASTIC SEQUENCES FILE: " << sequence_target_Folder << "/" << to_string(start_Index) << "_" << to_string(last_target_Index - 1) << ".nfasta" << endl;
                 exit(-1);
             }
-        }
-        nfasta.close();
-
-        sequence_Profiles_File.close();
-        sequence_parent_Progeny_relationships_File.close();
-
-        cout << "Found " << all_Sequences.size() << " sequences\nWriting migrating sequences: ";
-        fstream write_Migration;
-        write_Migration.open(sequence_target_Folder + "/" + to_string(start_Index) + "_" + to_string(last_target_Index - 1) + ".nfasta", ios::out);
-
-        if (write_Migration.is_open())
-        {
-            for (int sequence = 0; sequence < all_Sequences.size(); sequence++)
-            {
-                write_Migration << ">" << all_Sequences[sequence].first << endl
-                                << all_Sequences[sequence].second << endl;
-            }
-            write_Migration.close();
-            cout << "Complete\n";
-        }
-        else
-        {
-            cout << "ERROR: UNABLE TO CREATE METASTIC SEQUENCES FILE: " << sequence_target_Folder << "/" << to_string(start_Index) << "_" << to_string(last_target_Index - 1) << ".nfasta" << endl;
-            exit(-1);
         }
     }
 }
@@ -2866,7 +2869,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
             } while (rerun_Progeny.size() > 0);
 
-            for (int row = 0; row < tot_Parents * 2; row++)
+            for (int row = 0; row < parent_Cells_Found * 2; row++)
             {
                 free(progeny_Sequences[row]);
             }
@@ -2909,7 +2912,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             // remainder_Write_Sequences_NEXT_Generation(intermediary_Tissue_folder, functions);
             // cout << "Check 1\n";
             // functions.clear_Array_int_CPU(progeny_Sequences, parent_Cells_Found * 2);
-            for (int row = 0; row < parent_Cells_Found; row++)
+            for (int row = 0; row < parent_Cells_Found * 2; row++)
             {
                 free(progeny_Sequences[row]);
             }
