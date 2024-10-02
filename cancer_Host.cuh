@@ -167,7 +167,7 @@ public:
 
     void simulate_cell_Round(functions_library &functions, string &multi_Read, int &num_Cuda_devices, int *CUDA_device_IDs,
                              int &num_of_Cells, int &start, int &stop,
-                             int *parents_in_Tissue, int &tissue, string tissue_Name,
+                             vector<int> &parents_in_Tissue, int &tissue, string tissue_Name,
                              vector<pair<int, int>> &indexed_Tissue_Folder,
                              string this_Gen_intermediary_Sequences,
                              int &overall_Generations,
@@ -215,11 +215,11 @@ public:
     //                                    int &start, int &stop, int cell_Count,
     //                                    int *CUDA_device_IDs);
 
-    string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, int *parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen,
+    string find_Sequences_Master(int &offset, int &tissue, string &tissue_Name, functions_library &functions, string &folder_Path, vector<int> &parents_in_Tissue, int &num_Sequences, vector<pair<int, int>> &indexed_Tissue_Folder, int &current_Generation, vector<int> &parent_IDs, float *parents_Elapsed, int &last_index_Seq_Written, mt19937 &gen,
                                  int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List,
                                  string &viral_Migration);
 
-    void thread_find_Files(int offset, int start, int stop, int *parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
+    void thread_find_Files(int offset, int start, int stop, vector<int> &parents_in_Tissue, vector<pair<int, int>> &indexed_Tissue_Folder);
 
     void thread_Sequence_to_String_Cancer(int start, int stop, int **progeny_Sequences);
 

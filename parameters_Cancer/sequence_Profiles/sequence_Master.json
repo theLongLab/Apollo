@@ -35,11 +35,11 @@
 
     "Number of regions":5,
 
-    "Region 1":"100_100",
-    "Region 2":"50_200",
-    "Region 3":"10_10",
-    "Region 4":"1_100",
-    "Region 5":"200_300",
+    "Region 1":"1_10",
+    "Region 2":"20_100",
+    "Region 3":"15_50",
+    "Region 4":"50_75",
+    "Region 5":"80_90",
 
   },
 
@@ -49,7 +49,7 @@
 
     "Hotspot 1":{
 
-      "Region":"100_100",
+      "Region":"1_100",
       # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
       "Clock model":"Poisson",
 
@@ -81,7 +81,7 @@
 
     "Hotspot 2":{
 
-      "Region":"10000_20000",
+      "Region":"50_50",
       # Clock model, can follow a Poisson or Negative Binomial distribution or be Fixed.
       "Clock model":"Negative Binomial",
 

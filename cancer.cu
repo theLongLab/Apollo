@@ -114,6 +114,8 @@ cancer::cancer(string parameter_Master_Location)
         cout << "Decimal date: " << stop_Date << endl;
     }
 
+    // exit(-1);
+
     cout << "\nConfiguring hardware resources:\n\n";
     this->CPU_cores = Parameters.get_INT(found_Parameters[1]);
     cout << "Available CPU cores: " << this->CPU_cores << endl
