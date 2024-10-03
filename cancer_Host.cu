@@ -681,9 +681,8 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     vector<pair<int, int>> indexed_Source_Folder = functions.index_sequence_Folder(sequence_Tissue_Folder);
 
     // cout << "\nCalculating pre-requisites: \n";
-    int N = indexed_Source_Folder[indexed_Source_Folder.size() - 1].second + 1;
-    cout << "Total number of cells (N): " << N << endl;
 
+    int N_total = 0;
     int N_alive = 0;
 
     // exit(-1);
@@ -742,6 +741,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
                     {
                         N_alive++;
                     }
+                    N_total++;
                 }
             }
             nfasta.close();
@@ -762,6 +762,8 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
     cout << "Completed reading files\n";
 
+    cout << "Total number of cells (N): " << N_total << endl;
+
     cudaMemcpy(per_Region, cuda_per_Region, num_Regions * sizeof(int), cudaMemcpyDeviceToHost);
     cudaFree(cuda_per_Region);
 
@@ -777,18 +779,18 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
     double out_a_1;
 
-    double N_float = N;
+    double N_float = N_total;
     calc_pre_Requistes(b1,
                        b2,
                        c1,
                        c2,
                        e1,
                        e2,
-                       out_a_1, N, functions);
+                       out_a_1, N_total, functions);
     write_Tajima("ALL", per_Region, output_Tajima_File, overall_Generations, tissue_Name,
-                 num_Regions, N, N_float, out_a_1, e1, e2);
+                 num_Regions, N_total, N_float, out_a_1, e1, e2);
 
-    if (N != N_alive)
+    if (N_total != N_alive)
     {
         cout << "Processing ALIVE only\n";
         double N_float = N_alive;
@@ -1258,9 +1260,9 @@ void cancer_Host::migration_of_Cells(string &source_sequence_Data_folder, vector
                         nfasta.close();
                         index_Files++;
                         nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[index_Files].first) + "_" + to_string(indexed_Source_Folder[index_Files].second) + ".nfasta", ios::in);
-                        
+
                         cout << "File: " << sequence_Tissue_Folder << "/" << to_string(indexed_Source_Folder[index_Files].first) + "_" << to_string(indexed_Source_Folder[index_Files].second) << ".nfasta\n";
-                        
+
                         line_current = 0;
                     }
 
