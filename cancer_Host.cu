@@ -421,6 +421,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                 viral_Migration);
                         }
 
+                        parents_in_Tissue.clear();
+
                         // last_Progeny_written_this_Gen = indexed_Source_Folders[tissue][indexed_Source_Folders[tissue].size() - 1].second + 1;
 
                         fstream gen_Summary;
@@ -2114,7 +2116,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
     // exit(-1);
 
-    parents_in_Tissue.clear();
+   // parents_in_Tissue.clear();
 
     if (parent_IDs.size() != 0)
     {
