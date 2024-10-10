@@ -3122,13 +3122,15 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         }
         else
         {
-            cout << "CRITICAL ERROR: SEQUENCES ARE BLANK\n";
+            cout << "SEQUENCES ARE BLANK\n";
+            free(parents_Elapsed);
             // exit(-1);
         }
     }
     else
     {
         cout << "\nNo parents undergoing mitosis\n";
+        free(parents_Elapsed);
     }
 
     // exit(-1);
