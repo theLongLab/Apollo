@@ -2116,7 +2116,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
     // exit(-1);
 
-   // parents_in_Tissue.clear();
+    // parents_in_Tissue.clear();
 
     if (parent_IDs.size() != 0)
     {
@@ -2687,7 +2687,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                         parents_Elapsed[parent] = progeny_Elapsed[rerun_Progeny[parent].first];
                         parent_IDs.push_back(rerun_Progeny[parent].second);
                     }
-                    rerun_Progeny.clear();
+
                     free(progeny_Elapsed);
 
                     cout << "Done\n";
@@ -2740,6 +2740,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
 
                         cudaStreamCreate(&streams[gpu]);
                     }
+
+                    rerun_Progeny.clear();
 
                     free(parents_Elapsed);
 
