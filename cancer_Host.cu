@@ -1721,10 +1721,10 @@ void cancer_Host::remainder_Write_Sequences_NEXT_Generation(string next_Generati
         {
             cout << "ERROR: UNABLE TO CREATE NFASTA SEQUENCE FILE: " << next_Generation_location << "/" << start_String << "_" << stop_String << ".nfasta";
         }
-
-        to_write_Sequence_Store.clear();
-        to_write_Sequence_Store = vector<pair<string, string>>();
     }
+
+    to_write_Sequence_Store.clear();
+    to_write_Sequence_Store = vector<pair<string, string>>();
 }
 
 void cancer_Host::full_Write_Sequences_NEXT_Generation(int &max_sequences_per_File, string next_Generation_location,
