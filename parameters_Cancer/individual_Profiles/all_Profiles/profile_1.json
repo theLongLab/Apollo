@@ -8,7 +8,7 @@
 
   "Tissue profiles":{
 
-    "Tissue specific selection":"Yes",
+    "Tissue specific selection":"No",
 
     "Survivability profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/sequence_Survivability.csv",
     "Proof reading profile file":"/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/individual_Profiles/all_profiles/tissue_Specific/sequence_Proof_Reading.csv",

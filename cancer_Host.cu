@@ -1723,6 +1723,7 @@ void cancer_Host::remainder_Write_Sequences_NEXT_Generation(string next_Generati
         }
 
         to_write_Sequence_Store.clear();
+        to_write_Sequence_Store = vector<pair<string, string>>();
     }
 }
 
@@ -1777,6 +1778,10 @@ void cancer_Host::full_Write_Sequences_NEXT_Generation(int &max_sequences_per_Fi
             to_write_Sequence_Store.clear();
 
             to_write_Sequence_Store = to_write_Sequence_Store_NEXT_Gen_TEMP;
+        }
+        else
+        {
+            to_write_Sequence_Store.clear();
         }
     }
 }
@@ -2810,6 +2815,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                     }
 
                     cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
+
+                    // exit(-1);
 
                     // float **progeny_Configuration_Cancer;
                     progeny_Elapsed = (float *)malloc(sizeof(float) * parent_Cells_Found * 2);
