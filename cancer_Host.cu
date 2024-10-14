@@ -3213,7 +3213,15 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                     {
                         sequence.append(to_string(progeny_Sequences[progeny_Index][base]));
                     }
-                    to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) + survival_Status + to_string(progeny_Configuration_Cancer[progeny_Index][2]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) + "_" + to_string(progeny_Elapsed[progeny_Index]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][0]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][3]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][4]), sequence));
+                    to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) +
+                                                                             survival_Status +
+                                                                             to_string(progeny_Configuration_Cancer[progeny_Index][2]) +
+                                                                             "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) +
+                                                                             "_" + to_string(progeny_Elapsed[progeny_Index]) +
+                                                                             "_" + to_string(progeny_Configuration_Cancer[progeny_Index][0]) +
+                                                                             "_" + to_string(progeny_Configuration_Cancer[progeny_Index][3]) +
+                                                                             "_" + to_string(progeny_Configuration_Cancer[progeny_Index][4]),
+                                                                         sequence));
 
                     if (viral_Migration == "YES")
                     {
@@ -3314,7 +3322,18 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                         {
                             sequence.append(to_string(progeny_Sequences[progeny_Index][base]));
                         }
-                        to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) + survival_Status + to_string(progeny_Configuration_Cancer[progeny_Index][2]) + "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) + "_" + to_string(progeny_Elapsed[progeny_Index] - 1), sequence));
+                        to_write_Sequence_Store_NEXT_Gen.push_back(make_pair(to_string(last_index_Seq_Written) +
+                                                                                 survival_Status +
+                                                                                 to_string(progeny_Configuration_Cancer[progeny_Index][2]) +
+                                                                                 "_" + to_string(progeny_Configuration_Cancer[progeny_Index][1]) +
+                                                                                 "_" + to_string(progeny_Elapsed[progeny_Index] - 1) +
+                                                                                 "_" + to_string(progeny_Configuration_Cancer[progeny_Index][0]) +
+                                                                                 "_" + to_string(progeny_Configuration_Cancer[progeny_Index][3]) +
+                                                                                 "_" + to_string(progeny_Configuration_Cancer[progeny_Index][4]),
+                                                                             sequence));
+
+                        // cout << to_write_Sequence_Store_NEXT_Gen[to_write_Sequence_Store_NEXT_Gen.size() - 1].first << endl;
+                        // exit(-1);
 
                         if (viral_Migration == "YES")
                         {
