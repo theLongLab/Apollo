@@ -148,7 +148,13 @@ public:
                               float **tissues_ATGC_positions_Generation_death,
                               float **tissues_ATGC_positions_Replication_prob,
                               float **tissues_ATGC_positions_Metastatic,
-                              int *profile_tissue_Limits);
+                              int *profile_tissue_Limits,
+                              string null_Distribution_mode,
+                              string intermediate_null_Location,
+                              string result_null_Location,
+                              int null_buffer_generation,
+                              int null_target_generation,
+                              string temp_Original_intermediary);
 
     int terminal_status(int &num_tissues, int *tissue_array, string &source_sequence_Data_folder,
                         string &enable_Folder_management, string &enable_Compression, int &terminal_Load);

@@ -179,6 +179,13 @@ private:
     float **tissues_ATGC_positions_Replication_prob;
     float **tissues_ATGC_positions_Metastatic;
 
+    string null_Distribution_mode = "NO";
+    string intermediate_null_Location = "";
+    string result_null_Location = "";
+    int null_buffer_generation = -1;
+    int null_target_generation = -1;
+    // int null_replicants = -1;
+
 public:
     cancer(string parameter_Master_Location);
 

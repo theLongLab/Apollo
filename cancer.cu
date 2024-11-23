@@ -19,19 +19,61 @@ cancer::cancer(string parameter_Master_Location)
         "\"Process cell rate\"",
         "\"Start date\"",
         "\"Enable folder management\"",
-        "\"First infection\""};
+        "\"First infection\"",
+        "\"Null distribution mode\""};
 
     vector<string> found_Parameters = Parameters.get_parameters(parameter_Master_Location, parameters_List);
 
     cout << "\nConfiguring folders:\n";
 
+    null_Distribution_mode = function.to_Upper_Case(Parameters.get_STRING(found_Parameters[12]));
+
     intermediate_Folder_location = Parameters.get_STRING(found_Parameters[2]);
     output_Folder_location = Parameters.get_STRING(found_Parameters[3]);
 
-    function.config_Folder(intermediate_Folder_location, "Intermediate");
-    function.config_Folder(output_Folder_location, "Output");
-    output_Node_location = this->output_Folder_location + "/node_Data";
-    function.config_Folder(output_Node_location, "Node");
+    if (!filesystem::exists(intermediate_Folder_location))
+    {
+        if (null_Distribution_mode != "YES")
+        {
+            function.config_Folder(intermediate_Folder_location, "Intermediate");
+        }
+        else
+        {
+            cout << "ERROR: INTERMEDIATE FOLDER MUST EXIST FOR NULL DISTRIBUTION MODE.\nIT WAS NOT FOUND AT LOCATION: " << intermediate_Folder_location << endl;
+            exit(-1);
+        }
+    }
+    else
+    {
+        if (null_Distribution_mode == "YES")
+        {
+            cout << "Intermediate location exists: " << intermediate_Folder_location << endl;
+        }
+        else
+        {
+            cout << "ERROR: INTERMEDIATE FOLDER OF THE SAME NAME CANNOT ALREADY EXIST: " << intermediate_Folder_location << endl;
+            exit(-1);
+        }
+    }
+
+    if (!filesystem::exists(output_Folder_location))
+    {
+        function.config_Folder(output_Folder_location, "Output");
+        output_Node_location = this->output_Folder_location + "/node_Data";
+        function.config_Folder(output_Node_location, "Node");
+    }
+    else
+    {
+        if (null_Distribution_mode == "YES")
+        {
+            cout << "Output location exists: " << output_Folder_location << endl;
+        }
+        else
+        {
+            cout << "ERROR: OUTPUT FOLDER OF THE SAME NAME CANNOT ALREADY EXIST: " << output_Folder_location << endl;
+            exit(-1);
+        }
+    }
 
     max_sequences_per_File = Parameters.get_INT(found_Parameters[7]);
     max_Cells_at_a_time = Parameters.get_INT(found_Parameters[8]);
@@ -147,6 +189,56 @@ cancer::cancer(string parameter_Master_Location)
         cout << "ERROR: THERE HAS TO BE AT LEAST ONE CUDA DEVICE SELECTED\n";
         exit(-1);
     }
+
+    if (null_Distribution_mode == "YES")
+    {
+        cout << "\nConfiguring null distribution generation:\n";
+        parameters_List.clear();
+        parameters_List = {
+            "\"Null distribution intermediate\"",
+            "\"Null distribution results\"",
+            "\"Null distribution buffer generations\"",
+            "\"Null distribution target generation\""};
+
+        vector<string> found_Parameters_null = Parameters.get_parameters(parameter_Master_Location, parameters_List);
+
+        intermediate_null_Location = Parameters.get_STRING(found_Parameters_null[0]);
+        result_null_Location = Parameters.get_STRING(found_Parameters_null[1]);
+        null_buffer_generation = Parameters.get_INT(found_Parameters_null[2]);
+
+        null_target_generation = Parameters.get_INT(found_Parameters_null[3]);
+        cout << "null distribution target generation:" << null_target_generation << endl;
+        // null_replicants = Parameters.get_INT(found_Parameters_null[4]);
+        // cout << "null distribution number of replicant(s):" << null_replicants << endl;
+
+        null_buffer_generation = null_target_generation - null_buffer_generation;
+        cout << "null distribution buffer generation: " << null_buffer_generation << endl;
+        if (null_buffer_generation < 0)
+        {
+            null_buffer_generation = 0;
+            cout << "Resetting buffer generation to 0\n";
+        }
+
+        if (!filesystem::exists(intermediate_null_Location))
+        {
+            function.config_Folder(intermediate_null_Location, "null distribution Intermediate");
+        }
+        else
+        {
+            cout << "ERROR: INTERMEDIATE NUL FOLDER ALREADY EXISTS: " << intermediate_null_Location << endl;
+            exit(-1);
+        }
+
+        if (!filesystem::exists(result_null_Location))
+        {
+            function.config_Folder(result_null_Location, "null distribution Results");
+        }
+        else
+        {
+            cout << "ERROR: RESULTS NULL FOLDER ALREADY EXISTS: " << result_null_Location << endl;
+            exit(-1);
+        }
+    }
 }
 
 void cancer::ingress()
@@ -161,11 +253,24 @@ void cancer::ingress()
     cout << "STEP 2: Configuring sequence profiles\n\n";
     sequence_Master_Manager(functions);
 
-    cout << "\nSTEP 3: Configuring parent sequences\n\n";
-    vector<int> tissue_Sequence_Count;
-    // exit(-1);
-    //  vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
-    write_Reference_Sequences(read_Reference_Sequences(tissue_Sequence_Count), tissue_Sequence_Count, functions);
+    string temp_Original_intermediary = intermediate_Folder_location + "/sequence_Data" + "/cancer_Host";
+
+    if (null_Distribution_mode == "NO")
+    {
+        cout << "\nSTEP 3: Configuring parent sequences\n\n";
+        vector<int> tissue_Sequence_Count;
+        // exit(-1);
+        //  vector<string> collect_Sequences = read_Reference_Sequences(tissue_Sequence_Count);
+
+        write_Reference_Sequences(read_Reference_Sequences(tissue_Sequence_Count), tissue_Sequence_Count, functions);
+    }
+    else
+    {
+        intermediary_Sequence_location = intermediate_null_Location + "/sequence_Data";
+
+        this->output_Node_location = result_null_Location + "/node_Data";
+        functions.config_Folder(output_Node_location, "null Results");
+    }
 
     cout << "STEP 4: Configuring infection temporal data\n\n";
     // exit(-1);
@@ -201,17 +306,23 @@ void cancer::ingress()
 
     cancer_Host host = cancer_Host();
 
-    host.initialize(functions,
-                    tissue_Names,
-                    intermediary_Sequence_location, first_Infection,
-                    overall_Generations,
-                    output_Node_location,
-                    max_sequences_per_File);
+    if (null_Distribution_mode == "NO")
+    {
+        host.initialize(functions,
+                        tissue_Names,
+                        intermediary_Sequence_location, first_Infection,
+                        overall_Generations,
+                        output_Node_location,
+                        max_sequences_per_File);
 
-    // exit(-1);
+        // exit(-1);
 
-    functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
-
+        functions.folder_Delete(intermediate_Folder_location + "/sequence_Data/reference_Sequences");
+    }
+    else
+    {
+        overall_Generations = null_buffer_generation;
+    }
     // exit(-1);
 
     int stop = 0;
@@ -265,7 +376,13 @@ void cancer::ingress()
                               tissues_ATGC_positions_Generation_death,
                               tissues_ATGC_positions_Replication_prob,
                               tissues_ATGC_positions_Metastatic,
-                              profile_tissue_Limits);
+                              profile_tissue_Limits,
+                              null_Distribution_mode,
+                              intermediate_null_Location,
+                              result_null_Location,
+                              null_buffer_generation,
+                              null_target_generation,
+                              temp_Original_intermediary);
 
     if (stop == 1)
     {

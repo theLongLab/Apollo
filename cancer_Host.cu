@@ -66,7 +66,13 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                        float **tissues_ATGC_positions_Generation_death,
                                        float **tissues_ATGC_positions_Replication_prob,
                                        float **tissues_ATGC_positions_Metastatic,
-                                       int *profile_tissue_Limits)
+                                       int *profile_tissue_Limits,
+                                       string null_Distribution_mode,
+                                       string intermediate_null_Location,
+                                       string result_null_Location,
+                                       int null_buffer_generation,
+                                       int null_target_generation,
+                                       string temp_Original_intermediary)
 {
     cout << "\nSTEP 6: Conducting simulation\n";
 
@@ -77,6 +83,117 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
     this->CPU_cores = CPU_cores;
     this->genome_Length = genome_Length;
+
+    if (null_Distribution_mode == "YES")
+    {
+        cout << "\nConfiguring null distribution generation intialization:\n";
+        num_Tissues = tissue_Names.size();
+
+        source_sequence_Data_folder = intermediate_null_Location + "/sequence_Data/cancer_Host";
+        functions.config_Folder(intermediate_null_Location + "/sequence_Data", "Intermediary sequence data");
+        functions.config_Folder(intermediate_null_Location + "/sequence_Data/cancer_Host", "Intermediary host data");
+
+        // output_Node_location = result_null_Location + "/node_Data";
+        // functions.config_Folder(output_Node_location, "null Results");
+
+        vector<vector<pair<string, string>>> tissue_Sequences;
+        vector<vector<string>> profile_Lines_Tissues;
+
+        intialize_Tissues(source_sequence_Data_folder, tissue_Sequences, profile_Lines_Tissues, functions, null_buffer_generation);
+        // overall_Generations = null_buffer_generation;
+
+        cout << "Start generation: " << overall_Generations << endl;
+
+        // exit(-1);
+
+        cout << "Transferring original intermediary data to null intermediary per tissue:\n";
+        for (int tissue = 0; tissue < num_Tissues; tissue++)
+        {
+            cout << "Processing tissue: " << tissue + 1 << endl;
+            try
+            {
+                cout << "Copying tissue contents\n";
+                filesystem::copy(temp_Original_intermediary + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations), source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations), filesystem::copy_options::update_existing | filesystem::copy_options::recursive);
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Error: " << e.what() << '\n';
+                exit(-1);
+            }
+
+            int dead_Count = 0;
+            if (filesystem::exists(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt"))
+            {
+                cout << "Loading dead file: " << source_sequence_Data_folder << "/" + to_string(tissue) << "/generation_" << to_string(overall_Generations) << "/dead_List.txt\n";
+
+                fstream dead_File;
+                dead_File.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt", ios::in);
+                if (dead_File.is_open())
+                {
+                    string line;
+                    while (getline(dead_File, line))
+                    {
+                        if (line != "")
+                        {
+                            dead_Count++;
+                        }
+                    }
+                    dead_File.close();
+                    dead_Particle_count[tissue] = dead_Count;
+                }
+                else
+                {
+                    cout << "ERROR: UNABLE TO OPEN DEAD LIST FILE: " << source_sequence_Data_folder << "/" + to_string(tissue) << "/generation_" << to_string(overall_Generations) << "/dead_List.txt\n";
+                    exit(-1);
+                }
+            }
+        }
+
+        // get genome length
+
+        cout << "Getting genome length: ";
+
+        for (const auto &entry : filesystem::directory_iterator(source_sequence_Data_folder + "/" + to_string(0) + "/generation_" + to_string(overall_Generations)))
+        {
+            if (filesystem::is_regular_file(entry))
+            {
+                string check_Extenstion = entry.path().extension();
+                if (check_Extenstion == ".fasta" || check_Extenstion == ".fa" || check_Extenstion == ".nfa" || check_Extenstion == ".nfasta")
+                {
+                    fstream sequence_Read;
+                    sequence_Read.open(entry.path().string(), ios::in);
+                    if (sequence_Read.is_open())
+                    {
+                        string line;
+                        // skipe header
+                        getline(sequence_Read, line);
+                        // get first line
+                        getline(sequence_Read, line);
+                        this->genome_Length = line.length();
+                        genome_Length = line.length();
+                    }
+                    else
+                    {
+                        cout << "ERROR: UNABLE TO OPEN SEQUENCE FILE: " << entry.path().string() << endl;
+                        exit(-1);
+                    }
+                    break;
+                }
+            }
+        }
+
+        cout << genome_Length << endl;
+
+        if (!filesystem::exists(output_Node_location + "/cancer_Host"))
+        {
+            functions.config_Folder(output_Node_location + "/cancer_Host", "Cancer host node");
+            functions.create_File(output_Node_location + "/cancer_Host/sequence_Profiles.csv", "Sequence_ID\tTissue\treplication_Factor\tgenerational_death_Prob\treplication_Prob\tmetastatic_Prob\tSurvivability");
+            functions.create_File(output_Node_location + "/cancer_Host/sequence_parent_Progeny_relationships.csv", "Source\tTarget\tType");
+        }
+
+        //! end program after the set count of generations
+        stop_generations_Count = null_target_generation + 1;
+    }
 
     generational_Summary = output_Node_location + "/cancer_Host/node_generational_Summary.csv";
     functions.create_File(generational_Summary, "Generation\tTissue\tPhase\tnum_Parents\tnum_Progeny\tdead_Progeny\trapid_Progeny");
@@ -3855,7 +3972,7 @@ string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tiss
                 index_Files++;
                 nfasta.open(folder_Path + "/" + to_string(indexed_Tissue_Folder[index_Files].first) + "_" + to_string(indexed_Tissue_Folder[index_Files].second) + ".nfasta", ios::in);
 
-                cout << "File: " << folder_Path << "/" << to_string(indexed_Tissue_Folder[index_Files].first) + "_" << to_string(indexed_Tissue_Folder[index_Files].second) << ".nfast\n";
+                cout << "File: " << folder_Path << "/" << to_string(indexed_Tissue_Folder[index_Files].first) + "_" << to_string(indexed_Tissue_Folder[index_Files].second) << ".nfasta\n";
 
                 line_current = 0;
             }
@@ -3949,7 +4066,7 @@ string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tiss
             }
             else
             {
-                cout << "ERROR UNABLE TO OPEN NFATSA FILE: " << folder_Path << "/" << indexed_Tissue_Folder[index_Files].first << "_" << indexed_Tissue_Folder[index_Files].second << ".nfasta" << endl;
+                cout << "ERROR UNABLE TO OPEN NFASTA FILE: " << folder_Path << "/" << indexed_Tissue_Folder[index_Files].first << "_" << indexed_Tissue_Folder[index_Files].second << ".nfasta" << endl;
                 exit(-1);
             }
         }
