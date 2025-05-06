@@ -221,8 +221,16 @@ void cancer_Host::simulate_Generations(functions_library &functions,
     // cells_of_progeny_location = output_Node_location + "/cancer_Host/cells_of_Progeny.csv";
     // functions.create_File(cells_of_progeny_location, "Sequence_ID\tProgeny_Cell_ID");
 
+    // output_Node_location
+    cout << "\nCreating processing time file\n";
+    fstream time_Track;
+    functions.create_File(output_Node_location + "/run_Time_track.csv", "Generation\tTime");
+    time_Track.open(output_Node_location + "/run_Time_track.csv", ios::app);
+
     do
     {
+        auto start_Time = chrono::high_resolution_clock::now();
+
         cout << "Calculating actual particles in each tissue: \n";
         ////clear array
         int *real_Particle_count_per_Tissue = (int *)malloc(sizeof(int) * num_Tissues);
@@ -632,6 +640,12 @@ void cancer_Host::simulate_Generations(functions_library &functions,
             stop_Type = 4;
         }
 
+        auto stop_Time = chrono::high_resolution_clock::now();
+
+        auto duration_Time = chrono::duration_cast<chrono::milliseconds>(stop_Time - start_Time);
+
+        time_Track << to_string(overall_Generations) << "\t" << to_string(duration_Time.count()) << "\n";
+
         decimal_Date = decimal_Date + date_Increment;
         overall_Generations++;
 
@@ -658,6 +672,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         // stop_Type = 1;
 
     } while (stop_Type == 0);
+
+    time_Track.close();
 
     cout << "\nSimulation has concluded: ";
 }

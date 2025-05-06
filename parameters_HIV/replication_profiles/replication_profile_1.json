@@ -72,7 +72,7 @@
     "Number of mutation hotspots":30,
 
     "Hotspot 1":{
-        "Region":"89:89",
+        "Region":"88:88",
 
         # Poisson mutations per generation
         "Clock model":{

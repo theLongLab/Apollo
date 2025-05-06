@@ -12,7 +12,7 @@
   "Output folders":"results_Cancer",
   "Intermediate folders":"intermediates_Cancer",
 
-  "Null distribution mode":"Yes",
+  "Null distribution mode":"No",
   "Null distribution intermediate":"null_Intermediate",
   "Null distribution results":"null_results",
   "Null distribution buffer generations":1,
