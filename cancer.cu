@@ -1455,7 +1455,7 @@ void cancer::node_Master_Manager(functions_library &functions)
     }
     else
     {
-        cout << "Viral migration: Does not occur\n";
+        cout << "Cell migration: Does not occur\n";
     }
 
     // EXTRACT NODE PROFILE INFORMATION
@@ -1487,7 +1487,7 @@ void cancer::node_Master_Manager(functions_library &functions)
             vector<string> terminal_Tissue_distribution = Parameters.get_parameters(node_Profile_Location, parameters_List);
             transform(terminal_Tissue_distribution[0].begin(), terminal_Tissue_distribution[0].end(), terminal_Tissue_distribution[0].begin(), ::toupper);
 
-            cout << "\nTerminal viral load distribution: " << terminal_Tissue_distribution[0] << endl;
+            cout << "\nTerminal cell load distribution: " << terminal_Tissue_distribution[0] << endl;
 
             if (terminal_Tissue_distribution[0] == "\"BINOMIAL\"")
             {

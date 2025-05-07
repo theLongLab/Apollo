@@ -323,7 +323,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
                         if (dead_Particle_count[tissue] > 0)
                         {
-                            cout << "\nIdentifying dead viral indexe(s)\n";
+                            cout << "\nIdentifying dead cell indexe(s)\n";
 
                             fstream dead_File;
                             dead_File.open(source_sequence_Data_folder + "/" + to_string(tissue) + "/generation_" + to_string(overall_Generations) + "/dead_List.txt");
@@ -347,7 +347,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
                         if (removed_by_Transfer_Indexes[tissue].size() > 0)
                         {
-                            cout << "Identifying transferred viral indexe(s)\n";
+                            cout << "Identifying transferred cell indexe(s)\n";
                             for (auto it = removed_by_Transfer_Indexes[tissue].begin(); it != removed_by_Transfer_Indexes[tissue].end(); ++it)
                             {
                                 int value = *it; // Dereference the iterator to get the value
