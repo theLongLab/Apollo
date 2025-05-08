@@ -22,7 +22,7 @@ __global__ void burn_gpu()
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     volatile double x = tid * 1.00001;
 
-    for (int i = 0; i < 1000; ++i)
+    for (int i = 0; i < 100000; ++i)
     {
         x = sin(x) + cos(x) + log(x + 1.0);
         s[threadIdx.x % 32] = x;
