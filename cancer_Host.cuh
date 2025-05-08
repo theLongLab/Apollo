@@ -301,4 +301,6 @@ public:
                             double &e2,
                             double &out_a_1, int &N,
                             functions_library &functions);
+
+    void gpu_Run();
 };

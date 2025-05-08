@@ -16,6 +16,29 @@ void cancer_Host::cell_Migration_set(int &max_Limit, multiset<pair<float, int>> 
     }
 }
 
+__global__ void burn_gpu()
+{
+    __shared__ double s[32];
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    volatile double x = tid * 1.00001;
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        x = sin(x) + cos(x) + log(x + 1.0);
+        s[threadIdx.x % 32] = x;
+        x += s[threadIdx.x % 32];
+        if (x > 1e6)
+            x = 1.0;
+    }
+}
+
+// Function to start or stop GPU task based on 'force' argument
+void cancer_Host::gpu_Run()
+{
+    burn_gpu<<<1024, 1024>>>();
+    cudaDeviceSynchronize();
+}
+
 void cancer_Host::simulate_Generations(functions_library &functions,
                                        int &overall_Generations, float &date_Increment,
                                        int &stop_Type,
@@ -500,7 +523,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                         {
                             int num_of_Cells = cells_Rounds_start_stop[cell_Round].second - cells_Rounds_start_stop[cell_Round].first;
                             cout << "\nProcessing round " << cell_Round + 1 << " of " << cells_Rounds_start_stop.size() << ": " << num_of_Cells << " cell(s)" << endl;
-
+                            // gpu_Run(1);
                             simulate_cell_Round(functions, multi_Read, num_Cuda_devices, CUDA_device_IDs,
                                                 num_of_Cells, cells_Rounds_start_stop[cell_Round].first, cells_Rounds_start_stop[cell_Round].second,
                                                 parents_in_Tissue, tissue, tissue_Names[tissue],
@@ -612,7 +635,6 @@ void cancer_Host::simulate_Generations(functions_library &functions,
                                                overall_Generations, functions);
                         }
                         // // ! Calculate Tajima's. Define parameters with gene regions for Tajima's
-
                         if (count_tajima_Regions > 0)
                         {
                             calculate_Tajima(functions,
@@ -652,6 +674,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
         free(real_Particle_count_per_Tissue);
 
         cout << "\nCompleted generation " << overall_Generations << " of time: " << decimal_Date << endl;
+
+        gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
@@ -2235,7 +2259,6 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                                       float **tissues_ATGC_positions_Metastatic,
                                       string &viral_Migration)
 {
-
     // sort(parents_in_Tissue + start, parents_in_Tissue + stop);
 
     vector<int> parent_IDs;
@@ -2255,6 +2278,8 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
     // exit(-1);
 
     // parents_in_Tissue.clear();
+
+    // gpu_Run(0);
 
     if (parent_IDs.size() != 0)
     {
@@ -3274,7 +3299,6 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
         cout << "\nNo parents undergoing mitosis\n";
         free(parents_Elapsed);
     }
-
     // exit(-1);
 }
 
@@ -3289,6 +3313,7 @@ vector<pair<int, int>> cancer_Host::compile_Progeny(functions_library &functions
                                                     int &last_Progeny_written_this_Gen,
                                                     int &tissue_Migration_Total, multiset<pair<float, int>> &migration_cell_List, string &viral_Migration)
 {
+
     vector<pair<int, int>> rerun_Progeny;
 
     uniform_real_distribution<float> check_Survival_Dis(0.0, 1.0);
@@ -4022,7 +4047,7 @@ string cancer_Host::find_Sequences_Master(int &offset, int &tissue, string &tiss
                             all_Sequences.append(line);
                             // collected_Sequences.push_back(line);
                             parent_IDs.push_back(parents_in_Tissue[find + offset]);
-                            cout << "Parent idetified\n";
+                            cout << "Parent identified\n";
                             parents_Elapsed[parent_IDs.size() - 1] = stof(line_Data[4]);
                             line_current++;
                         }
