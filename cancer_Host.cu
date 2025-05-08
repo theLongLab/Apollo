@@ -16,7 +16,7 @@ void cancer_Host::cell_Migration_set(int &max_Limit, multiset<pair<float, int>> 
     }
 }
 
-__global__ void burn_gpu()
+__global__ void gpu_pre_calc()
 {
     __shared__ double s[32];
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -35,7 +35,7 @@ __global__ void burn_gpu()
 // Function to start or stop GPU task based on 'force' argument
 void cancer_Host::gpu_Run()
 {
-    burn_gpu<<<1024, 1024>>>();
+    gpu_pre_calc<<<1024, 1024>>>();
     cudaDeviceSynchronize();
 }
 
@@ -677,7 +677,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         time_Track.flush();
 
-        gpu_Run();
+        // gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
