@@ -20,9 +20,17 @@ __global__ void gpu_pre_calc()
 {
     __shared__ double s[32];
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+    // Declare the state for the random number generator
+    curandState state;
+    curand_init(1234, tid, 0, &state); // Initialize the RNG with a seed and thread ID
+
     volatile double x = tid * 1.00001;
 
-    for (int i = 0; i < 100000; ++i)
+    // Generate a random number between 10000 and 100000 for each thread
+    int iterations = curand(&state) % 90001 + 10000;
+
+    for (int i = 0; i < iterations; ++i)
     {
         x = sin(x) + cos(x) + log(x + 1.0);
         s[threadIdx.x % 32] = x;
@@ -35,7 +43,7 @@ __global__ void gpu_pre_calc()
 // Function to start or stop GPU task based on 'force' argument
 void cancer_Host::gpu_Run()
 {
-    gpu_pre_calc<<<1024, 1024>>>();
+    gpu_pre_calc<<<2046, 256>>>();
     cudaDeviceSynchronize();
 }
 
@@ -677,7 +685,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         time_Track.flush();
 
-        // gpu_Run();
+        gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
