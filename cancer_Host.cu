@@ -675,6 +675,8 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         cout << "\nCompleted generation " << overall_Generations << " of time: " << decimal_Date << endl;
 
+        time_Track.flush();
+
         gpu_Run();
 
         if (stop_gen_Mode == 0)
