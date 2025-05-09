@@ -2984,7 +2984,7 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                         cudaSetDevice(CUDA_device_IDs[gpu]);
 
                         int blockSize, minGridSize;
-                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_Main, 0, 0);
+                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_reRun, 0, 0);
                 
                         int grid_Size = minGridSize;
                 
