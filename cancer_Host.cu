@@ -685,7 +685,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         time_Track.flush();
 
-        gpu_Run();
+        // gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
@@ -826,7 +826,18 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     free(full_Char);
 
     reference_Genome = "";
-    cuda_convert_Sequence<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(genome_Length, cuda_full_Char);
+
+    int blockSize, minGridSize;
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_convert_Sequence, 0, 0);
+
+    int grid_Size = minGridSize;
+
+    if (genome_Length < (blockSize * grid_Size))
+    {
+        grid_Size = (genome_Length + blockSize - 1) / blockSize;
+    }
+
+    cuda_convert_Sequence<<<grid_Size, blockSize>>>(genome_Length, cuda_full_Char);
     cudaDeviceSynchronize();
 
     cudaError_t err = cudaGetLastError();
@@ -1015,7 +1026,17 @@ void cancer_Host::calc_pre_Requistes(double &b1,
         // Copy the initial value from host to device
         cudaMemcpy(cuda_a_1, &a_1, sizeof(float), cudaMemcpyHostToDevice);
 
-        addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_1, (N - 1));
+        int blockSize, minGridSize;
+        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, addToVariable, 0, 0);
+
+        int grid_Size = minGridSize;
+
+        if ((N + 1) < (blockSize * grid_Size))
+        {
+            grid_Size = ((N + 1) + blockSize - 1) / blockSize;
+        }
+
+        addToVariable<<<grid_Size, blockSize>>>(cuda_a_1, (N - 1));
         cudaDeviceSynchronize();
 
         cudaError_t err = cudaGetLastError();
@@ -1038,7 +1059,17 @@ void cancer_Host::calc_pre_Requistes(double &b1,
         cudaMalloc(&cuda_a_2, sizeof(float));
         cudaMemcpy(cuda_a_2, &a_2, sizeof(float), cudaMemcpyHostToDevice);
 
-        squared_addToVariable<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(cuda_a_2, (N - 1));
+        // blockSize, minGridSize;
+        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, squared_addToVariable, 0, 0);
+
+        grid_Size = minGridSize;
+
+        if ((N + 1) < (blockSize * grid_Size))
+        {
+            grid_Size = ((N + 1) + blockSize - 1) / blockSize;
+        }
+
+        squared_addToVariable<<<grid_Size, blockSize>>>(cuda_a_2, (N - 1));
         cudaDeviceSynchronize();
 
         err = cudaGetLastError();
@@ -1273,9 +1304,19 @@ void cancer_Host::process_Tajima_String(string &all_Sequences, int &count_Track,
     free(char_dead_or_Alive);
     dead_or_Alive = "";
 
-    cuda_tajima_calc<<<functions.tot_Blocks_array[0], functions.tot_ThreadsperBlock_array[0]>>>(num_Regions, genome_Length, cuda_tajima_regions_Start_Stop,
-                                                                                                cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track,
-                                                                                                cuda_char_dead_or_Alive, cuda_per_Region_ALIVE);
+    int blockSize, minGridSize;
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_tajima_calc, 0, 0);
+
+    int grid_Size = minGridSize;
+
+    if (count_Track < (blockSize * grid_Size))
+    {
+        grid_Size = (count_Track + blockSize - 1) / blockSize;
+    }
+
+    cuda_tajima_calc<<<grid_Size, blockSize>>>(num_Regions, genome_Length, cuda_tajima_regions_Start_Stop,
+                                               cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track,
+                                               cuda_char_dead_or_Alive, cuda_per_Region_ALIVE);
     cudaDeviceSynchronize();
 
     cudaError_t err = cudaGetLastError();
@@ -2610,7 +2651,18 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
             {
                 cudaSetDevice(CUDA_device_IDs[gpu]);
-                cuda_replicate_Progeny_Main<<<functions.tot_Blocks_array[gpu], functions.tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
+
+                int blockSize, minGridSize;
+                cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_Main, 0, 0);
+        
+                int grid_Size = minGridSize;
+        
+                if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
+                {
+                    grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
+                }
+
+                cuda_replicate_Progeny_Main<<<grid_Size, blockSize, 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
                                                                                                                                             cuda_progeny_Sequences[gpu], genome_Length, cuda_full_Char[gpu],
                                                                                                                                             cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
                                                                                                                                             cuda_A_0_mutation[gpu],
@@ -2931,7 +2983,17 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                     {
                         cudaSetDevice(CUDA_device_IDs[gpu]);
 
-                        cuda_replicate_Progeny_reRun<<<functions.tot_Blocks_array[gpu], functions.tot_ThreadsperBlock_array[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
+                        int blockSize, minGridSize;
+                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_Main, 0, 0);
+                
+                        int grid_Size = minGridSize;
+                
+                        if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
+                        {
+                            grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
+                        }
+
+                        cuda_replicate_Progeny_reRun<<<grid_Size, blockSize, 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
                                                                                                                                                      cuda_parent_sequences_INT[gpu], cuda_progeny_Sequences_INT[gpu], genome_Length,
                                                                                                                                                      cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
                                                                                                                                                      cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],

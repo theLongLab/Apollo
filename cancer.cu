@@ -648,15 +648,29 @@ int **cancer::process_Reference_Sequences(functions_library &functions, vector<s
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
     {
         cudaSetDevice(CUDA_device_IDs[gpu]);
-        cuda_Sequences_to_INT_replication_Factor<<<tot_Blocks[gpu], tot_ThreadsperBlock[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu],
-                                                                                                                 cuda_gen_Death_probabilities[gpu], cuda_Replication_probabilities[gpu],
-                                                                                                                 cuda_sequence_replication_prob_changes[gpu], cuda_sequence_generation_death_changes[gpu],
-                                                                                                                 num_effect_Segregating_sites_Cancer[3], num_effect_Segregating_sites_Cancer[2],
-                                                                                                                 Reference_cancer_parameters[2], Reference_cancer_parameters[3],
-                                                                                                                 cuda_replication_Factor[gpu], cuda_metastatic_Prob[gpu], cuda_Survivability[gpu],
-                                                                                                                 Reference_cancer_parameters[0], Reference_cancer_parameters[4], Reference_fitness_survivability_proof_reading[1],
-                                                                                                                 num_effect_Segregating_sites_Cancer[0], num_effect_Segregating_sites_Cancer[4], num_effect_Segregating_sites[1],
-                                                                                                                 cuda_sequence_replication_factor_changes[gpu], cuda_sequence_metastatic_prob_changes[gpu], cuda_sequence_Survivability_changes[gpu]);
+
+        int blockSize, minGridSize;
+        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_Sequences_to_INT_replication_Factor, 0, 0);
+
+        int grid_Size = minGridSize;
+
+        // cout << "Sizes: \t" << grid_Size << " " << blockSize << endl;
+        // cout << "Original: \t" << tot_Blocks[gpu] << " " << tot_ThreadsperBlock[gpu] << endl;
+
+        if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
+        {
+            grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
+        }
+
+        cuda_Sequences_to_INT_replication_Factor<<<grid_Size, blockSize, 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, cuda_Sequence[gpu], genome_Length, cuda_full_Char[gpu],
+                                                                                            cuda_gen_Death_probabilities[gpu], cuda_Replication_probabilities[gpu],
+                                                                                            cuda_sequence_replication_prob_changes[gpu], cuda_sequence_generation_death_changes[gpu],
+                                                                                            num_effect_Segregating_sites_Cancer[3], num_effect_Segregating_sites_Cancer[2],
+                                                                                            Reference_cancer_parameters[2], Reference_cancer_parameters[3],
+                                                                                            cuda_replication_Factor[gpu], cuda_metastatic_Prob[gpu], cuda_Survivability[gpu],
+                                                                                            Reference_cancer_parameters[0], Reference_cancer_parameters[4], Reference_fitness_survivability_proof_reading[1],
+                                                                                            num_effect_Segregating_sites_Cancer[0], num_effect_Segregating_sites_Cancer[4], num_effect_Segregating_sites[1],
+                                                                                            cuda_sequence_replication_factor_changes[gpu], cuda_sequence_metastatic_prob_changes[gpu], cuda_sequence_Survivability_changes[gpu]);
     }
 
     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -673,6 +687,8 @@ int **cancer::process_Reference_Sequences(functions_library &functions, vector<s
     }
 
     cout << "GPU(s) streams completed and synchronized\nCopying data from GPU to Host memory\n";
+
+    // exit(-1);
 
     // exit(-1);
 
