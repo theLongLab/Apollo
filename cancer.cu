@@ -304,7 +304,7 @@ void cancer::ingress()
 
     // cout << "STEP 5: Configuring infection temporal data\n\n";
 
-    cancer_Host host = cancer_Host();
+    cancer_Host host = cancer_Host(CUDA_device_IDs, num_Cuda_devices);
 
     if (null_Distribution_mode == "NO")
     {

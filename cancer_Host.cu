@@ -1,8 +1,45 @@
 #include "cancer_Host.cuh"
 
-cancer_Host::cancer_Host()
+cancer_Host::cancer_Host(int *CUDA_device_IDs, int &num_Cuda_devices)
 {
     cout << "\nSTEP 5: Cancer host intialization\n";
+
+    maxGridSizeX = (int *)malloc(sizeof(int) * num_Cuda_devices);
+
+    /*
+    cuda_convert_Sequence
+    addToVariable
+    squared_addToVariable
+    cuda_tajima_calc
+    cuda_replicate_Progeny_Main
+    cuda_replicate_Progeny_reRun
+    */
+
+    block_size_cuda_convert_Sequence = (int *)malloc(sizeof(int) * num_Cuda_devices);
+    block_size_addToVariable = (int *)malloc(sizeof(int) * num_Cuda_devices);
+    block_size_squared_addToVariable = (int *)malloc(sizeof(int) * num_Cuda_devices);
+    block_size_cuda_tajima_calc = (int *)malloc(sizeof(int) * num_Cuda_devices);
+    block_size_cuda_replicate_Progeny_Main = (int *)malloc(sizeof(int) * num_Cuda_devices);
+    block_size_cuda_replicate_Progeny_reRun = (int *)malloc(sizeof(int) * num_Cuda_devices);
+
+    cout << "\nCalibrating GPU(s):\n";
+
+    for (int device = 0; device < num_Cuda_devices; device++)
+    {
+        calibrate_Functions(device, CUDA_device_IDs[device]);
+    }
+
+    cout << endl;
+
+    // exit(-1);
+}
+
+int cancer_Host::get_grid_Size(int gpu_Load, int &blockSize, int &maxGridSizeX_gpu)
+{
+    int gridSize = (gpu_Load + blockSize - 1) / blockSize;
+    gridSize = min(gridSize, maxGridSizeX_gpu);
+
+    return gridSize;
 }
 
 void cancer_Host::cell_Migration_set(int &max_Limit, multiset<pair<float, int>> &migration_cell_List, pair<float, int> candidate_Cell)
@@ -827,17 +864,17 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
 
     reference_Genome = "";
 
-    int blockSize, minGridSize;
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_convert_Sequence, 0, 0);
+    // int blockSize, minGridSize;
+    // cudaOccupancyMaxPotentialBlockSize(&minGridSize, blockSize, cuda_convert_Sequence, 0, 0);
 
-    int grid_Size = minGridSize;
+    int grid_Size = get_grid_Size(genome_Length, block_size_cuda_convert_Sequence[0], maxGridSizeX[0]);
 
-    if (genome_Length < (blockSize * grid_Size))
-    {
-        grid_Size = (genome_Length + blockSize - 1) / blockSize;
-    }
+    // if (genome_Length < (blockSize * grid_Size))
+    // {
+    //     grid_Size = (genome_Length + blockSize - 1) / blockSize;
+    // }
 
-    cuda_convert_Sequence<<<grid_Size, blockSize>>>(genome_Length, cuda_full_Char);
+    cuda_convert_Sequence<<<grid_Size, block_size_cuda_convert_Sequence[0]>>>(genome_Length, cuda_full_Char);
     cudaDeviceSynchronize();
 
     cudaError_t err = cudaGetLastError();
@@ -1026,17 +1063,17 @@ void cancer_Host::calc_pre_Requistes(double &b1,
         // Copy the initial value from host to device
         cudaMemcpy(cuda_a_1, &a_1, sizeof(float), cudaMemcpyHostToDevice);
 
-        int blockSize, minGridSize;
-        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, addToVariable, 0, 0);
+        //  int blockSize, minGridSize;
+        // cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, addToVariable, 0, 0);
 
-        int grid_Size = minGridSize;
+        int grid_Size = get_grid_Size(N + 1, block_size_addToVariable[0], maxGridSizeX[0]);
 
-        if ((N + 1) < (blockSize * grid_Size))
-        {
-            grid_Size = ((N + 1) + blockSize - 1) / blockSize;
-        }
+        // if ((N + 1) < (blockSize * grid_Size))
+        // {
+        //     grid_Size = ((N + 1) + blockSize - 1) / blockSize;
+        // }
 
-        addToVariable<<<grid_Size, blockSize>>>(cuda_a_1, (N - 1));
+        addToVariable<<<grid_Size, block_size_addToVariable[0]>>>(cuda_a_1, (N - 1));
         cudaDeviceSynchronize();
 
         cudaError_t err = cudaGetLastError();
@@ -1060,16 +1097,16 @@ void cancer_Host::calc_pre_Requistes(double &b1,
         cudaMemcpy(cuda_a_2, &a_2, sizeof(float), cudaMemcpyHostToDevice);
 
         // blockSize, minGridSize;
-        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, squared_addToVariable, 0, 0);
+        // cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, squared_addToVariable, 0, 0);
 
-        grid_Size = minGridSize;
+        grid_Size = get_grid_Size(N + 1, block_size_squared_addToVariable[0], maxGridSizeX[0]);
 
-        if ((N + 1) < (blockSize * grid_Size))
-        {
-            grid_Size = ((N + 1) + blockSize - 1) / blockSize;
-        }
+        // if ((N + 1) < (blockSize * grid_Size))
+        // {
+        //     grid_Size = ((N + 1) + blockSize - 1) / blockSize;
+        // }
 
-        squared_addToVariable<<<grid_Size, blockSize>>>(cuda_a_2, (N - 1));
+        squared_addToVariable<<<grid_Size, block_size_squared_addToVariable[0]>>>(cuda_a_2, (N - 1));
         cudaDeviceSynchronize();
 
         err = cudaGetLastError();
@@ -1304,19 +1341,19 @@ void cancer_Host::process_Tajima_String(string &all_Sequences, int &count_Track,
     free(char_dead_or_Alive);
     dead_or_Alive = "";
 
-    int blockSize, minGridSize;
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_tajima_calc, 0, 0);
+    // int blockSize, minGridSize;
+    // cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_tajima_calc, 0, 0);
 
-    int grid_Size = minGridSize;
+    int grid_Size = get_grid_Size(count_Track, block_size_cuda_tajima_calc[0], maxGridSizeX[0]);
 
-    if (count_Track < (blockSize * grid_Size))
-    {
-        grid_Size = (count_Track + blockSize - 1) / blockSize;
-    }
+    // if (count_Track < (blockSize * grid_Size))
+    // {
+    //     grid_Size = (count_Track + blockSize - 1) / blockSize;
+    // }
 
-    cuda_tajima_calc<<<grid_Size, blockSize>>>(num_Regions, genome_Length, cuda_tajima_regions_Start_Stop,
-                                               cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track,
-                                               cuda_char_dead_or_Alive, cuda_per_Region_ALIVE);
+    cuda_tajima_calc<<<grid_Size, block_size_cuda_tajima_calc[0]>>>(num_Regions, genome_Length, cuda_tajima_regions_Start_Stop,
+                                                                   cuda_full_Char, cuda_Reference_Genome, cuda_per_Region, count_Track,
+                                                                   cuda_char_dead_or_Alive, cuda_per_Region_ALIVE);
     cudaDeviceSynchronize();
 
     cudaError_t err = cudaGetLastError();
@@ -2652,52 +2689,52 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
             {
                 cudaSetDevice(CUDA_device_IDs[gpu]);
 
-                int blockSize, minGridSize;
-                cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_Main, 0, 0);
-        
-                int grid_Size = minGridSize;
-        
-                if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
-                {
-                    grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
-                }
+                // int blockSize, minGridSize;
+                // cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_Main, 0, 0);
 
-                cuda_replicate_Progeny_Main<<<grid_Size, blockSize, 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
-                                                                                                                                            cuda_progeny_Sequences[gpu], genome_Length, cuda_full_Char[gpu],
-                                                                                                                                            cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
-                                                                                                                                            cuda_A_0_mutation[gpu],
-                                                                                                                                            cuda_T_1_mutation[gpu],
-                                                                                                                                            cuda_G_2_mutation[gpu],
-                                                                                                                                            cuda_C_3_mutation[gpu],
-                                                                                                                                            mutation_Hotspots,
-                                                                                                                                            cuda_mutation_hotspot_parameters[gpu],
-                                                                                                                                            cuda_num_effect_Segregating_sites[gpu],
-                                                                                                                                            cuda_sequence_Survivability_changes[gpu],
-                                                                                                                                            cuda_sequence_Proof_reading_changes[gpu],
-                                                                                                                                            cuda_num_effect_Segregating_sites_Cancer[gpu],
-                                                                                                                                            cuda_sequence_replication_factor_changes[gpu],
-                                                                                                                                            cuda_sequence_mutation_rate_changes[gpu],
-                                                                                                                                            cuda_sequence_generation_death_changes[gpu],
-                                                                                                                                            cuda_sequence_replication_prob_changes[gpu],
-                                                                                                                                            cuda_sequence_metastatic_prob_changes[gpu],
-                                                                                                                                            cuda_progeny_Configuration_Cancer[gpu],
-                                                                                                                                            cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
-                                                                                                                                            cuda_tissue_selection_Position_Count[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Survivability[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Proof[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Replication_factor[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Generation_death[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Replication_prob[gpu],
-                                                                                                                                            cuda_tissues_ATGC_positions_Metastatic[gpu],
-                                                                                                                                            cuda_Survivability_Positions[gpu],
-                                                                                                                                            cuda_Proof_Positions[gpu],
-                                                                                                                                            cuda_Replication_factor_Positions[gpu],
-                                                                                                                                            cuda_Mutation_rate_factor_Positions[gpu],
-                                                                                                                                            cuda_Generation_death_Positions[gpu],
-                                                                                                                                            cuda_Replication_prob_Positions[gpu],
-                                                                                                                                            cuda_Metastatic_Positions[gpu],
-                                                                                                                                            tissue);
+                int grid_Size = get_grid_Size(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, block_size_cuda_replicate_Progeny_Main[gpu], maxGridSizeX[gpu]);
+
+                // if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
+                // {
+                //     grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
+                // }
+
+                cuda_replicate_Progeny_Main<<<grid_Size, block_size_cuda_replicate_Progeny_Main[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
+                                                                                       cuda_progeny_Sequences[gpu], genome_Length, cuda_full_Char[gpu],
+                                                                                       cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
+                                                                                       cuda_A_0_mutation[gpu],
+                                                                                       cuda_T_1_mutation[gpu],
+                                                                                       cuda_G_2_mutation[gpu],
+                                                                                       cuda_C_3_mutation[gpu],
+                                                                                       mutation_Hotspots,
+                                                                                       cuda_mutation_hotspot_parameters[gpu],
+                                                                                       cuda_num_effect_Segregating_sites[gpu],
+                                                                                       cuda_sequence_Survivability_changes[gpu],
+                                                                                       cuda_sequence_Proof_reading_changes[gpu],
+                                                                                       cuda_num_effect_Segregating_sites_Cancer[gpu],
+                                                                                       cuda_sequence_replication_factor_changes[gpu],
+                                                                                       cuda_sequence_mutation_rate_changes[gpu],
+                                                                                       cuda_sequence_generation_death_changes[gpu],
+                                                                                       cuda_sequence_replication_prob_changes[gpu],
+                                                                                       cuda_sequence_metastatic_prob_changes[gpu],
+                                                                                       cuda_progeny_Configuration_Cancer[gpu],
+                                                                                       cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
+                                                                                       cuda_tissue_selection_Position_Count[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Survivability[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Proof[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Replication_factor[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Generation_death[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Replication_prob[gpu],
+                                                                                       cuda_tissues_ATGC_positions_Metastatic[gpu],
+                                                                                       cuda_Survivability_Positions[gpu],
+                                                                                       cuda_Proof_Positions[gpu],
+                                                                                       cuda_Replication_factor_Positions[gpu],
+                                                                                       cuda_Mutation_rate_factor_Positions[gpu],
+                                                                                       cuda_Generation_death_Positions[gpu],
+                                                                                       cuda_Replication_prob_Positions[gpu],
+                                                                                       cuda_Metastatic_Positions[gpu],
+                                                                                       tissue);
             }
 
             for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -2983,52 +3020,52 @@ void cancer_Host::simulate_cell_Round(functions_library &functions, string &mult
                     {
                         cudaSetDevice(CUDA_device_IDs[gpu]);
 
-                        int blockSize, minGridSize;
-                        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_reRun, 0, 0);
-                
-                        int grid_Size = minGridSize;
-                
-                        if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
-                        {
-                            grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
-                        }
+                        // int blockSize, minGridSize;
+                        // cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cuda_replicate_Progeny_reRun, 0, 0);
 
-                        cuda_replicate_Progeny_reRun<<<grid_Size, blockSize, 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
-                                                                                                                                                     cuda_parent_sequences_INT[gpu], cuda_progeny_Sequences_INT[gpu], genome_Length,
-                                                                                                                                                     cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
-                                                                                                                                                     cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
-                                                                                                                                                     cuda_sequence_replication_factor_changes[gpu],
-                                                                                                                                                     mutation_Hotspots,
-                                                                                                                                                     cuda_mutation_hotspot_parameters[gpu],
-                                                                                                                                                     cuda_A_0_mutation[gpu],
-                                                                                                                                                     cuda_T_1_mutation[gpu],
-                                                                                                                                                     cuda_G_2_mutation[gpu],
-                                                                                                                                                     cuda_C_3_mutation[gpu],
-                                                                                                                                                     cuda_num_effect_Segregating_sites[gpu],
-                                                                                                                                                     cuda_num_effect_Segregating_sites_Cancer[gpu],
-                                                                                                                                                     cuda_sequence_Survivability_changes[gpu],
-                                                                                                                                                     cuda_sequence_Proof_reading_changes[gpu],
-                                                                                                                                                     cuda_sequence_mutation_rate_changes[gpu],
-                                                                                                                                                     cuda_sequence_generation_death_changes[gpu],
-                                                                                                                                                     cuda_sequence_replication_prob_changes[gpu],
-                                                                                                                                                     cuda_sequence_metastatic_prob_changes[gpu],
-                                                                                                                                                     cuda_progeny_Configuration_Cancer[gpu],
-                                                                                                                                                     cuda_tissue_selection_Position_Count[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Survivability[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Proof[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Replication_factor[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Generation_death[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Replication_prob[gpu],
-                                                                                                                                                     cuda_tissues_ATGC_positions_Metastatic[gpu],
-                                                                                                                                                     cuda_Survivability_Positions[gpu],
-                                                                                                                                                     cuda_Proof_Positions[gpu],
-                                                                                                                                                     cuda_Replication_factor_Positions[gpu],
-                                                                                                                                                     cuda_Mutation_rate_factor_Positions[gpu],
-                                                                                                                                                     cuda_Generation_death_Positions[gpu],
-                                                                                                                                                     cuda_Replication_prob_Positions[gpu],
-                                                                                                                                                     cuda_Metastatic_Positions[gpu],
-                                                                                                                                                     tissue);
+                        int grid_Size = get_grid_Size(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first, block_size_cuda_replicate_Progeny_reRun[gpu], maxGridSizeX[gpu]);
+
+                        // if ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) < (blockSize * grid_Size))
+                        // {
+                        //     grid_Size = ((start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first) + blockSize - 1) / blockSize;
+                        // }
+
+                        cuda_replicate_Progeny_reRun<<<grid_Size, block_size_cuda_replicate_Progeny_reRun[gpu], 0, streams[gpu]>>>(start_stop_Per_GPU[gpu].second - start_stop_Per_GPU[gpu].first,
+                                                                                                cuda_parent_sequences_INT[gpu], cuda_progeny_Sequences_INT[gpu], genome_Length,
+                                                                                                cuda_parents_Elapsed[gpu], cuda_progeny_Elapsed[gpu],
+                                                                                                cuda_Reference_fitness_survivability_proof_reading[gpu], cuda_Reference_cancer_parameters[gpu],
+                                                                                                cuda_sequence_replication_factor_changes[gpu],
+                                                                                                mutation_Hotspots,
+                                                                                                cuda_mutation_hotspot_parameters[gpu],
+                                                                                                cuda_A_0_mutation[gpu],
+                                                                                                cuda_T_1_mutation[gpu],
+                                                                                                cuda_G_2_mutation[gpu],
+                                                                                                cuda_C_3_mutation[gpu],
+                                                                                                cuda_num_effect_Segregating_sites[gpu],
+                                                                                                cuda_num_effect_Segregating_sites_Cancer[gpu],
+                                                                                                cuda_sequence_Survivability_changes[gpu],
+                                                                                                cuda_sequence_Proof_reading_changes[gpu],
+                                                                                                cuda_sequence_mutation_rate_changes[gpu],
+                                                                                                cuda_sequence_generation_death_changes[gpu],
+                                                                                                cuda_sequence_replication_prob_changes[gpu],
+                                                                                                cuda_sequence_metastatic_prob_changes[gpu],
+                                                                                                cuda_progeny_Configuration_Cancer[gpu],
+                                                                                                cuda_tissue_selection_Position_Count[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Survivability[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Proof[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Replication_factor[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Mutation_rate_factor[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Generation_death[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Replication_prob[gpu],
+                                                                                                cuda_tissues_ATGC_positions_Metastatic[gpu],
+                                                                                                cuda_Survivability_Positions[gpu],
+                                                                                                cuda_Proof_Positions[gpu],
+                                                                                                cuda_Replication_factor_Positions[gpu],
+                                                                                                cuda_Mutation_rate_factor_Positions[gpu],
+                                                                                                cuda_Generation_death_Positions[gpu],
+                                                                                                cuda_Replication_prob_Positions[gpu],
+                                                                                                cuda_Metastatic_Positions[gpu],
+                                                                                                tissue);
                     }
 
                     for (int gpu = 0; gpu < num_Cuda_devices; gpu++)
@@ -4688,4 +4725,37 @@ void cancer_Host::intialize_Tissues(string &host_Folder, vector<vector<pair<stri
 
         removed_by_Transfer_Indexes.push_back(init_removed_by_Transfer_Indexes);
     }
+}
+
+void cancer_Host::calibrate_Functions(int &device, int &device_ID)
+{
+    int minGridSize;
+
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, device_ID);
+
+    cout << "\nConfiguring GPU: " << device_ID << endl;
+
+    maxGridSizeX[device] = prop.maxGridSize[0];
+    cout << "Max grid Size available: " << maxGridSizeX[device] << endl;
+
+    cout << "\nConfiguring GPU functions' block sizes:\n";
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_cuda_convert_Sequence[device], cuda_convert_Sequence, 0, 0);
+    cout << "block_size_cuda_convert_Sequence: " << block_size_cuda_convert_Sequence[device] << endl;
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_addToVariable[device], addToVariable, 0, 0);
+    cout << "addToVariable: " << block_size_addToVariable[device] << endl;
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_squared_addToVariable[device], squared_addToVariable, 0, 0);
+    cout << "squared_addToVariable: " << block_size_squared_addToVariable[device] << endl;
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_cuda_tajima_calc[device], cuda_tajima_calc, 0, 0);
+    cout << "cuda_tajima_calc: " << block_size_cuda_tajima_calc[device] << endl;
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_cuda_replicate_Progeny_Main[device], cuda_replicate_Progeny_Main, 0, 0);
+    cout << "cuda_replicate_Progeny_Main: " << block_size_cuda_replicate_Progeny_Main[device] << endl;
+
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &block_size_cuda_replicate_Progeny_reRun[device], cuda_replicate_Progeny_reRun, 0, 0);
+    cout << "cuda_replicate_Progeny_reRun: " << block_size_cuda_replicate_Progeny_reRun[device] << endl;
 }

@@ -69,8 +69,19 @@ private:
     vector<vector<vector<pair<string, string>>>> to_write_Sequence_Store_OTHER_Gens;
     vector<vector<int>> last_index_Seq_Written_OTHERs;
 
+    int *maxGridSizeX;
+
+    int *block_size_cuda_convert_Sequence;
+    int *block_size_addToVariable;
+    int *block_size_squared_addToVariable;
+    int *block_size_cuda_tajima_calc;
+    int *block_size_cuda_replicate_Progeny_Main;
+    int *block_size_cuda_replicate_Progeny_reRun;
+
 public:
-    cancer_Host();
+    cancer_Host(int *CUDA_device_IDs, int &num_Cuda_devices);
+
+   // int get_grid_Size(int gpu_Load, int &blockSize, int &maxGridSizeX_gpu);
 
     vector<set<int>> removed_by_Transfer_Indexes;
 
@@ -303,4 +314,7 @@ public:
                             functions_library &functions);
 
     void gpu_Run();
+
+    void calibrate_Functions(int &device, int &device_ID);
+    int get_grid_Size(int gpu_Load, int &blockSize, int &maxGridSizeX_gpu);
 };
