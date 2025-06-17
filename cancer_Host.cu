@@ -1428,7 +1428,10 @@ void cancer_Host::migration_of_Cells(string &source_sequence_Data_folder, vector
         if (filesystem::exists(sequence_target_Folder))
         {
             vector<pair<int, int>> sequence_target_Index = functions.index_sequence_Folder(sequence_target_Folder);
-            last_target_Index = sequence_target_Index[sequence_target_Index.size() - 1].second + 1;
+            if (sequence_target_Index.size() > 0)
+            {
+                last_target_Index = sequence_target_Index[sequence_target_Index.size() - 1].second + 1;
+            }
         }
         else
         {
