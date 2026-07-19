@@ -722,7 +722,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         time_Track.flush();
 
-        // gpu_Run();
+        gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
