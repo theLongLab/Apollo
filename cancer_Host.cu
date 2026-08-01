@@ -722,7 +722,7 @@ void cancer_Host::simulate_Generations(functions_library &functions,
 
         time_Track.flush();
 
-        gpu_Run();
+        // gpu_Run();
 
         if (stop_gen_Mode == 0)
         {
@@ -932,7 +932,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
     for (int file = 0; file < indexed_Source_Folder.size(); file++)
     {
         fstream nfasta;
-        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[file].first) + "_" + to_string(indexed_Source_Folder[file].second) + ".nfasta");
+        nfasta.open(sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[file].first) + "_" + to_string(indexed_Source_Folder[file].second) + ".nfasta", ios::in);
         if (nfasta.is_open())
         {
             string line;
@@ -966,7 +966,7 @@ void cancer_Host::calculate_Tajima(functions_library &functions,
         else
         {
             cout << "ERROR: UNABLE TO OPEN SEQUENCE: "
-                 << sequence_Tissue_Folder + "/" << indexed_Source_Folder[file].first + "_" << indexed_Source_Folder[file].second << ".nfasta\n";
+                 << sequence_Tissue_Folder + "/" + to_string(indexed_Source_Folder[file].first) + "_" + to_string(indexed_Source_Folder[file].second) + ".nfasta\n";
             exit(-1);
         }
     }

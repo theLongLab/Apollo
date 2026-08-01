@@ -2068,13 +2068,13 @@ void cancer::sequence_Master_Manager(functions_library &functions)
         // exit(-1);
 
         cout << "Number of regions: " << count_tajima_Regions << endl;
-        cout << "\nConfiguring regions:";
+        cout << "\nConfiguring regions:" << flush;
         tajima_regions_Start_Stop = functions.create_INT_2D_arrays(count_tajima_Regions, 2);
         vector<string> line_Data;
 
         for (int region = 0; region < count_tajima_Regions; region++)
         {
-            cout << "Processing Region " << region + 1 << ": ";
+            cout << "Processing Region " << region + 1 << ": " << flush;
             string region_String = "Region " + to_string(region + 1);
             string region_Start_Stop = Parameters.get_STRING(mutations_Block, region_String);
 
