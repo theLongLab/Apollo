@@ -303,4 +303,6 @@ public:
     vector<pair<int, int>> index_sequence_Folder(string &source_Target_file_Location);
 
     // int draw_Dead_or_Aline(float &prob);
+
+    string path_Check(string path);
 };

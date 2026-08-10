@@ -9,8 +9,8 @@
   "Multi read":"YES",
 
   # Output and Intermediate folder locations.
-  "Output folders":"results_Cancer",
-  "Intermediate folders":"intermediates_Cancer",
+  "Output folders":"/mnt/d/Deshan/Books/population/results_Cancer",
+  "Intermediate folders":"/mnt/d/Deshan/Books/population/intermediates_Cancer_no_bias_accel_0_15",
 
   "Null distribution mode":"No",
   "Null distribution intermediate":"null_Intermediate",

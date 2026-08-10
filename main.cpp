@@ -35,6 +35,8 @@
 #include "pheno_plink.cuh"
 #include "tumor_plink.cuh"
 
+#include "cancer_unique_Seq.cuh"
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -112,6 +114,17 @@ int main(int argc, char *argv[])
 
           cancer can_Sim = cancer(parameter_MASTER_file);
           can_Sim.ingress();
+     }
+     else if (function == "--collect_sequences")
+     {
+          cout << "Cancer sequence Identification\n\n";
+
+          // Waiting rigorous tests
+
+          cancer_unique_Seq collect_Sequences = cancer_unique_Seq(parameter_MASTER_file);
+          collect_Sequences.ingress();
+
+          cout << "\nSequences collected" << endl;
      }
      else if (function == "--hapcounter")
      {
@@ -196,6 +209,11 @@ int main(int argc, char *argv[])
 
           network net = network(Parameters.get_INT(found_Parameters[0]), Parameters.get_INT(found_Parameters[1]), Parameters.get_INT(found_Parameters[2]), Parameters.get_STRING(found_Parameters[3]), 1);
           net.align_One();
+          exit(-1);
+     }
+     else
+     {
+          cerr << "ERROR UNKNOW FUNCTION" << endl;
           exit(-1);
      }
 

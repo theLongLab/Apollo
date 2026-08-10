@@ -114,7 +114,7 @@ void functions_library::config_Folder(string location, string type_Folder)
     else
     {
         cout << "Creating " << type_Folder << " folder: " << location;
-        filesystem::create_directory(location);
+        filesystem::create_directories(location);
     }
     cout << "\n";
 }
@@ -6955,4 +6955,19 @@ void functions_library::decimal_to_Date(float decimal_Date, int &year, int &mont
 
         day = daysInMonth[month - 1];
     }
+}
+
+string functions_library::path_Check(string path)
+{
+    if (path.at(path.size() - 1) != '/')
+    {
+        path.append("/");
+    }
+
+    if (path.at(0) != '/')
+    {
+        path = "/" + path;
+    }
+
+    return path;
 }
