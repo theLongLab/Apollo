@@ -305,4 +305,6 @@ public:
     // int draw_Dead_or_Aline(float &prob);
 
     string path_Check(string path);
+
+    vector<pair<int, int>> fixed_thread_start_Stop(int num_Threads, int load, int &actual_thread_Use);
 };

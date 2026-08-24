@@ -6971,3 +6971,32 @@ string functions_library::path_Check(string path)
 
     return path;
 }
+
+vector<pair<int, int>> functions_library::fixed_thread_start_Stop(int num_Threads, int load, int &actual_thread_Use)
+{
+    vector<pair<int, int>> start_Stop_threads;
+
+    if (num_Threads > load)
+    {
+        actual_thread_Use = load;
+    }
+
+    int num_per_Core = load / actual_thread_Use;
+    int remainder = load % actual_thread_Use;
+
+    int start = 0;
+
+    for (int thread_ID = 0; thread_ID < actual_thread_Use; thread_ID++)
+    {
+        int stop = start + num_per_Core;
+        start_Stop_threads.push_back(make_pair(start, stop));
+        start = stop;
+    }
+
+    if (remainder != 0)
+    {
+        start_Stop_threads[start_Stop_threads.size() - 1].second = start_Stop_threads[start_Stop_threads.size() - 1].second + remainder;
+    }
+
+    return start_Stop_threads;
+}
