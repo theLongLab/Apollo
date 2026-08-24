@@ -12,8 +12,12 @@
             "args": [
                 // "--cancer",
                 // "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/parameters_MASTER.json"
-                "--collect_Sequences",
-                "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/parameters_MASTER.json"
+                // "--collect_Sequences",
+                // "/mnt/d/Deshan/Books/University of Calgary/Experiments/Simulator_Linux/parameters_Cancer/parameters_MASTER.json"
+                "--get_variants",
+                "/mnt/d/Deshan/Books/University of Calgary/Year 5/5_Winter/Cancer_tool/results/reference_1.fasta",
+                "/mnt/d/Deshan/Books/University of Calgary/Year 5/5_Winter/Cancer_tool/results/trim_dead.tsv",
+                "/mnt/d/Deshan/Books/University of Calgary/Year 5/5_Winter/Cancer_tool/results/trim_dead_translated.tsv"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

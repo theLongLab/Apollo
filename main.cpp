@@ -36,6 +36,7 @@
 #include "tumor_plink.cuh"
 
 #include "cancer_unique_Seq.cuh"
+#include "get_Variants.cuh"
 
 using namespace std;
 
@@ -125,6 +126,19 @@ int main(int argc, char *argv[])
           collect_Sequences.ingress();
 
           cout << "\nSequences collected" << endl;
+     }
+     else if (function == "--get_variants")
+     {
+          cout << "Variant detections and sequence translation\n\n";
+
+          string reference_Sequence_location(argv[2]);
+          string variant_File_location(argv[3]);
+          string output_File_location(argv[4]);
+
+          get_Variants get_variants = get_Variants(reference_Sequence_location, variant_File_location, output_File_location);
+          get_variants.ingress();
+
+          cout << "\nSequences translated and variants detected" << endl;
      }
      else if (function == "--hapcounter")
      {

@@ -75,7 +75,7 @@ get_Variants::get_Variants(string reference_Sequence_location, string variant_Fi
     num_Threads = thread::hardware_concurrency();
     cout << "\nUsing " << num_Threads << " thread(s)" << endl;
 
-    output_File_location = output_File_location;
+    this->output_File_location = output_File_location;
 }
 
 void get_Variants::ingress()
@@ -84,7 +84,7 @@ void get_Variants::ingress()
 
     vector<thread> threads_vec;
 
-    shared_mutex g_mutex;
+    // shared_mutex g_mutex;
 
     int actual_thread_Use = num_Threads;
     vector<pair<int, int>> start_Stop_threads = functions.fixed_thread_start_Stop(this->num_Threads, lines_To_process, actual_thread_Use);
@@ -116,7 +116,7 @@ void get_Variants::ingress()
         cout << "Writing to file: " << output_File_location << flush;
         write_Out << "Tissue\tGeneration\tHaplotype\tCount\tReplication_Prob\tGen_Death_prob\tReplication_Factor\tmetastatic_Prob\tsurvivability\tSequence\tMutations" << endl;
 
-        for (int line = start; line < variant_Lines.size(); line++)
+        for (int line = 0; line < variant_Lines.size(); line++)
         {
             write_Out << variant_Lines[line] << "\n";
         }
@@ -132,7 +132,8 @@ void get_Variants::ingress()
 
 void get_Variants::process_Lines(int thread_ID, int start, int stop, functions_library &functions)
 {
-    string status = "Completed processing " + thread_ID + " of " + num_Threads;
+    string status = "Completed processing " + to_string(thread_ID) +
+                    " of " + to_string(num_Threads);
 
     vector<string> line_Data;
     for (int line = start; line < stop; line++)
@@ -151,11 +152,11 @@ void get_Variants::process_Lines(int thread_ID, int start, int stop, functions_l
 
         for (int base_Index = 0; base_Index < numeric_Sequence.size(); base_Index++)
         {
-            string base = numeric_Sequence[base_Index] == '0' ? "A" : numeric_Sequence[base_Index] == '1' ? "T"
-                                                                  : numeric_Sequence[base_Index] == '2'   ? "G"
-                                                                                                          : "C";
+            char base = numeric_Sequence[base_Index] == '0' ? 'A' : numeric_Sequence[base_Index] == '1' ? 'T'
+                                                                : numeric_Sequence[base_Index] == '2'   ? 'G'
+                                                                                                        : 'C';
 
-            sequence.append(base);
+            sequence += base;
 
             if (base != reference_Sequence[base_Index])
             {
@@ -165,10 +166,14 @@ void get_Variants::process_Lines(int thread_ID, int start, int stop, functions_l
 
         if (mutations_Captured != "")
         {
-            if (mutations_Captured[mutations_Captured.size() - 1] == ";")
+            if (mutations_Captured[mutations_Captured.size() - 1] == ';')
             {
                 mutations_Captured = mutations_Captured.substr(0, mutations_Captured.size() - 1);
             }
+        }
+        else
+        {
+            mutations_Captured = "NA";
         }
 
         variant_Lines[line].append("\t" + sequence + "\t" + mutations_Captured);
